@@ -23,7 +23,8 @@ import {inspirationMatches} from '../src/shared/inspiration/matches.ts';
 import {rhythmWords,songFeature,textbookTalk} from '../src/shared/inspiration/talk.ts';
 import {isTextbookTrack} from '@wanwu-v2/contracts/textbook';
 import {parseRoute,routeHref} from '../src/app/router.ts';
-import {PREVIEW_MAX_SECONDS,previewPlan} from '../src/shared/inspiration/rhythmPreview.ts';
+import {BACKGROUND_RULES} from '@wanwu-v2/sound-rules/rules';
+import {PREVIEW_MAX_SECONDS,previewBeat,previewPlan} from '../src/shared/inspiration/rhythmPreview.ts';
 import {textbookTracks} from '../src/shared/inspiration/textbookTracks.ts';
 
 const now=new Date('2026-10-23T08:00:00.000Z');
@@ -292,8 +293,18 @@ test('textbook preview: the song\'s own background (its rhythm and key) in whole
  assert.ok(plan.seconds<=PREVIEW_MAX_SECONDS+1e-9&&plan.seconds>=2*beat*bird.meter);
  assert.ok(Math.abs(plan.seconds/(beat*bird.meter)-Math.round(plan.seconds/(beat*bird.meter)))<1e-9,'whole bars');
  const drums=plan.notes.filter(note=>note.part==='rhythm'&&note.at<plan.cadenceAt-1e-9).map(note=>Math.round(note.at/beat*4)/4%bird.meter);
- assert.deepEqual([...new Set(drums)].sort(),[0,.5,1],'嘀嘀嗒: notes at 0, ½ and 1 of every bar');
+ assert.deepEqual([...new Set(drums)].sort(),[0,.5,1,1.5,1.75],'its rhythm cell: notes at 0, ½, 1, 1½ and 1¾ of every bar');
  assert.notEqual(((previewPlan(horn).tonic%12)+12)%12,((plan.tonic%12)+12)%12,'two songs, two keys');
+});
+
+test('万物声场\'s preview is only the beat: the same bars, every beat of the song\'s tempo, strong on each bar\'s first, no pitched notes',()=>{
+ for(const track of textbookTracks){
+  const beat=previewBeat(track),full=previewPlan(track),step=60/track.tempoBpm;
+  assert.equal(beat.seconds,full.seconds);
+  assert.ok(beat.notes.every(note=>note.part==='rhythm'),'only the drum');
+  assert.ok(beat.notes.every((note,i)=>Math.abs(note.at-i*step)<1e-9),'on every beat, nothing in between');
+  assert.ok(beat.notes.every((note,i)=>(i%track.meter===0)===(note.accent===BACKGROUND_RULES.beat.strong)),'strong on the first beat of each bar');
+ }
 });
 
 test('the squirrel has something to say after every card control: no textbook, the volume, each shape',()=>{

@@ -15,15 +15,18 @@ export const guideLines={
  span:(seconds:number)=>`声场变成 ${seconds} 秒啦，声音的先后都没变。`,
  spanFitted:(name:string,seconds:number,span:number)=>`「${name}」要响 ${seconds} 秒，声场自动换成 ${span} 秒啦。`,
  spanBlocked:(name:string,seconds:number,span:number)=>`「${name}」要响 ${seconds} 秒，声场至少要 ${span} 秒才放得下。`,
- // The background switch, 课本灵感 and the mood carry no small text: the frog says what they mean.
- backgroundOn:(what:string)=>`背景开啦：${what}。`,
- backgroundOff:'背景音乐关啦，现在只听自己的声音。',
- inspirationSong:(title:string,childLine:string)=>`「${title}」${childLine}。先听一听，再摆你的声音。`,
- inspirationMusic:'老师的这段音乐还不能用来做背景，现在背景跟着心情走。',
- inspirationNone:'先不用课本，背景跟着心情走。',
- mood:(mood:string,mode:string)=>`心情是「${mood}」，背景变成${mode}啦。`,
- moodNone:(mode:string)=>`先不选心情，背景用${mode}。`,
- moodQuiet:(mood:string)=>`心情是「${mood}」。打开课本灵感旁边的小喇叭，就能听到背景跟着心情变。`,
+ // 课本灵感 and the mood: the frog says what they do here. The field plays only a chosen song's beat; the full background
+ // (chords, key, the song's rhythm, the mood's colour) is heard in 万物成曲.
+ beatOn:(title:string,metre:string)=>`拍子开啦：跟着「${title}」的${metre}摆吧。`,
+ beatNoSong:'先在课本灵感里选一首歌，才有拍子哦。',
+ beatOff:'拍子关啦，现在只听自己的声音。',
+ inspirationSong:(title:string,metre:string)=>`跟着「${title}」的${metre}摆吧！完整的音乐到万物成曲去听。`,
+ inspirationMusic:'老师的音乐还不能打拍子，声场里先只听你的声音。',
+ inspirationNone:'先不用课本，声场里只听你自己的声音。',
+ /** A song chosen while the switch is off. */
+ inspirationSongQuiet:(title:string)=>`选好「${title}」啦，打开旁边的小喇叭就有拍子。`,
+ mood:(mood:string)=>`心情是「${mood}」，到万物成曲听背景跟着它变。`,
+ moodNone:'先不选心情也可以，到万物成曲再听背景。',
  example:'这是一个示例摆放，先听一听，也可以清空了自己摆。',
  empty:'先在左边点一个声音，再点声场里的空白处放下。',
  idle:'摆好了就点「听听这段声音」，听听看～',

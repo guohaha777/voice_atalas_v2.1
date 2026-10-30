@@ -18,7 +18,7 @@ export type WorldNotice={tone:'info'|'error';key:NoticeKey}|null;
 /** `span-fitted`: a sound got longer than the field, so the field grew to hold it; `span-blocked`: a length too short
  *  for the longest sound was asked for and refused. */
 export type LastAction='placed'|'moved'|'copied'|'span'|'span-fitted'|'span-blocked'|'removed'|'cleared'|'row-added'|'clipped'
- /** Choices the frog explains (the row and the mood picker carry no small text): mood, background switch, 课本灵感. */
+ /** Choices the frog explains (the row and the mood picker carry no small text): mood, the switch, 课本灵感. */
  |'mood'|'background-on'|'background-off'|'inspiration'|null;
 export type SoundWorldState={
  arrangement:Arrangement|null;
@@ -48,7 +48,7 @@ export type SoundWorldAction=
  |{type:'mood';mood:MoodChoice|null;now:Date}
  |{type:'span';spanSeconds:SpanSeconds;now:Date}
  |{type:'blocked'}
- /** A shared setting changed outside the arrangement (background switch, 课本灵感): only what the frog says changes. */
+ /** A shared setting changed outside the arrangement (the switch, 课本灵感): only what the frog says changes. */
  |{type:'said';lastAction:'background-on'|'background-off'|'inspiration'}
  |{type:'notice';notice:WorldNotice};
 

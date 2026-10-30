@@ -2,8 +2,8 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import {DEFAULT_ROWS} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import {flowSteps} from '../../app/navigation';
-import {backgroundCopy} from '../../shared/background/copy';
 import {moodLabels,presetMood} from '../../shared/creation/moodCopy';
+import {metreNames} from '../../shared/inspiration/copy';
 import {InspirationDialog} from '../../shared/inspiration/InspirationDialog';
 import {SoundMarker} from '../../shared/markers/SoundMarker';
 import {FlowHeader} from '../../shared/ui/FlowHeader';
@@ -28,22 +28,19 @@ import {SoundPalette} from './components/SoundPalette';
 import styles from './SoundWorldPage.module.css';
 import {ui} from '../../shared/ui/controls';
 
-/** What the frog says about the background switch, 课本灵感 and the mood (the controls themselves carry no small text). */
+/** What the frog says about the switch, 课本灵感 and the mood (the controls themselves carry no small text). */
 function spokenChoice(world:SoundWorld){
- const {arrangement,lastAction}=world.state,plan=world.backgroundPlan;
- if(!arrangement||!plan)return null;
- const what=backgroundCopy.describe(plan,world.backgroundTrack?.title??null),mood=presetMood(arrangement.mood);
+ const {arrangement,lastAction}=world.state;
+ if(!arrangement)return null;
  switch(lastAction){
-  case 'background-on':return guideLines.backgroundOn(what);
-  case 'background-off':return guideLines.backgroundOff;
+  case 'background-on':return world.beatTrack?guideLines.beatOn(world.beatTrack.title,metreNames[world.beatTrack.meter]):guideLines.beatNoSong;
+  case 'background-off':return guideLines.beatOff;
   case 'inspiration':{
-   const inspiration=world.inspiration;
-   if(inspiration.kind==='textbook'&&world.backgroundTrack)return guideLines.inspirationSong(world.backgroundTrack.title,world.backgroundTrack.childLine);
-   return inspiration.kind==='teaching-music'?guideLines.inspirationMusic:guideLines.inspirationNone;
+   const track=world.beatTrack;
+   if(track)return world.beatOn?guideLines.inspirationSong(track.title,metreNames[track.meter]):guideLines.inspirationSongQuiet(track.title);
+   return world.inspiration.kind==='teaching-music'?guideLines.inspirationMusic:guideLines.inspirationNone;
   }
-  case 'mood':
-   if(!mood)return guideLines.moodNone(backgroundCopy.mode(plan.mode));
-   return world.backgroundEnabled?guideLines.mood(moodLabels[mood],backgroundCopy.mode(plan.mode)):guideLines.moodQuiet(moodLabels[mood]);
+  case 'mood':{const mood=presetMood(arrangement.mood);return mood?guideLines.mood(moodLabels[mood]):guideLines.moodNone;}
   default:return null;
  }
 }
@@ -127,8 +124,8 @@ export function SoundWorldPage({onNavigate,onFinish}:{onNavigate:(path:string)=>
   {drag&&dragUnit&&<span className={styles.dragGhost} style={{left:drag.x,top:drag.y}} aria-hidden="true"><SoundMarker index={dragUnit.markerIndex} className={styles.ghostMarker} face="happy"/></span>}
   {more&&<MoreSoundsDialog world={world} initial={more} onClose={()=>setMore(null)} onMakeNew={()=>{setMore(null);onNavigate('/create?new');}}/>}
   {trimming&&<ClipEditor world={world} eventId={trimming} onClose={()=>setTrimming(null)}/>}
-  {/* With sounds placed, it opens on 帮我找找 (the songs most like the arrangement); before that, on the song list. */}
-  {inspiring&&<InspirationDialog value={world.inspiration} entries={world.inspirationEntries} matches={world.matches}
+  {/* Here a song lends only its beat: no 帮我找找, and 听一听 plays the beat (the full background is 万物成曲's). */}
+  {inspiring&&<InspirationDialog variant="beat" value={world.inspiration} entries={world.inspirationEntries}
    teachingOpen={world.teachingOpen}
    onChange={world.setInspiration} onClose={()=>setInspiring(false)}/>}
  </div>;

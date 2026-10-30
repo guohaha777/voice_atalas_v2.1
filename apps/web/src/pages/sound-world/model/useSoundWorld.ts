@@ -1,10 +1,8 @@
-import {useCallback,useEffect,useMemo,useReducer,useRef,useState} from 'react';
+import {useCallback,useEffect,useReducer,useRef,useState} from 'react';
 import type {Arrangement,SourceClip,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import {DEFAULT_COMPOSE_SETTINGS} from '@wanwu-v2/contracts/work';
 import type {ComposeSettings,Inspiration} from '@wanwu-v2/contracts/work';
-import type {Instrument} from '../../../shared/background/instruments';
-import type {BackgroundLibrary} from '../../../shared/background/library';
-import {useBackgroundLayer} from '../../../shared/background/useBackgroundLayer';
+import {inspirationTrack} from '../../../shared/background/backgroundLayer';
 import type {InspirationCatalog} from '../../../shared/inspiration/catalog';
 import type {TeachingMusicService} from '../../../shared/inspiration/teachingMusic';
 import {useInspirationCatalog} from '../../../shared/inspiration/useInspirationCatalog';
@@ -15,6 +13,7 @@ import type {LibraryScope,SoundWorldRepository} from '../services/soundWorldRepo
 import type {MoodInterpreter} from '../services/moodInterpreter';
 import {eventOf,initialSoundWorld,nudge,placedClip,rowEndSpot,soundWorldReducer,spanHolds,unitOf} from './soundWorldState';
 import type {NoticeKey} from './soundWorldState';
+import {useBeatLayer} from './useBeatLayer';
 import {useFieldSound} from './useFieldSound';
 import {useMood} from './useMood';
 
@@ -23,42 +22,35 @@ export type FinishResult={status:'unavailable'}|{status:'opened'};
 export type FieldSpot={at:number;row:number};
 
 /** 万物声场: place the work's sounds along time, edit their excerpts, pick a mood and a textbook song, then go on to
- *  万物成曲. What the field sounds like lives in useFieldSound (with the local background from useBackgroundLayer, the
- *  same layer 万物成曲 plays) and the mood in useMood; this hook owns the arrangement and the shared settings. */
-export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,repository:SoundWorldRepository=services.soundWorldRepository,moods:MoodInterpreter=services.moodInterpreter,inspirations:InspirationCatalog=services.inspirationCatalog,backgrounds:BackgroundLibrary=services.backgroundLibrary,teaching:TeachingMusicService=services.teachingMusic){
+ *  万物成曲. What the field sounds like lives in useFieldSound (with only the chosen song's beat from useBeatLayer — the
+ *  full background is 万物成曲's) and the mood in useMood; this hook owns the arrangement and the shared settings. */
+export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,repository:SoundWorldRepository=services.soundWorldRepository,moods:MoodInterpreter=services.moodInterpreter,inspirations:InspirationCatalog=services.inspirationCatalog,teaching:TeachingMusicService=services.teachingMusic){
  const [state,dispatch]=useReducer(soundWorldReducer,initialSoundWorld);
  const latest=useRef(state);latest.current=state;
  const notify=useCallback((key:NoticeKey,tone:'info'|'error'='error')=>dispatch({type:'notice',notice:{tone,key}}),[]);
- // 课本灵感 and the background switch are kept with the work for 万物成曲; they never move a sound.
+ // 课本灵感 and the switch beside it are kept with the work for 万物成曲 (the same settings); they never move a sound.
  const [settings,setSettingsState]=useState<ComposeSettings>(DEFAULT_COMPOSE_SETTINGS);
- const [instruments,setInstruments]=useState<readonly Instrument[]>([]);
- // 课本灵感: the same songs and 帮我找找 as 万物成曲 (shared/inspiration).
- const {entries,matches,teachingOpen}=useInspirationCatalog(state.arrangement,inspirations,teaching);
- const background=useBackgroundLayer(settings,instruments,entries);
- const sound=useFieldSound(latest,dispatch,notify,background);
+ // 课本灵感: the same songs as 万物成曲 (shared/inspiration); here a song lends only its beat.
+ const {entries,teachingOpen}=useInspirationCatalog(state.arrangement,inspirations,teaching);
+ const beat=useBeatLayer(inspirationTrack(settings.inspiration,entries),settings.background.enabled);
+ const sound=useFieldSound(latest,dispatch,notify,beat);
  const mood=useMood(moods,dispatch,notify);
  const {stopAll,playOne,clipSound,player}=sound;
 
  useEffect(()=>{
   let live=true;
   void repository.load().then(arrangement=>{if(live)dispatch({type:'loaded',arrangement});});
-  void Promise.all([repository.loadSettings(),backgrounds.list()]).then(([current,library])=>{
-   if(live){setSettingsState(current);setInstruments(library.instruments);}
-  });
+  void repository.loadSettings().then(current=>{if(live)setSettingsState(current);});
   return()=>{live=false;};
- },[repository,backgrounds]);
+ },[repository]);
  const saveSettings=(next:ComposeSettings)=>{setSettingsState(next);void repository.saveSettings(next);};
- /** A new song changes what the background borrows: a running full playback stops (like any edit). */
+ /** A new song changes the beat (or takes it away): a running full playback stops (like any edit). */
  const setInspiration=(next:Inspiration)=>{stopAll();saveSettings({...settings,inspiration:next});dispatch({type:'said',lastAction:'inspiration'});};
- /** 背景音乐 on / off — the same switch 万物成曲 has; the frog says what the background follows. */
+ /** The switch beside 课本灵感 — the same setting as 万物成曲's 背景 switch; here it turns the song's beat on or off. */
  const setBackgroundEnabled=(enabled:boolean)=>{
   stopAll();saveSettings({...settings,background:{...settings.background,enabled}});
   dispatch({type:'said',lastAction:enabled?'background-on':'background-off'});
  };
- /** What the background is made of now (mood colour, borrowed rhythm), for the switch's line. */
- const backgroundPlan=useMemo(()=>state.arrangement?background.plan(state.arrangement):null,
- // The plan only changes with the arrangement and what the background borrows.
- [state.arrangement,background.key]);
 
  // The child's arrangement is kept through the repository on every change; an untouched example is not stored.
  useEffect(()=>{
@@ -141,16 +133,16 @@ export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,r
   previewUnit:sound.previewUnit,previewEvent:sound.previewEvent,previewClip:sound.previewClip,previewSource:sound.previewSource,
   stopSound:sound.stopSound,playAll:sound.playAll,finish,
   loadSource:(sourceId:string)=>sound.bank.source(sourceId),
-  // The mood colours the background, so a running full playback stops when it changes (like any edit).
-  setMood:(next:Parameters<typeof mood.setMood>[0])=>{stopAll();mood.setMood(next);},
-  customMood:(text:string)=>{stopAll();return mood.customMood(text);},
-  interpreting:mood.interpreting,moodModelAvailable:mood.moodModelAvailable,
-  pickMood:(id:Parameters<typeof mood.pickMood>[0])=>{stopAll();mood.pickMood(id);},
+  // The mood colours 万物成曲's background; the field (only the song's beat) sounds the same, so playback goes on.
+  setMood:mood.setMood,customMood:mood.customMood,
+  interpreting:mood.interpreting,moodModelAvailable:mood.moodModelAvailable,pickMood:mood.pickMood,
   addUnit:(unit:SoundUnitDraft)=>{stopAll();dispatch({type:'add-unit',unit,now:new Date()});},
   clearEvents:()=>{stopAll();dispatch({type:'clear-events',now:new Date()});},
   scope:(scope:LibraryScope)=>repository.scope(scope),
-  inspiration:settings.inspiration,inspirationEntries:entries,setInspiration,matches,teachingOpen,
-  backgroundEnabled:settings.background.enabled,backgroundTrack:background.track,backgroundPlan,setBackgroundEnabled,
+  inspiration:settings.inspiration,inspirationEntries:entries,setInspiration,teachingOpen,
+  backgroundEnabled:settings.background.enabled,setBackgroundEnabled,
+  /** The chosen song (its beat plays while the switch is on), or null. */
+  beatTrack:beat.track,beatOn:beat.enabled,
  };
 }
 export type SoundWorld=ReturnType<typeof useSoundWorld>;

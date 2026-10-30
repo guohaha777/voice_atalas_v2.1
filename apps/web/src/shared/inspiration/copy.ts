@@ -19,6 +19,8 @@ const reasons={
 export const inspirationCopy={
  title:'课本灵感',
  description:'选一首课本歌曲，听听它的节奏和你的声音碰在一起。',
+ /** 万物声场: a song lends only its beat there. */
+ beatDescription:'选一首课本歌曲，跟着它的拍子摆你的声音。',
  tabs:{match:'帮我找找',examples:'课本歌曲',upload:'教学音乐'},
  example:'示例',
  catalogueNote:'现在是几首示例歌曲，课本曲库还没有开放。',

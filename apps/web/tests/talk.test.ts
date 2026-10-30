@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {ARRANGEMENT_CONTRACT_VERSION,DEFAULT_ROWS} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement,PlacedEvent} from '@wanwu-v2/contracts/arrangement';
 import {SOUND_CONTRACT_VERSION} from '@wanwu-v2/contracts/sound';
@@ -82,6 +83,14 @@ test('课本灵感 opens on the same page everywhere: teaching music, the chosen
  assert.equal(openingTab({kind:'textbook',entryId:'tb:mock:lullaby'},true),'examples');
  assert.equal(openingTab({kind:'none'},true),'match');
  assert.equal(openingTab({kind:'none'},false),'examples');
+});
+
+test('课本灵感 in 万物声场 has only 课本歌曲 and 教学音乐 (a song lends its beat there); 万物成曲 also has 帮我找找',async()=>{
+ const {inspirationTabs}=await import('../src/shared/inspiration/tabs.ts');
+ assert.deepEqual(inspirationTabs('beat'),['examples','upload']);
+ assert.deepEqual(inspirationTabs('full'),['match','examples','upload']);
+ const page=readFileSync(new URL('../src/pages/sound-world/SoundWorldPage.tsx',import.meta.url),'utf8');
+ assert.match(page,/<InspirationDialog variant="beat"/);
 });
 
 test('the sound library is one source: 声音诞生 and 万物声场 list the same examples',async()=>{

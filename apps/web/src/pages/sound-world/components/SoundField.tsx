@@ -18,6 +18,15 @@ type Props={world:SoundWorld;area:RefObject<HTMLDivElement|null>;locate:(x:numbe
 
 /** Tick spacing per field length, so the ruler always reads 0 … end in a few even steps. */
 const tickStep=(span:number)=>span<=20?5:span<=30?10:15;
+/** More beats than this across the field would read as a blur: then only the bar lines are drawn. */
+const MAX_BEAT_LINES=32;
+
+/** The chosen song's beat across the field, on the same seconds scale as the ruler: a line on every beat, a stronger
+ *  one on each bar's first beat — the beat the field plays, to place sounds against. Drawn only; it never moves a sound. */
+function beatLines(track:{tempoBpm:number;meter:number},span:number){
+ const beat=60/track.tempoBpm,count=Math.floor(span/beat+1e-9),every=count>MAX_BEAT_LINES?track.meter:1;
+ return Array.from({length:count+1},(_,b)=>b).filter(b=>b%every===0).map(b=>({at:b*beat/span,bar:b%track.meter===0}));
+}
 
 /**
  * The field: left → right is time (先响起 → 后响起) on a seconds ruler; each sound trails a tail as long as it is heard.
@@ -81,6 +90,9 @@ export function SoundField({world,area,locate,drag,bind,onTrim}:Props){
    </div>
    <div ref={area} className={styles.lanes} onClick={tap} onPointerMove={track} onPointerLeave={()=>setHover(null)}>
     {rowIndexes.map(row=><div key={row} className={styles.lane} aria-hidden="true"/>)}
+    {world.beatTrack&&world.beatOn&&<div className={styles.beats} aria-hidden="true">
+     {beatLines(world.beatTrack,spanSeconds).map(line=><i key={line.at} data-bar={line.bar||undefined} style={{left:timePosition(line.at)}}/>)}
+    </div>}
     {target&&<span className={styles.dropTarget} style={spotPosition(target,rows)} aria-hidden="true"><Glyph name="plus"/></span>}
     {/* Length tails sit under the markers: a bar as long as the sound is heard, on the same seconds scale as the ruler. */}
     {arrangement.events.map(event=>{

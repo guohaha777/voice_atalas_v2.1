@@ -13,11 +13,12 @@ import {eventOf,planPlayback,unitOf} from './soundWorldState';
 import type {NoticeKey,SoundWorldAction,SoundWorldState} from './soundWorldState';
 
 type Notify=(key:NoticeKey,tone?:'info'|'error')=>void;
-/** The background layer (shared with 万物成曲): whether it plays, how loud, and its render for an arrangement. */
+/** What plays under the child's sounds (the chosen song's beat, ./useBeatLayer.ts): whether it plays, how loud, and its
+ *  render for an arrangement. */
 type Background={enabled:boolean;gain:number;buffer:(arrangement:Arrangement)=>Promise<AudioBuffer>};
 
 /** Everything the field sounds like: originals and shaped renders from the shared work sound bank, single previews,
- *  听听这段声音 (with the local background when it is on), and the clock the playheads follow. */
+ *  听听这段声音 (with the chosen song's beat), and the clock the playheads follow. */
 export function useFieldSound(latest:RefObject<SoundWorldState>,dispatch:Dispatch<SoundWorldAction>,notify:Notify,background:Background){
  const [playing,setPlaying]=useState<string|null>(null);
  const [preparing,setPreparing]=useState<string|null>(null);
@@ -95,12 +96,12 @@ export function useFieldSound(latest:RefObject<SoundWorldState>,dispatch:Dispatc
   try{
    const layer=music.current;
    const sounds=await Promise.all(plan.map(item=>clipSound(item,item.clip)));
-   // The background is its own layer: if it cannot be made, the child's sounds still play.
+   // The beat is its own layer: if it cannot be made, the child's sounds still play.
    const under=layer.enabled?await layer.buffer(work).catch(()=>{notify('background-failed');return null;}):null;
    if(mine!==token.current)return;
    timeline.current=plan.map((item,index)=>({eventId:item.eventId,start:item.startSeconds,end:item.startSeconds+sounds[index]!.duration}));
    const voices=plan.map((item,index)=>({at:item.startSeconds,buffer:sounds[index]!}));
-   // With the background, the whole chosen length plays (the background ends there); without it, until the last sound.
+   // With the beat, the whole chosen length plays (the beat ends there); without it, until the last sound.
    await player.play('all',under?[...voices,{at:0,buffer:under,layer:'background'}]:voices,MIX_RULES.childGain,
     {length:under?pieceSeconds(work):undefined,layers:{background:layer.gain},limiter:MIX_RULES.limiter});
   }catch(reason){if(mine===token.current)report(reason);}

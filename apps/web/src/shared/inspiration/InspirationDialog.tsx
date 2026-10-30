@@ -8,19 +8,20 @@ import {WorkSheet,sheetStyles} from '../ui/WorkSheet';
 import {inspirationCopy as copy} from './copy';
 import type {InspirationMatch} from './matches';
 import {renderRhythmPreview} from './rhythmPreview';
-import {openingTab} from './tabs';
-import type {InspirationTab} from './tabs';
+import {inspirationTabs,openingTab} from './tabs';
+import type {InspirationTab,InspirationVariant} from './tabs';
 import {teachingMusic} from './teachingMusic';
 import type {LocalTeachingMusic,PickResult} from './teachingMusic';
 import styles from './InspirationDialog.module.css';
 
-export type {InspirationTab} from './tabs';
+export type {InspirationTab,InspirationVariant} from './tabs';
 
 /**
- * One thing sounds at a time in the dialog: an example rhythm (rendered in the browser) or the picked teaching music
- * (a local file). Tapping what plays stops it; switching tabs or closing the dialog stops everything.
+ * One thing sounds at a time in the dialog: a song's preview (rendered in the browser: its background, or only its beat
+ * in 万物声场) or the picked teaching music (a local file). Tapping what plays stops it; switching tabs or closing the
+ * dialog stops everything.
  */
-function useListening(){
+function useListening(variant:InspirationVariant){
  const [playing,setPlaying]=useState<string|null>(null);
  const player=useMemo(()=>new SequencePlayer(key=>setPlaying(current=>key??(current?.startsWith('music:')?current:null))),[]);
  const audio=useRef<HTMLAudioElement|null>(null);
@@ -32,7 +33,7 @@ function useListening(){
   if(playing===key)return stop();
   stop();if(!audioSupported())return;
   let render=previews.current.get(item.id);
-  if(!render){render=renderRhythmPreview(item);previews.current.set(item.id,render);}
+  if(!render){render=renderRhythmPreview(item,variant);previews.current.set(item.id,render);}
   setPlaying(key);
   try{await player.playOne(key,await render);}catch{setPlaying(null);}
  };
@@ -64,20 +65,23 @@ function SongRow({entry,note,value,listening,onChange,onClose}:{entry:TextbookTr
 
 /**
  * 课本灵感: let the system find the songs most like the arrangement (local rules), pick a textbook song, or pick
- * teaching music on this device. Used in 万物声场 (before or while arranging) and 万物成曲. Picking teaching music keeps
- * it on this device; upload, analysis and generation are not open yet.
+ * teaching music on this device. One dialog for both pages: in 万物声场 (`beat`) a song lends only its beat, so there is
+ * no 帮我找找 and 听一听 plays the beat; in 万物成曲 (`full`) everything. Picking teaching music keeps it on this device;
+ * upload, analysis and generation are not open yet.
  */
-export function InspirationDialog({value,entries,matches,initialTab,teachingOpen=false,onChange,onClose}:{value:Inspiration;entries:readonly TextbookTrack[];matches:readonly InspirationMatch[];
+export function InspirationDialog({value,entries,matches=[],variant='full',initialTab,teachingOpen=false,onChange,onClose}:{value:Inspiration;entries:readonly TextbookTrack[];matches?:readonly InspirationMatch[];
+ variant?:InspirationVariant;
  /** A tab the page asks for (a 帮我找找 button); otherwise the shared opening rule (./tabs.ts). */
  initialTab?:InspirationTab;
  /** Whether teaching music can be analysed (the server is connected); until then the tab says it is not open. */
  teachingOpen?:boolean;onChange:(next:Inspiration)=>void;onClose:()=>void}){
- const [tab,setTab]=useState<InspirationTab>(initialTab??openingTab(value,matches.length>0));
- const listening=useListening();
+ const tabs=inspirationTabs(variant);
+ const [tab,setTab]=useState<InspirationTab>(initialTab&&tabs.includes(initialTab)?initialTab:openingTab(value,tabs.includes('match')&&matches.length>0));
+ const listening=useListening(variant);
  const row=(entry:TextbookTrack,note?:string)=><SongRow key={entry.id} entry={entry} note={note} value={value} listening={listening} onChange={onChange} onClose={onClose}/>;
- return <WorkSheet title={copy.title} description={copy.description} className={styles.songSheet} onClose={onClose}>
+ return <WorkSheet title={copy.title} description={variant==='beat'?copy.beatDescription:copy.description} className={styles.songSheet} onClose={onClose}>
   <div className={styles.tabs} role="tablist">
-   {(['match','examples','upload'] as const).map(id=><button key={id} type="button" role="tab" aria-selected={tab===id} onClick={()=>{listening.stop();setTab(id);}}>
+   {tabs.map(id=><button key={id} type="button" role="tab" aria-selected={tab===id} onClick={()=>{listening.stop();setTab(id);}}>
     <Glyph name={id==='match'?'bulb':id==='examples'?'book':'upload'}/>{copy.tabs[id]}
    </button>)}
   </div>

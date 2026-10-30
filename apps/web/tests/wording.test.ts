@@ -15,6 +15,7 @@ import type {BackgroundMode} from '@wanwu-v2/sound-rules/rules';
 import {backgroundCopy} from '../src/shared/background/copy.ts';
 import {exampleTracks} from './fixtures/exampleTracks.ts';
 import {textbookTracks} from '../src/shared/inspiration/textbookTracks.ts';
+import {metreNames} from '../src/shared/inspiration/copy.ts';
 /** The real catalogue and the made-up fixtures: every title and child line the page may say. */
 const tracks=[...textbookTracks,...exampleTracks];
 import {guideLines as squirrel} from '../src/pages/compose/config/guideLines.ts';
@@ -31,7 +32,7 @@ function lines(guide:Record<string,unknown>):string[]{
   :typeof value==='function'?(SPECIAL.has(key)?[]:[String(value(NAME,12,30))])
   :value&&typeof value==='object'?lines(value as Record<string,unknown>):[]);
 }
-const SPECIAL=new Set(['inspirationSong','volume','shapeTap']);
+const SPECIAL=new Set(['inspirationSong','beatOn','inspirationSongQuiet','volume','shapeTap']);
 const longest=<T,>(items:readonly T[],text:(item:T)=>string)=>items.map(text).sort((a,b)=>charCount(b)-charCount(a))[0]!;
 
 test('guide lines fit two lines of the bubble: at most 36 characters, child words only',()=>{
@@ -43,8 +44,9 @@ test('guide lines fit two lines of the bubble: at most 36 characters, child word
   ({title,...plan})=>backgroundCopy.describe(plan,title));
  const composed=[
   longest(titles.flatMap(title=>pairs.map(pair=>({title,pair}))),({title,pair})=>squirrel.inspirationSong(title,pair)),
-  longest(tracks,track=>frog.inspirationSong(track.title,track.childLine)),
-  squirrel.backgroundOn(describe),frog.backgroundOn(describe),
+  longest(tracks,track=>frog.inspirationSong(track.title,metreNames[track.meter])),
+  longest(tracks,track=>frog.beatOn(track.title,metreNames[track.meter])),longest(tracks,track=>frog.inspirationSongQuiet(track.title)),
+  squirrel.backgroundOn(describe),
   ...(['soft','medium','loud'] as const).map(level=>squirrel.volume(level)),
   ...tracks.flatMap(track=>TEXTBOOK_VARIATIONS.map(shape=>squirrel.shapeTap(shape,rhythmWords(track.rhythmCell),rhythmWords(shapeOf(track.rhythmCell,shape).cell)))),
   squirrel.instruments(backgroundCopy.parts({chord:['organ'],bass:['organ'],melody:['marimba'],rhythm:['drum']},{organ:'风琴',marimba:'木琴',drum:'小鼓'})),

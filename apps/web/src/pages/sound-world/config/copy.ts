@@ -11,7 +11,7 @@ export const worldCopy={
  paletteTitle:'选一个声音',listen:'试听',stop:'停',example:'示例',placedTimes:(count:number)=>`放了 ${count} 次`,
  more:'找更多声音',
  inspiration:'课本灵感',
- backgroundToggle:'背景音乐开关：听的时候带上背景',
+ backgroundToggle:'拍子开关：听的时候带上课本歌曲的拍子',
  // Field
  fieldLabel:'声场',rowName:(row:number)=>`第 ${row} 行`,
  // Invisible layout reference only: preserve the pre-removal spacing at every font/viewport size.
@@ -76,7 +76,7 @@ export const worldCopy={
   'load-failed':'网络有点慢，声音没加载出来，再点一次试试。',
   'no-audio':'这个浏览器不能播放试听。',
   'missing-audio':'这个声音的录音找不到了，可能清除过浏览器数据。',
-  'background-failed':'背景音乐没能准备好，先只播放你的声音。',
+  'background-failed':'拍子没能准备好，先只播放你的声音。',
  } satisfies Record<NoticeKey,string>,
 } as const;
 

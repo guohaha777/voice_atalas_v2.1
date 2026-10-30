@@ -1,17 +1,14 @@
 import {MOODS} from '@wanwu-v2/contracts/arrangement';
 import {SOUND_CHOICES,SOUND_DIMENSIONS,SOUND_KINDS} from '@wanwu-v2/contracts/sound';
 import type {SoundDimension,SoundKind} from '@wanwu-v2/contracts/sound';
-import {TEXTBOOK_VARIATIONS} from '@wanwu-v2/contracts/textbook';
-import type {TextbookVariation} from '@wanwu-v2/contracts/textbook';
 import type {MoodId} from '@wanwu-v2/contracts/arrangement';
 import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
 import {moodLabels} from '../../../shared/creation/moodCopy';
-import {variationNames} from '../../../shared/inspiration/talk';
 import {promptCopy} from '../config/promptCopy';
 import type {PromptLab} from '../model/usePromptLab';
 import styles from '../PromptLabPage.module.css';
 
-/** What the chosen task depends on: the work's mood, the textbook song and its shape; per task a few more inputs. */
+/** What the chosen task depends on: the work's mood, the textbook song; per task a few more inputs. */
 export function PromptInputs({lab}:{lab:PromptLab}){
  const {task,hint}=lab;
  const piece=task==='work-talk'||task==='textbook-talk'||task==='background-audio'||task==='background-notes';
@@ -29,11 +26,6 @@ export function PromptInputs({lab}:{lab:PromptLab}){
      {MOODS.map(mood=><option key={mood} value={mood}>{moodLabels[mood]}</option>)}
     </select>
    </label>
-   {lab.track&&<label>{promptCopy.variation}
-    <select value={lab.variation} onChange={event=>lab.setVariation(event.target.value as TextbookVariation)}>
-     {TEXTBOOK_VARIATIONS.map(variation=><option key={variation} value={variation}>{variationNames[variation]}</option>)}
-    </select>
-   </label>}
   </>}
   {task==='background-notes'&&<label>{promptCopy.attempt}
    <select value={lab.attempt} onChange={event=>lab.setAttempt(Number(event.target.value))}>

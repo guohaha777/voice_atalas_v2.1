@@ -19,7 +19,6 @@ import {backgroundBrief,backgroundInput} from '../src/shared/background/backgrou
 import {offlineBackgroundGenerator,runBackgroundChain} from '../src/shared/background/generator.ts';
 import type {BackgroundGenerator} from '../src/shared/background/generator.ts';
 import {exampleTracks} from './fixtures/exampleTracks.ts';
-import {inspirationMatches} from '../src/shared/inspiration/matches.ts';
 import {rhythmWords,songFeature,textbookTalk} from '../src/shared/inspiration/talk.ts';
 import {isTextbookTrack} from '@wanwu-v2/contracts/textbook';
 import {parseRoute,routeHref} from '../src/app/router.ts';
@@ -158,13 +157,9 @@ test('the local background is made from the work: its length, when its sounds pl
  assert.equal(backgroundInput(piece,{kind:'teaching-music',musicId:'m',name:'歌',durationMs:1000},exampleTracks).textbook,null,'teaching music is not analysed yet');
 });
 
-test('textbook example cards are valid templates, and 帮我找找 finds the most alike songs offline',()=>{
+test('textbook example cards are valid templates',()=>{
  assert.ok(exampleTracks.length>=6&&exampleTracks.every(isTextbookTrack));
  assert.ok(exampleTracks.every(track=>track.source===null&&track.extraction.numbers==='example'),'examples say they are examples');
- assert.deepEqual(inspirationMatches(work({events:[]}),exampleTracks),[],'nothing placed: nothing to match');
- const matches=inspirationMatches(work({events:[ev('a',0,0,4),ev('b',.5,0,3)],mood:{kind:'preset',id:'sad'}}),exampleTracks);
- assert.equal(matches.length,3);
- assert.ok(matches.every(match=>exampleTracks.includes(match.track)&&match.reason.field));
 });
 
 test('万物成曲 refuses a length too short for the longest sound',()=>{
@@ -175,23 +170,21 @@ test('万物成曲 refuses a length too short for the longest sound',()=>{
  assert.equal(composeReducer(state,{type:'span',spanSeconds:45,now}).arrangement!.spanSeconds,45);
 });
 
-test('课本: the child picks a shape of the song; the background, the AI brief and the talk follow it',()=>{
+test('课本: a chosen song is played as it is; the background, the AI brief and the talk follow it',()=>{
  let state=loaded(work({events:[ev('a',0,0,4),ev('b',.5,0,3)]}));
- assert.equal(composeReducer(state,{type:'variation',variation:'stretch'}),state,'no song chosen: nothing to shape');
  state=composeReducer(state,{type:'inspiration',inspiration:{kind:'textbook',entryId:'tb:mock:lullaby'}});
- state=composeReducer(state,{type:'variation',variation:'lower'});
- assert.deepEqual(state.settings.inspiration,{kind:'textbook',entryId:'tb:mock:lullaby',variation:'lower'});
+ assert.deepEqual(state.settings.inspiration,{kind:'textbook',entryId:'tb:mock:lullaby'});
  assert.ok(parseComposeSettings(state.settings));
- assert.equal(isValidInspiration({kind:'textbook',entryId:'x',variation:'sideways'}),false);
+ assert.ok(isValidInspiration({kind:'textbook',entryId:'x',variation:'lower'}),'a variation kept by an older version is ignored');
  const input=backgroundInput(state.arrangement!,state.settings.inspiration,exampleTracks);
- assert.equal(input.textbook?.variation,'lower');assert.equal(backgroundPlan(input).variation,'lower');
- assert.equal(backgroundBrief(state.arrangement!,state.settings.inspiration,exampleTracks,[])!.variation,'lower');
+ assert.equal(input.textbook?.id,'tb:mock:lullaby');
+ assert.equal(backgroundBrief(state.arrangement!,state.settings.inspiration,exampleTracks,[])!.textbook?.id,'tb:mock:lullaby');
  const track=exampleTracks.find(item=>item.id==='tb:mock:lullaby')!;
  assert.equal(rhythmWords([2,1]),'嗒— 嗒');assert.equal(rhythmWords([.5,.5,1]),'嘀 嘀 嗒');
  assert.equal(songFeature(track),'「摇篮曲」是三拍子，节奏是「嗒— 嗒」，像摇篮轻轻晃。');
- const talk=textbookTalk(track,'lower',{kind:'together',example:0},'蛙鸣');
- assert.deepEqual(Object.keys(talk),['feature','shape','meeting','task']);
- assert.match(talk.meeting,/「蛙鸣」正好落在拍子上/);assert.match(talk.shape,/唱低了一点/);
+ const talk=textbookTalk(track,{kind:'together',example:0},'蛙鸣');
+ assert.deepEqual(Object.keys(talk),['feature','meeting','task']);
+ assert.match(talk.meeting,/「蛙鸣」正好落在拍子上/);
 });
 
 test('the shelf can rename a work and take one off; empty names are refused',()=>{
@@ -222,7 +215,7 @@ test('teaching music rides in the same AI background brief, by its upload id onl
  const piece=work({events:[ev('a',0,0,4)]});
  const brief=backgroundBrief(piece,{kind:'teaching-music',musicId:'music:42',name:'三年级二班春游录音',durationMs:90_000},exampleTracks,[])!;
  assert.ok(isBackgroundBrief(brief));
- assert.deepEqual([brief.teachingMusic,brief.textbook,brief.variation],[{musicId:'music:42'},null,null]);
+ assert.deepEqual([brief.teachingMusic,brief.textbook],[{musicId:'music:42'},null]);
  assert.ok(!JSON.stringify(brief).includes('春游'),'the file name stays on the device');
  const bad=(change:Record<string,unknown>)=>isBackgroundBrief({...brief,...change});
  assert.equal(bad({teachingMusic:{musicId:''}}),false,'empty id');

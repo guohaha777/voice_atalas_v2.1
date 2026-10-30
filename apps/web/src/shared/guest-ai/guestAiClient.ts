@@ -6,7 +6,8 @@ import {parseApiFailure} from '@wanwu-v2/contracts/api';
 import {providerFilled} from '../model-config/modelConfig.ts';
 import type {ModelConfig,ModelKind} from '../model-config/modelConfig.ts';
 
-export type GuestStatus={language:boolean;music:boolean};
+/** What the server has built in: language model, music model, and a model that hears audio (teaching-music cards). */
+export type GuestStatus={language:boolean;music:boolean;audio:boolean};
 export type GuestReply={ok:true;data:unknown}|{ok:false;status:number;reason:string};
 type Fetcher=(input:string,init:RequestInit)=>Promise<Response>;
 
@@ -40,11 +41,13 @@ export class GuestAiClient{
   if(kind==='language'&&providerFilled(this.models().language))return true;
   return this.status?this.status[kind]:kind==='language';
  }
+ /** Whether the server can hear a teaching-music excerpt (its built-in audio model); unknown until the status arrives. */
+ hears(){return this.status?.audio===true;}
  loadStatus():Promise<GuestStatus>{
   if(this.status)return Promise.resolve(this.status);
   this.pendingStatus??=this.send('GET','/api/v1/guest/status').then(reply=>{
    const data=reply.ok?reply.data as Record<string,unknown>:null;
-   const status={language:data?.language===true,music:data?.music===true};
+   const status={language:data?.language===true,music:data?.music===true,audio:data?.audio===true};
    if(reply.ok)this.status=status;
    return status;
   }).finally(()=>{this.pendingStatus=null;});

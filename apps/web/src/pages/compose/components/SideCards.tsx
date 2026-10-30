@@ -1,7 +1,6 @@
 import {useMemo} from 'react';
 import type {CSSProperties} from 'react';
 import {inspirationCopy} from '../../../shared/inspiration/copy';
-import {variationNames} from '../../../shared/inspiration/talk';
 import type {InspirationTab} from '../../../shared/inspiration/InspirationDialog';
 import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
 import type {PaperIconName,PaperTone} from '../../../shared/ui/PaperIcon';
@@ -35,25 +34,18 @@ export function SpanCard({compose}:{compose:Compose}){
  </section>;
 }
 
-/** 课本灵感 (optional, also offered in 万物声场): lends rhythm and feel to the background only. 帮我找找 is local rules. */
+/** 课本灵感 (optional, also offered in 万物声场): lends rhythm and feel to the background only. */
 export function InspirationCard({compose,onOpen}:{compose:Compose;onOpen:(tab:InspirationTab)=>void}){
  const {inspiration,background}=compose.state.settings;
  const lead=inspiration.kind==='none'?composeCopy.inspirationLead
-  :inspirationCopy.summary(inspiration,compose.entries)+'。'+(inspiration.kind==='teaching-music'?composeCopy.inspirationTeachingWait:background.enabled?'':composeCopy.inspirationBackgroundOff);
- return <section className={`${styles.card} ${styles.fit}`} aria-labelledby="inspiration-title">
+  :inspirationCopy.summary(inspiration,compose.entries)+'。'+(inspiration.kind==='teaching-music'&&!compose.entry?composeCopy.inspirationTeachingWait:background.enabled?'':composeCopy.inspirationBackgroundOff);
+ // One or the other: while the AI background plays, the song's card is greyed (tapping a song switches back).
+ return <section className={`${styles.card} ${styles.fit}`} aria-labelledby="inspiration-title" data-dimmed={compose.usingAi||undefined}>
   <h3 id="inspiration-title" className={styles.cardTitle}><Badge icon="book" tone="pink"/>{composeCopy.inspirationTitle}<small>{composeCopy.inspirationOptional}</small></h3>
   <p className={styles.cardLead}>{lead}</p>
-  {/* 换几种样子: as it is, or two shapes chosen for this arrangement; the squirrel says what each one does. */}
-  {compose.variations.length>0&&<div className={styles.variationRow} role="radiogroup" aria-label={composeCopy.variationLabel}>
-   {compose.variations.map(variation=><button key={variation} type="button" role="radio"
-    aria-checked={(inspiration.kind==='textbook'?inspiration.variation??'original':'original')===variation} onClick={()=>compose.setVariation(variation)}>
-    {variationNames[variation]}
-   </button>)}
-  </div>}
   <div className={styles.choiceRow} role="group" aria-labelledby="inspiration-title">
    <button type="button" aria-pressed={inspiration.kind==='none'} onClick={()=>compose.setInspiration({kind:'none'})}>{composeCopy.inspirationNone}</button>
    <button type="button" aria-pressed={inspiration.kind!=='none'} onClick={()=>onOpen(inspiration.kind==='teaching-music'?'upload':'examples')}>{composeCopy.inspirationTextbook}</button>
-   <button type="button" aria-pressed={false} onClick={()=>onOpen('match')}>{composeCopy.inspirationSuggest}</button>
   </div>
  </section>;
 }
@@ -63,13 +55,17 @@ export function InspirationCard({compose,onOpen}:{compose:Compose;onOpen:(tab:In
 export function BackgroundCard({compose}:{compose:Compose}){
  const {background}=compose.state.settings;
  const chosen=new Set(compose.chosen.map(item=>item.id));
- const aiReady=compose.ai.status==='ready';
- return <section className={styles.card} aria-labelledby="background-title" data-off={!background.enabled||undefined}>
+ const working=compose.ai.status==='working';
+ /** One or the other: while a song's background plays, this card (the AI background) is greyed; the AI chip switches. */
+ const songPlays=compose.state.settings.inspiration.kind!=='none'&&!compose.usingAi;
+ return <section className={styles.card} aria-labelledby="background-title" data-off={!background.enabled||undefined} data-song={songPlays||undefined}>
   <div className={styles.cardTop}>
    <h3 id="background-title" className={styles.cardTitle}><Badge icon="note" tone="lime"/>{composeCopy.backgroundTitle}
-    {/* Shown only once an AI background is ready: a tap switches between it and the first one (the child decides). */}
-    {aiReady&&<button type="button" className={styles.sourceTag} aria-pressed={compose.usingAi}
-     aria-label={composeCopy.aiLabel(compose.usingAi)} onClick={compose.tapAi}>{composeCopy.aiTag}</button>}
+    {/* AI or the song's / first background, one or the other: the AI chip is greyed while it is not playing; a tap
+        switches to AI (making one for this piece if there is none yet), or back. 换一首 shows only while AI plays. */}
+    {compose.ai.status!=='closed'&&<button type="button" className={styles.sourceTag} aria-pressed={compose.usingAi} data-dimmed={!compose.usingAi||undefined}
+     disabled={working||!compose.state.arrangement?.events.length} aria-label={composeCopy.aiLabel(compose.usingAi)} onClick={compose.tapAi}>{working?composeCopy.aiMaking:composeCopy.aiTag}</button>}
+    {compose.usingAi&&!working&&<button type="button" className={styles.sourceTag} onClick={compose.makeAi}>{composeCopy.aiMake}</button>}
    </h3>
    <button type="button" role="switch" aria-checked={background.enabled} aria-label={composeCopy.backgroundToggle} className={styles.switch}
     onClick={()=>compose.setBackgroundEnabled(!background.enabled)}>

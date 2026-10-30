@@ -21,7 +21,8 @@ export const guideLines={
  beatNoSong:'先在课本灵感里选一首歌，才有拍子哦。',
  beatOff:'拍子关啦，现在只听自己的声音。',
  inspirationSong:(title:string,metre:string)=>`跟着「${title}」的${metre}摆吧！完整的音乐到万物成曲去听。`,
- inspirationMusic:'老师的音乐还不能打拍子，声场里先只听你的声音。',
+ /** Teaching music before its card is made (then it is spoken of like a song). */
+ inspirationMusic:'正在听老师的这段音乐，听完就有拍子啦。',
  inspirationNone:'先不用课本，声场里只听你自己的声音。',
  /** A song chosen while the switch is off. */
  inspirationSongQuiet:(title:string)=>`选好「${title}」啦，打开旁边的小喇叭就有拍子。`,

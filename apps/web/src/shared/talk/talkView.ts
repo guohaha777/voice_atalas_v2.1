@@ -34,10 +34,11 @@ export type Polished={work:WorkTalkLines|null;textbook:TextbookTalkLines|null};
 
 export function localTalk(arrangement:Arrangement|null,track:TextbookTrack|null,inspiration:Inspiration,plan:BackgroundPlan|null){
  const facts=arrangement?findDiscoveries(arrangement):[];
- const textbook=arrangement&&track&&inspiration.kind==='textbook'&&plan&&arrangement.events.length?(()=>{
+ // 课本讲解 for a textbook song, and for teaching music once its card is made.
+ const textbook=arrangement&&track&&inspiration.kind!=='none'&&plan&&arrangement.events.length?(()=>{
   const timed=timedEvents(arrangement),meeting=backgroundMeeting(plan,timed.map(({start,end})=>({start,end})));
-  const name=meeting.example===null?null:timed[meeting.example]?.unit.name??null,variation=inspiration.variation??'original';
-  return {talk:textbookTalk(track,variation,meeting,name),briefed:textbookTalkBrief(track,variation,meeting.kind,name)};
+  const name=meeting.example===null?null:timed[meeting.example]?.unit.name??null;
+  return {talk:textbookTalk(track,meeting,name),briefed:textbookTalkBrief(track,meeting.kind,name)};
  })():null;
  const work=arrangement?workTalkBrief(facts,arrangement.spanSeconds,presetMood(arrangement.mood),textbook?track!.title:null):null;
  return {facts,discoveries:facts.map(fact=>discoveryText(fact)),tryThis:localTryThis(facts),textbook,work};
@@ -74,7 +75,7 @@ export function mergeTalk(local:LocalTalk,polished:Polished|null,polishOpen:bool
  const lines=polished?.work?.lines??[],aiTry=polished?.work?.tryThis??null,parts=polished?.textbook??null;
  const discoveries=local.discoveries.map((text,i)=>{const line=lines[i];return line?{...text,line:restoreNames(line,names)}:text;});
  const textbook=local.textbook&&{...local.textbook.talk};
- if(textbook&&parts)for(const part of ['feature','shape','meeting','task'] as const){const line=parts[part];if(line)textbook[part]=restoreNames(line,textbookNames);}
+ if(textbook&&parts)for(const part of ['feature','meeting','task'] as const){const line=parts[part];if(line)textbook[part]=restoreNames(line,textbookNames);}
  return {
   facts:local.facts,discoveries,tryThis:aiTry?restoreNames(aiTry,names):local.tryThis,textbook,polishOpen,
   origin:{work:lines.some(Boolean)||aiTry?'ai':'local',textbook:parts&&Object.values(parts).some(Boolean)?'ai':'local'},

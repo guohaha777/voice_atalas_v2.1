@@ -1,7 +1,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import type {Arrangement,MoodId} from '@wanwu-v2/contracts/arrangement';
 import type {SoundDimension,SoundKind} from '@wanwu-v2/contracts/sound';
-import type {TextbookTrack,TextbookVariation} from '@wanwu-v2/contracts/textbook';
+import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {TaskId} from '@wanwu-v2/prompts/tasks';
 import {services} from '../../../app/services';
 import {presetMood} from '../../../shared/creation/moodCopy';
@@ -14,7 +14,6 @@ export function usePromptLab(){
  const [task,setTask]=useState<TaskId>('work-talk');
  const [mood,setMood]=useState<MoodId|null>(null);
  const [trackId,setTrackId]=useState<string|null>(null);
- const [variation,setVariation]=useState<TextbookVariation>('original');
  const [attempt,setAttempt]=useState(0);
  const [hint,setHint]=useState<{dimension:SoundDimension;value:string;kind:SoundKind|null}>({dimension:'pitch',value:'high',kind:'series'});
  const [moodText,setMoodText]=useState('有点想家');
@@ -26,18 +25,18 @@ export function usePromptLab(){
    if(!live)return;
    setArrangement(work.arrangement);setTracks(catalogue.entries);setMood(presetMood(work.arrangement.mood));
    const settings=work.settings.inspiration;
-   if(settings.kind==='textbook'){setTrackId(settings.entryId);setVariation(settings.variation??'original');}
+   if(settings.kind==='textbook')setTrackId(settings.entryId);
   });
   return()=>{live=false;};
  },[]);
 
  const track=tracks.find(item=>item.id===trackId)??null;
- const view=useMemo(()=>taskView(task,{arrangement,tracks,mood,track,variation,attempt,hint,moodText}),[task,arrangement,tracks,mood,track,variation,attempt,hint,moodText]);
+ const view=useMemo(()=>taskView(task,{arrangement,tracks,mood,track,attempt,hint,moodText}),[task,arrangement,tracks,mood,track,attempt,hint,moodText]);
  const check=useMemo(()=>reply.trim()&&view.check?view.check(reply):null,[reply,view]);
  return {
-  task,arrangement,tracks,mood,track,variation,attempt,hint,moodText,reply,view,check,
+  task,arrangement,tracks,mood,track,attempt,hint,moodText,reply,view,check,
   pickTask:(next:TaskId)=>{setTask(next);setReply('');},
-  setMood,setTrackId,setVariation,setAttempt,setHint,setMoodText,setReply,
+  setMood,setTrackId,setAttempt,setHint,setMoodText,setReply,
   fillExample:()=>setReply(exampleReply(task)),
  };
 }

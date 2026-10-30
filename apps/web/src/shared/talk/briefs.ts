@@ -3,7 +3,7 @@
 import type {MoodId} from '@wanwu-v2/contracts/arrangement';
 import {TEXTBOOK_TALK_BRIEF_VERSION,WORK_TALK_BRIEF_VERSION,soundToken} from '@wanwu-v2/contracts/talk';
 import type {Discovery,MeetingKind,TextbookTalkBrief,WorkTalkBrief} from '@wanwu-v2/contracts/talk';
-import type {TextbookTrack,TextbookVariation} from '@wanwu-v2/contracts/textbook';
+import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import {tokenizeFacts} from '@wanwu-v2/prompts/accept';
 import {rhythmWords,textbookTalk} from '@wanwu-v2/prompts/corpus';
 
@@ -15,11 +15,11 @@ export function workTalkBrief(facts:readonly Discovery[],seconds:number,mood:Moo
  return {brief:{version:WORK_TALK_BRIEF_VERSION,seconds,mood,textbookTitle,facts:tokenized.facts},names:tokenized.names};
 }
 
-export function textbookTalkBrief(track:Pick<TextbookTrack,'title'|'meter'|'rhythmCell'|'childLine'>,variation:TextbookVariation,meeting:MeetingKind,exampleName:string|null):Briefed<TextbookTalkBrief>{
+export function textbookTalkBrief(track:Pick<TextbookTrack,'title'|'meter'|'rhythmCell'|'childLine'>,meeting:MeetingKind,exampleName:string|null):Briefed<TextbookTalkBrief>{
  const example=exampleName===null?null:soundToken(0);
  return {
   brief:{version:TEXTBOOK_TALK_BRIEF_VERSION,title:track.title,metre:track.meter,rhythm:rhythmWords(track.rhythmCell),childLine:track.childLine,
-   variation,meeting,example,local:textbookTalk(track,variation,meeting,example)},
+   meeting,example,local:textbookTalk(track,meeting,example)},
   names:exampleName===null?[]:[exampleName],
  };
 }

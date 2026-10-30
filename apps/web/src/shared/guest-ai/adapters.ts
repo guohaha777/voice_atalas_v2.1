@@ -1,8 +1,9 @@
-// The three guest AI ports, backed by the server (GuestAiClient). Pages see the same ports as before; whatever the server
+// The guest AI ports, backed by the server (GuestAiClient). Pages see the same ports as before; whatever the server
 // sends is still checked by the page's own parsers, and every failure leaves the local result in place.
 import {AI_BACKGROUND_STEPS} from '@wanwu-v2/contracts/background';
 import type {AiBackgroundStep,BackgroundResult,BackgroundUnavailable} from '@wanwu-v2/contracts/background';
 import type {BackgroundGenerator} from '../background/generator.ts';
+import type {TeachingMusicService} from '../inspiration/teachingMusic.ts';
 import type {TalkPolisher} from '../talk/polisher.ts';
 import type {MoodInterpreter} from '../../pages/sound-world/services/moodInterpreter.ts';
 import type {GuestAiClient,GuestReply} from './guestAiClient.ts';
@@ -22,6 +23,14 @@ export function guestTalkPolisher(client:GuestAiClient):TalkPolisher{
   get open(){return client.open('language');},
   async workTalk(brief,signal){const reply=await client.post('/api/v1/talk/work',brief,signal);return reply.ok?reply.data:null;},
   async textbookTalk(brief,signal){const reply=await client.post('/api/v1/talk/textbook',brief,signal);return reply.ok?reply.data:null;},
+ };
+}
+
+/** 教学音乐出卡: the audio model hears the excerpt, else the language model reads the numbers (the server decides). */
+export function guestTeachingMusicService(client:GuestAiClient):TeachingMusicService{
+ return {
+  get analyseAvailable(){return client.hears()||client.open('language');},
+  async features(request,signal){const reply=await client.post('/api/v1/textbook/features',request,signal);return reply.ok?reply.data:null;},
  };
 }
 

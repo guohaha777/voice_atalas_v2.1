@@ -126,7 +126,7 @@ export function SoundWorldPage({onNavigate,onFinish}:{onNavigate:(path:string)=>
   {trimming&&<ClipEditor world={world} eventId={trimming} onClose={()=>setTrimming(null)}/>}
   {/* Here a song lends only its beat: no 帮我找找, and 听一听 plays the beat (the full background is 万物成曲's). */}
   {inspiring&&<InspirationDialog variant="beat" value={world.inspiration} entries={world.inspirationEntries}
-   teachingOpen={world.teachingOpen}
+   teachingOpen={world.teachingOpen} teachingItems={world.teachingItems} onAnalyse={world.analyseTeaching}
    onChange={world.setInspiration} onClose={()=>setInspiring(false)}/>}
  </div>;
 }

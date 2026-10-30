@@ -44,8 +44,8 @@ export const composeCopy={
  // Inspiration
  inspirationTitle:'课本灵感',inspirationOptional:'（可跳过）',
  inspirationLead:'让背景跟着课本歌曲的节奏走。',
- inspirationNone:'先不用',inspirationTextbook:'跟着课本',inspirationSuggest:'帮我找找',
- inspirationTeachingWait:'这段音乐还不能用来做背景，现在背景跟着心情走。',
+ inspirationNone:'先不用',inspirationTextbook:'跟着课本',
+ inspirationTeachingWait:'正在听这段音乐，听完背景就跟着它走。',
  inspirationBackgroundOff:'背景关着，打开背景音乐才听得到。',
  // Background
  backgroundTitle:'背景音乐',
@@ -56,13 +56,14 @@ export const composeCopy={
  volumeLabel:'背景音量',
  /** The AI chip, shown once an AI background is ready. */
  aiTag:'AI',aiLabel:(using:boolean)=>using?'正在听 AI 做的背景，点一下换回原来的':'换上 AI 做的背景',
+ /** The one button that asks the model again (new music and explanation), and its label while it works. */
+ aiMake:'换一首',aiMaking:'AI 在做…',
  // Discovery
  discoveryTitle:'音乐小发现',discoveryNext:'换一条',
  bulbOpen:'点小灯泡，看这首音乐有什么特征',bulbClose:'收起',
- variationLabel:'课本歌曲换几种样子',
  talkTitle:'课本讲解',
  tryThisTitle:'试一试',tryThisLead:'回声场里',
- talkParts:{feature:'特点',shape:'这次的样子',meeting:'碰一碰',task:'试一试'},
+ talkParts:{feature:'特点',meeting:'碰一碰',task:'试一试'},
  teachTitle:'这首音乐有什么特征',
  teachLead:'边放边讲，问问孩子听出了什么。',
  polishing:'AI 正在换个说法…',

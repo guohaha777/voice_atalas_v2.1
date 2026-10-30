@@ -14,6 +14,8 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{compose:Compose;onSav
  const [index,setIndex]=useState(0);
  const [teaching,setTeaching]=useState(false);
  const {discoveries,tryThis,textbook}=compose.talk,discovery=discoveries.length?discoveries[index%discoveries.length]!:null;
+ /** How many entries the bulb's panel holds: shown on the bulb as a hint to open it. */
+ const entries=discoveries.length?(textbook?1:0)+discoveries.length+(tryThis?1:0):0;
  // Esc closes the panel (dialogs handle their own Esc).
  useEffect(()=>{
   if(!teaching)return;
@@ -25,6 +27,7 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{compose:Compose;onSav
    <button type="button" className={styles.bulb} aria-expanded={teaching} aria-controls="teach-panel" disabled={!discoveries.length}
     aria-label={teaching?composeCopy.bulbClose:composeCopy.bulbOpen} title={teaching?composeCopy.bulbClose:composeCopy.bulbOpen} onClick={()=>setTeaching(open=>!open)}>
     <PaperIcon name="bulb" tone="yellow"/>
+    {entries>0&&!teaching&&<span className={styles.bulbCount} aria-hidden="true">{entries}</span>}
    </button>
    <div>
     <h3 id="discovery-title">{composeCopy.discoveryTitle}</h3>
@@ -57,7 +60,7 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{compose:Compose;onSav
     {/* 课本讲解 first when a textbook song is chosen: feature → this shape → what happened → one thing to try. */}
     {textbook&&<li className={styles.talk}>
      <b>{composeCopy.talkTitle}</b>
-     {(['feature','shape','meeting','task'] as const).map(part=><p key={part}><em>{composeCopy.talkParts[part]}</em>{textbook[part]}</p>)}
+     {(['feature','meeting','task'] as const).map(part=><p key={part}><em>{composeCopy.talkParts[part]}</em>{textbook[part]}</p>)}
     </li>}
     {discoveries.map((text,i)=><li key={`${text.idea}-${i}`}>
      <b>{text.line}</b>

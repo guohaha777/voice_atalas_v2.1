@@ -24,7 +24,7 @@ const piece:Arrangement={version:ARRANGEMENT_CONTRACT_VERSION,id:'work:talk',row
  units:[unit('u1',0,'小林家的狗'),unit('u2',1,'王老师的铃')],
  events:[ev('a',0,2,'u1'),ev('b',.3,1,'u2'),ev('c',.6,2,'u1')]};
 const lullaby=exampleTracks.find(track=>track.id==='tb:mock:lullaby')!;
-const inspiration={kind:'textbook' as const,entryId:lullaby.id,variation:'lower' as const};
+const inspiration={kind:'textbook' as const,entryId:lullaby.id};
 const plan=backgroundPlan(backgroundInput(piece,inspiration,exampleTracks));
 const local=localTalk(piece,lullaby,inspiration,plan);
 
@@ -77,18 +77,12 @@ test('the prompt lab has its own address next to the tuning lab',()=>{
  assert.deepEqual(parseRoute('/lab/sound-rules'),{page:'lab'});
 });
 
-test('课本灵感 opens on the same page everywhere: teaching music, the chosen song, or 帮我找找 when there is something to compare',async()=>{
- const {openingTab}=await import('../src/shared/inspiration/tabs.ts');
- assert.equal(openingTab({kind:'teaching-music',musicId:'m',name:'歌',durationMs:1000},true),'upload');
- assert.equal(openingTab({kind:'textbook',entryId:'tb:mock:lullaby'},true),'examples');
- assert.equal(openingTab({kind:'none'},true),'match');
- assert.equal(openingTab({kind:'none'},false),'examples');
-});
-
-test('课本灵感 in 万物声场 has only 课本歌曲 and 教学音乐 (a song lends its beat there); 万物成曲 also has 帮我找找',async()=>{
- const {inspirationTabs}=await import('../src/shared/inspiration/tabs.ts');
- assert.deepEqual(inspirationTabs('beat'),['examples','upload']);
- assert.deepEqual(inspirationTabs('full'),['match','examples','upload']);
+test('课本灵感 has two pages on both pages — 课本歌曲 and 教学音乐 — and opens on teaching music when that is chosen',async()=>{
+ const {INSPIRATION_TABS,openingTab}=await import('../src/shared/inspiration/tabs.ts');
+ assert.deepEqual(INSPIRATION_TABS,['examples','upload']);
+ assert.equal(openingTab({kind:'teaching-music',musicId:'m',name:'歌',durationMs:1000}),'upload');
+ assert.equal(openingTab({kind:'textbook',entryId:'tb:mock:lullaby'}),'examples');
+ assert.equal(openingTab({kind:'none'}),'examples');
  const page=readFileSync(new URL('../src/pages/sound-world/SoundWorldPage.tsx',import.meta.url),'utf8');
  assert.match(page,/<InspirationDialog variant="beat"/);
 });

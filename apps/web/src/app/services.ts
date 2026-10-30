@@ -9,7 +9,7 @@ import type {ShelfRepository} from '../pages/works/services/shelfRepository';
 import type {BackgroundGenerator} from '../shared/background/generator';
 import type {BackgroundLibrary} from '../shared/background/library';
 import type {InspirationCatalog} from '../shared/inspiration/catalog';
-import {offlineTeachingMusicService} from '../shared/inspiration/teachingMusic';
+import {teachingMusic} from '../shared/inspiration/teachingMusic';
 import type {TeachingMusicService} from '../shared/inspiration/teachingMusic';
 import {bundledSoundLibrary} from '../shared/creation/soundLibrary';
 import type {SoundLibraryService} from '../shared/creation/soundLibrary';
@@ -24,7 +24,7 @@ import type {AccountClient} from '../shared/account/accountClient';
 import {CloudWorkspace} from '../shared/cloud/cloudWorkspace';
 import {cloudAdapters} from '../shared/cloud/adapters';
 import {GuestAiClient} from '../shared/guest-ai/guestAiClient';
-import {guestBackgroundGenerator,guestMoodInterpreter,guestTalkPolisher} from '../shared/guest-ai/adapters';
+import {guestBackgroundGenerator,guestMoodInterpreter,guestTalkPolisher,guestTeachingMusicService} from '../shared/guest-ai/adapters';
 import {visitorModels} from '../shared/model-config/visitorModels';
 import {indexedDbStore,keepGuestWork,restoreGuestWork} from '../shared/storage/guestStore';
 import {decodeKept} from '../shared/storage/decodeKept';
@@ -60,6 +60,9 @@ export const guestWorkReady:Promise<void>=(async()=>{
  try{await restoreGuestWork(store,decodeKept);}catch{/* nothing kept, or storage unavailable */}
  keepGuestWork(store,()=>!cloud.getSnapshot().accountId);
 })();
+// Teaching music picked on this device (with its cards) is kept in its own store, signed in or not: it never leaves
+// the device except the 30 s excerpt a card is made from.
+if(typeof window!=='undefined')void teachingMusic.attach(indexedDbStore('wanwu-teaching'));
 export const services:Services={
  inspirationCatalog:bundledInspirationCatalog,
  backgroundLibrary:localBackgroundLibrary,
@@ -71,8 +74,10 @@ export const services:Services={
  moodInterpreter:guestMoodInterpreter(guestAi),
  backgroundGenerator:guestBackgroundGenerator(guestAi),
  talkPolisher:guestTalkPolisher(guestAi),
- // Still local / not open: corpus hints (by choice), teaching-music analysis (a teacher feature, not in this version).
+ // 教学音乐出卡: the server's audio model hears a 30 s excerpt (else its language model reads the numbers); without the
+ // server the program makes the card alone.
+ teachingMusic:guestTeachingMusicService(guestAi),
+ // Still local by choice: corpus hints.
  soundHints:presetHintProvider,
- teachingMusic:offlineTeachingMusicService,
  // Real content, not a mock: the example sounds shipped with the page.
 };

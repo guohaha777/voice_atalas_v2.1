@@ -4,7 +4,6 @@
 import {SPAN_CHOICES} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import {DEFAULT_COMPOSE_SETTINGS,MAX_INSTRUMENTS,WORK_CONTRACT_VERSION,cleanWorkTitle} from '@wanwu-v2/contracts/work';
-import type {TextbookVariation} from '@wanwu-v2/contracts/textbook';
 import type {ComposeSettings,Inspiration,Rendering,SavedWork} from '@wanwu-v2/contracts/work';
 import {fitSpan,spanHolds,withSpan} from '../../../shared/creation/arrangementTiming.ts';
 
@@ -16,10 +15,9 @@ export type ComposeLastAction='span'|'span-blocked'|'inspiration'|'inspiration-n
  |'background-on'|'background-off'|'background-volume'|'instrument'|'instrument-coming'
  /** The AI chip was tapped (it is shown only while an AI background is ready). */
  |'ai-background'
- /** An AI background just came back: the squirrel offers it (it is never switched on by itself). */
- |'ai-ready'
- /** A shape of the textbook song's feature was picked (换几种样子). */
- |'variation'|null;
+ /** The AI background is being made, or could not be made (换一首): the squirrel says so. */
+ |'ai-making'|'ai-failed'
+ |null;
 export type ComposeState={
  arrangement:Arrangement|null;
  settings:ComposeSettings;
@@ -36,12 +34,10 @@ export type ComposeAction=
  /** Tap an instrument: add it, or take it away if it is already chosen. */
  |{type:'instrument';id:string}
  |{type:'inspiration';inspiration:Inspiration}
- /** 换几种样子: which shape of the chosen textbook song's feature the background plays. */
- |{type:'variation';variation:TextbookVariation}
  |{type:'saved';work:SavedWork}
  |{type:'notice';notice:ComposeNotice}
  /** Nothing changes but what the squirrel says (tapping the instruments that are not open yet). */
- |{type:'said';lastAction:'instrument-coming'|'ai-background'|'ai-ready'};
+ |{type:'said';lastAction:'instrument-coming'|'ai-background'|'ai-making'|'ai-failed'};
 
 export const initialCompose:ComposeState={arrangement:null,settings:DEFAULT_COMPOSE_SETTINGS,shelved:null,notice:null,lastAction:null};
 
@@ -80,11 +76,6 @@ export function composeReducer(state:ComposeState,action:ComposeAction):ComposeS
   }
   case 'inspiration':
    return {...state,settings:{...state.settings,inspiration:action.inspiration},notice:null,lastAction:action.inspiration.kind==='none'?'inspiration-none':'inspiration'};
-  case 'variation':{
-   const inspiration=state.settings.inspiration;
-   if(inspiration.kind!=='textbook')return state;
-   return {...state,settings:{...state.settings,inspiration:{...inspiration,variation:action.variation}},notice:null,lastAction:'variation'};
-  }
   case 'saved':return {...state,shelved:action.work,notice:null,lastAction:'saved'};
   case 'notice':return {...state,notice:action.notice};
   case 'said':return {...state,notice:null,lastAction:action.lastAction};

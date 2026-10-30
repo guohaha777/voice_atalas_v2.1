@@ -12,15 +12,10 @@ import {workSummary} from '@wanwu-v2/sound-rules/textbook-match';
 import {pieceSeconds,timedEvents} from '../creation/arrangementTiming.ts';
 import {presetMood} from '../creation/moodCopy.ts';
 
-/** The textbook card an inspiration points to (teaching music is not analysed yet, so it lends nothing). */
+/** The card an inspiration points to: a textbook song, or teaching music once its card is made (null until then). */
 export function inspirationTrack(inspiration:Inspiration,tracks:readonly TextbookTrack[]){
- return inspiration.kind==='textbook'?tracks.find(track=>track.id===inspiration.entryId)??null:null;
-}
-
-/** The chosen song with the shape of its feature the child picked (换几种样子). */
-function textbookWithVariation(inspiration:Inspiration,tracks:readonly TextbookTrack[]){
- const track=inspirationTrack(inspiration,tracks);
- return track&&inspiration.kind==='textbook'?{...track,variation:inspiration.variation??'original'}:null;
+ const id=inspiration.kind==='textbook'?inspiration.entryId:inspiration.kind==='teaching-music'?inspiration.musicId:null;
+ return id?tracks.find(track=>track.id===id)??null:null;
 }
 
 /** Plan input: the piece's real length, when the child's sounds are heard, the mood and the chosen textbook song. */
@@ -33,7 +28,7 @@ export function backgroundInput(arrangement:Arrangement,inspiration:Inspiration,
    return {start,end,...(pitch?{pitch}:{}),...(contour?{contour}:{}),...(intensity?{intensity}:{})};
   }),
   mood:presetMood(arrangement.mood),
-  textbook:textbookWithVariation(inspiration,tracks),
+  textbook:inspirationTrack(inspiration,tracks),
   seed:arrangement.id,
  };
 }
@@ -47,8 +42,8 @@ export function textbookFeatures(track:TextbookTrack):TextbookFeatures{
 /**
  * The anonymous brief an AI background request carries: the same frame the local background uses (length, when the
  * child's sounds play, tempo, metre, mode, mood), the arrangement in the textbook's words, the textbook song's features,
- * the teaching music's upload id (not its file name), the chosen instruments and the rule versions. No recordings,
- * sound names, makers, places or source ids.
+ * teaching music's card features like a song's (its upload id only while it has no card yet), the chosen instruments
+ * and the rule versions. No recordings, sound names, makers, places or source ids.
  */
 export function backgroundBrief(arrangement:Arrangement,inspiration:Inspiration,tracks:readonly TextbookTrack[],instruments:readonly string[]):BackgroundBrief|null{
  const summary=workSummary(arrangement);
@@ -59,8 +54,7 @@ export function backgroundBrief(arrangement:Arrangement,inspiration:Inspiration,
   tempo:plan.tempo,metre:plan.metre,mode:plan.mode,mood:input.mood,
   arrangement:{density:summary.density,repetition:summary.repetition,register:summary.register},
   textbook:track?textbookFeatures(track):null,
-  variation:input.textbook?.variation??null,
-  teachingMusic:inspiration.kind==='teaching-music'?{musicId:inspiration.musicId}:null,
+  teachingMusic:inspiration.kind==='teaching-music'&&!track?{musicId:inspiration.musicId}:null,
   instruments:[...instruments],rules:{...RULE_VERSIONS},
  };
 }

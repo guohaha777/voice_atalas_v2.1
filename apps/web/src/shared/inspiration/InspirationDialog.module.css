@@ -22,17 +22,15 @@ dialog.songSheet>.panel{flex:0 1 430px;min-height:0;display:flex;flex-direction:
 .note{flex-wrap:wrap;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 0;font-size:var(--font-small);font-weight:600;color:var(--wk-muted)}
 .note svg{width:15px;height:15px;flex-shrink:0}
 .entries{display:flex;flex-direction:column;gap:6px;margin:10px 0 0;padding:6px;list-style:none;border-radius:22px;background:var(--wk-field);box-shadow:var(--wk-inset)}
-.entries li,.music{min-width:0;flex-wrap:wrap;display:flex;align-items:center;gap:12px;min-height:64px;padding:6px 10px 6px 8px;border-radius:17px;background:#fff;box-shadow:0 3px 0 var(--wk-line-strong)}
+.entries li{min-width:0;flex-wrap:wrap;display:flex;align-items:center;gap:12px;min-height:64px;padding:6px 10px 6px 8px;border-radius:17px;background:#fff;box-shadow:0 3px 0 var(--wk-line-strong)}
 /* The song itself is the play button: a round play / stop and the title; it glows yellow while sounding. */
 .entryPlay{flex:1;min-width:0;display:flex;align-items:center;gap:10px;min-height:56px;padding:4px 8px 4px 4px;border:0;border-radius:14px;background:none;color:inherit;text-align:left}
 .entryPlay:hover{background:#f6f8ef99}
 .playDot{display:grid;place-items:center;flex-shrink:0;width:40px;height:40px;border-radius:50%;background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift)}
 .playDot svg{width:16px;height:16px}
 .entryPlay[aria-pressed=true] .playDot{background:var(--wk-sun-fill);box-shadow:0 0 0 4px #ffe57666}
-.music{width:100%;border:0;color:inherit;text-align:left}
-.music[aria-pressed=true]{box-shadow:inset 0 0 0 3px var(--wk-sun)}
-.entries li[data-using],.music[data-using]{background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift)}
-.entries li[data-using] .entryText small,.entries li[data-using] .entryText em,.music[data-using] .entryText small{color:#3f4f16}
+.entries li[data-using]{background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift)}
+.entries li[data-using] .entryText small,.entries li[data-using] .entryText em{color:#3f4f16}
 .entries li[data-using] .entryText em{background:#ffffffa6}
 .entryText{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .entryText b{flex-wrap:wrap;display:flex;align-items:center;gap:8px;font-size:var(--font-control);font-weight:800;white-space:normal;overflow-wrap:anywhere}
@@ -44,17 +42,33 @@ dialog.songSheet>.panel{flex:0 1 430px;min-height:0;display:flex;flex-direction:
 .use{flex-shrink:0;min-width:84px;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:var(--wk-selected-fill);color:var(--wk-on-fill);font-size:var(--font-body);font-weight:800;box-shadow:var(--wk-selected-lift)}
 .use[aria-pressed=true]{background:#ffffffb3;color:var(--wk-on-fill);box-shadow:none}
 .upload{display:flex;flex-direction:column;gap:10px}
-.music{padding-left:10px;background:var(--wk-soft)}
-.musicIcon{display:inline-flex;flex-shrink:0}
-.musicIcon svg{width:36px;height:36px;filter:drop-shadow(0 2px 2px #26301a22)}
-.listen{display:inline-flex;pointer-events:none;align-items:center;gap:6px;flex-shrink:0;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:#fff;color:var(--wk-on-fill);font-size:var(--font-body);font-weight:700;box-shadow:inset 0 0 0 2px var(--wk-lime)}
-.listen svg{width:14px;height:14px}
-.listen[aria-pressed=true]{background:var(--wk-sun);color:var(--wk-on-fill)}
 .hint{margin:0;padding:18px 16px;border-radius:18px;background:var(--wk-soft);font-size:var(--font-body);font-weight:600;line-height:1.7;color:#56615a;text-align:center}
 .pick{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;border:0;border-radius:999px;background:#fff;color:var(--wk-on-fill);font-size:var(--font-body);font-weight:800;box-shadow:var(--wk-outline-lift)}
 .pick svg{width:20px;height:20px}
 .pick:hover{background:var(--wk-green-soft)}
 .error{margin:0;padding:8px 14px;border-radius:12px;background:var(--wk-alert-soft);font-size:var(--font-small);font-weight:600;color:var(--wk-alert)}
+/* 万物声场 has two tabs (no 帮我找找): two columns, so no empty third. */
+.tabs[data-count="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+/* Teaching music's card on its way: a label and a thin bar that fills over the whole wait (CARD_BUDGET_MS), easing out. */
+.analysing{display:flex;align-items:center;gap:10px;padding:4px 6px;font-size:var(--font-small);font-weight:600;color:var(--wk-muted)}
+.analysing>span:first-child{flex-shrink:0}
+.analysingTrack{position:relative;flex:1 1 80px;height:6px;border-radius:999px;background:var(--wk-soft);box-shadow:inset 0 0 0 1px var(--wk-line-strong);overflow:hidden}
+.analysingTrack i{position:absolute;inset:0 auto 0 0;width:92%;border-radius:inherit;background:var(--wk-green-text);transform-origin:left;animation:fill linear both;animation-timing-function:cubic-bezier(.2,.7,.3,1)}
+@keyframes fill{from{transform:scaleX(.04)}to{transform:scaleX(1)}}
+/* The card: beat and rhythm, the line for children, the note for teachers, who made it. */
+.teachingCard{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:17px;background:#fff;box-shadow:0 3px 0 var(--wk-line-strong)}
+.teachingCard b{font-size:var(--font-control);font-weight:800;color:var(--wk-ink)}
+.teachingCard p{margin:0;font-size:var(--font-body);font-weight:600;line-height:1.6;color:#56615a}
+.teachingCard .teacherNote{font-size:var(--font-small);color:var(--wk-muted)}
+.teacherNote small{margin-right:6px;padding:0 7px;border-radius:8px;background:var(--wk-soft);font-size:var(--font-caption);font-weight:700}
+.madeBy{font-size:var(--font-caption);font-weight:700;color:var(--wk-green-text)}
+/* On a short screen the tab scrolls; the new pieces keep their height instead of being squeezed. */
+.analysing,.teachingCard{flex-shrink:0}
+/* 案例 in 课本歌曲 (built-in recordings): the arrow turns down when the explanation is open; the explanation takes a full row. */
+.caseBody{flex-basis:100%;min-width:0;display:flex;flex-direction:column;gap:8px;padding:0 4px 6px}
+.caseListen{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:0;border-radius:999px;background:#fff;color:var(--wk-on-fill);font-size:var(--font-small);font-weight:700;box-shadow:inset 0 0 0 2px var(--wk-lime)}
+.caseListen svg{width:14px;height:14px}
+.caseListen[aria-pressed=true]{background:var(--wk-sun)}
 
 /* Narrow sheet content gives the title and its explanation a full row. */
 @container(max-width:300px){
@@ -62,5 +76,5 @@ dialog.songSheet>.panel{flex:0 1 430px;min-height:0;display:flex;flex-direction:
  .entryPlay{width:100%;gap:8px;min-height:48px;padding:4px 0}
  .use{justify-self:end;min-height:36px;padding:6px 14px}
  .entryText small{line-height:var(--line-body)}
- .music{gap:8px;padding:10px}.music .entryText{flex-basis:calc(100% - 52px)}.listen{margin-left:auto}
 }
+@media(--reduced-motion){.analysingTrack i{animation:none;transform:scaleX(.5);opacity:.6}}

@@ -13,7 +13,7 @@ export const promptCopy={
  status:{open:'开放',closed:'暂不开放（只用语料）'},
  when:{runtime:'孩子使用时',development:'开发期，一次'},
  meta:(model:string,version:string,when:string,fallback:string)=>`${model} · ${version} · ${when} · 不在时：${fallback}`,
- inputs:'这首作品',mood:'心情',noMood:'不选',song:'课本歌曲',noSong:'不用',variation:'样子',attempt:'第几次生成',
+ inputs:'这首作品',mood:'心情',noMood:'不选',song:'课本歌曲',noSong:'不用',attempt:'第几次生成',
  hint:'选项',kind:'体检分类',noKind:'未知',moodText:'孩子写的心情',
  brief:'程序给模型的（匿名摘要）',local:'模型不在时（语料 / 本地规则）',prompt:'拼好的提示词',system:'共用的系统提示词',
  noPrompt:'这一项现在没有可发的内容。',

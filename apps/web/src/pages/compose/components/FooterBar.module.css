@@ -18,6 +18,9 @@
 .bulb[aria-expanded=true] svg{filter:drop-shadow(0 2px 2px #26301a22) drop-shadow(0 0 12px #ffd84a)}
 .bulb:not(:disabled) svg{animation:glow 3.6s ease-in-out infinite}
 .bulb:disabled{opacity:.5;cursor:default}
+/* How many entries the panel holds: a small count on the bulb, a hint to open it (hidden while it is open). */
+.bulb:has(.bulbCount){position:relative}
+.bulbCount{position:absolute;top:-2px;right:-4px;display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--wk-sun-deep);color:#fff;font-size:var(--font-caption);font-weight:800;line-height:1;box-shadow:0 0 0 2px #fff;pointer-events:none}
 .discovery>div{min-width:0;min-width:0}
 .discovery h3{margin:0;font-size:var(--font-body);font-weight:800}
 .discovery p{margin:2px 0 0;font-size:var(--font-body);font-weight:500;line-height:1.5;color:var(--wk-text);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}

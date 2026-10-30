@@ -21,7 +21,7 @@ const previewSeconds=(track:TextbookTrack)=>{const bar=60/track.tempoBpm*track.m
 
 /** Pure: whole bars, nothing else playing, the song's own colour. */
 export function previewPlan(track:TextbookTrack):BackgroundPlan{
- const plan=backgroundPlan({seconds:previewSeconds(track),sounding:[],mood:null,textbook:{...track,variation:'original'},seed:track.id});
+ const plan=backgroundPlan({seconds:previewSeconds(track),sounding:[],mood:null,textbook:track,seed:track.id});
  // A few seconds heard on purpose: start at once (the first strong beat matters) and end with a short fade.
  return {...plan,fadeInSeconds:.03,fadeOutSeconds:Math.min(plan.fadeOutSeconds,.8)};
 }

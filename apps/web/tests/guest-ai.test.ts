@@ -9,7 +9,7 @@ import type {ModelConfig} from '../src/shared/model-config/modelConfig.ts';
 
 const token='a'.repeat(43);
 const brief:BackgroundBrief={version:'background-request-v1',workId:'work:t',seconds:20,sounding:[{start:1,end:2}],tempo:90,metre:4,mode:'major',mood:'happy',
- arrangement:{density:'medium',repetition:'low',register:'medium'},textbook:null,variation:null,teachingMusic:null,instruments:[],
+ arrangement:{density:'medium',repetition:'low',register:'medium'},textbook:null,teachingMusic:null,instruments:[],
  rules:{analysis:'analysis-v2',shaping:'shaping-v3',background:'background-v1',mix:'mix-v1'}};
 type Seen={path:string;init:RequestInit};
 const json=(status:number,body:unknown)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json'}});

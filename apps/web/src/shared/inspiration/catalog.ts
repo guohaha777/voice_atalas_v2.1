@@ -1,6 +1,6 @@
 // 课本灵感, shared by 万物声场 (chosen before or while arranging, heard at once in the local background) and 万物成曲.
 // Each song is a feature card (`TextbookTrack`, contract textbook-v1): extracted once at development time, shipped
-// with the page, so listing and 帮我找找 (local rules in @wanwu-v2/sound-rules/textbook-match) work without a network.
+// with the page, so the list works without a network.
 // Today's catalogue is textbookTracks.ts (real songs with their textbook source; numbers measured by code, words drafted
 // by the model, ear check pending).
 // An inspiration only lends rhythm and feel to the background layer — never a melody, never the child's sounds.

@@ -4,7 +4,7 @@
 import {MOOD_TEXT_MAX} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement,MoodId} from '@wanwu-v2/contracts/arrangement';
 import type {SoundDimension,SoundKind} from '@wanwu-v2/contracts/sound';
-import type {TextbookTrack,TextbookVariation} from '@wanwu-v2/contracts/textbook';
+import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
 import {hintLines} from '@wanwu-v2/prompts/corpus';
 import {TASKS,buildBackgroundAudio,buildBackgroundNotes,buildMoodWords,buildSoundHint,buildTextbookFeatures,buildTextbookTalk,buildTextbookWords,buildWorkTalk,
@@ -19,19 +19,19 @@ import {promptCopy} from '../config/promptCopy';
 
 export type PromptLabInput={
  arrangement:Arrangement|null;tracks:readonly TextbookTrack[];
- mood:MoodId|null;track:TextbookTrack|null;variation:TextbookVariation;attempt:number;
+ mood:MoodId|null;track:TextbookTrack|null;attempt:number;
  hint:{dimension:SoundDimension;value:string;kind:SoundKind|null};moodText:string;
 };
 export type ReplyCheck={repairs:string[];status:'accepted'|'partly'|'rejected';notes:string[];shown:string[]};
 export type TaskView={brief:unknown;local:string[];built:BuiltPrompt|null;note:string|null;check:((reply:string)=>ReplyCheck)|null};
 
 const json=(value:unknown)=>JSON.stringify(value);
-const TALK_PARTS=['feature','shape','meeting','task'] as const;
+const TALK_PARTS=['feature','meeting','task'] as const;
 
 export function taskView(id:TaskId,input:PromptLabInput):TaskView{
  const {track,tracks}=input;
  const arrangement=input.arrangement&&{...input.arrangement,mood:input.mood?{kind:'preset' as const,id:input.mood}:null};
- const inspiration:Inspiration=track?{kind:'textbook',entryId:track.id,variation:input.variation}:{kind:'none'};
+ const inspiration:Inspiration=track?{kind:'textbook',entryId:track.id}:{kind:'none'};
  const hasEvents=!!arrangement?.events.length;
  const plan=arrangement&&hasEvents?backgroundPlan(backgroundInput(arrangement,inspiration,tracks)):null;
  const empty=(note:string):TaskView=>({brief:null,local:[],built:null,note,check:null});

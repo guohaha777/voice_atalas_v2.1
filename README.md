@@ -42,7 +42,7 @@ npm run dev
 
 ```sh
 npm test                # 全部测试，必须全过
-npm run build           # 类型检查 + 资源检查 + 样式结构检查（单文件 ≤ 220 行）+ 构建
+npm run build           # 类型检查 + 资源检查 + 样式结构检查（媒体查询只用屏幕档位）+ 构建
 # 仅在替换原件、修改压缩配方后执行：
 npm run assets:build
 # 只更新声音库示例声音（新增 / 替换原件后；需要 ffmpeg）：

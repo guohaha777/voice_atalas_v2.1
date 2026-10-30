@@ -31,11 +31,11 @@ export const inspirationCopy={
  reason:(field:MatchField,value:string)=>field==='mood'?`心情都有点「${moodLabels[value as MoodId]}」`:reasons[field][value as never],
  upload:{
   pick:'选一段教学音乐',repick:'换一段',
-  hint:'请老师选一段课堂上唱的歌，最长 10 分钟。',
+  hint:'请老师选一段课堂上唱的歌。',
   picked:(ms:number)=>`时长 ${minutes(ms)}`,
   listen:'试听',stop:'停',
   off:'老师的音乐还不能用来做背景，现在背景跟着心情走。',
-  errors:{'not-audio':'这不是音频文件，换一个试试。','too-large':'文件太大了（最大 30MB）。','too-long':'音乐太长了，最长 10 分钟。','unreadable':'这段音频读不出来，换一个试试。'},
+  errors:{'not-audio':'这不是音频文件，换一个试试。','too-large':'文件太大了（最大 10MB）。','unreadable':'这段音频读不出来，换一个试试。'},
  },
  /** One line describing the current choice, for the cards that open the dialog. */
  summary:(value:Inspiration,entries:readonly TextbookTrack[])=>{

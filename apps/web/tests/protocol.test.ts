@@ -8,7 +8,7 @@ import {DEFAULT_COMPOSE_SETTINGS,WORK_CONTRACT_VERSION,isWorkShare,parseSavedWor
 import type {SavedWork} from '@wanwu-v2/contracts/work';
 import {RULE_VERSIONS} from '@wanwu-v2/sound-rules/rules';
 import {exampleSounds} from '../src/shared/creation/exampleSounds.ts';
-import {WorkShelf} from '../src/mocks/workShelf.ts';
+import {WorkShelf} from '../src/shared/creation/workShelf.ts';
 
 const uploaded:SoundSource={id:'recording:7f3a',kind:'uploaded',label:'后山的风',durationMs:12_000,mimeType:'audio/webm;codecs=opus',
  provenance:{recordedBy:'小林',recordedOn:'2026-10-20',place:'后山',group:'秋游',provenanceUrl:null}};

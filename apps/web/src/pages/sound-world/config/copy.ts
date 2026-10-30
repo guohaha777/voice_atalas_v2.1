@@ -47,7 +47,7 @@ export const worldCopy={
   mineEmpty:'这个范围里还没有可选声卡。',
   makeNew:'去声音诞生做一个新声音',
   unavailable:{'needs-account':'请先用受邀老师账号登录；个人和老师共享库都需要试听确认。','needs-review':'首版不提供公众素材库。'},
-  sessionOnly:'访客摆放仅保留在本页；登录后的保存状态以上方云端栏为准。',
+  sessionOnly:'访客摆放保存在这台设备上；登录后的保存状态以上方云端栏为准。',
  },
  clipEditor:{
   title:(name:string)=>`剪一剪「${name}」`,
@@ -75,7 +75,7 @@ export const worldCopy={
   'compose-unavailable':'万物成曲还在准备中，暂未开放。你的摆放都还在这里。',
   'load-failed':'网络有点慢，声音没加载出来，再点一次试试。',
   'no-audio':'这个浏览器不能播放试听。',
-  'missing-audio':'这个声音的录音只在之前打开的页面里，刷新后找不到了。',
+  'missing-audio':'这个声音的录音找不到了，可能清除过浏览器数据。',
   'background-failed':'背景音乐没能准备好，先只播放你的声音。',
  } satisfies Record<NoticeKey,string>,
 } as const;

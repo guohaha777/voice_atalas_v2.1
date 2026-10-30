@@ -27,7 +27,11 @@ function textbookWithVariation(inspiration:Inspiration,tracks:readonly TextbookT
 export function backgroundInput(arrangement:Arrangement,inspiration:Inspiration,tracks:readonly TextbookTrack[]):BackgroundInput{
  return {
   seconds:pieceSeconds(arrangement),
-  sounding:timedEvents(arrangement).map(({start,end})=>({start,end})),
+  // How each sound sounds, for the melody's answer: the child's choices first, 声音体检's 高低 when 高低 was not chosen.
+  sounding:timedEvents(arrangement).map(({start,end,unit})=>{
+   const pitch=unit.shape.pitch??unit.analysis?.band,{contour,intensity}=unit.shape;
+   return {start,end,...(pitch?{pitch}:{}),...(contour?{contour}:{}),...(intensity?{intensity}:{})};
+  }),
   mood:presetMood(arrangement.mood),
   textbook:textbookWithVariation(inspiration,tracks),
   seed:arrangement.id,
@@ -36,8 +40,8 @@ export function backgroundInput(arrangement:Arrangement,inspiration:Inspiration,
 
 /** Only the features of a textbook song (never its title, audio or melody) go into an AI request. */
 export function textbookFeatures(track:TextbookTrack):TextbookFeatures{
- const {id,tempoBpm,meter,rhythmCell,onsetDensity,pitchRange,brightness,mode,repetition,mood}=track;
- return {id,tempoBpm,meter,rhythmCell:[...rhythmCell],onsetDensity,pitchRange:{...pitchRange},brightness,mode,repetition,mood};
+ const {id,tempoBpm,meter,rhythmCell,onsetDensity,pitchRange,brightness,mode,repetition,mood,tonic}=track;
+ return {id,tempoBpm,meter,rhythmCell:[...rhythmCell],onsetDensity,pitchRange:{...pitchRange},brightness,mode,repetition,mood,...(tonic===undefined?{}:{tonic})};
 }
 
 /**
@@ -51,7 +55,7 @@ export function backgroundBrief(arrangement:Arrangement,inspiration:Inspiration,
  if(!summary)return null;
  const input=backgroundInput(arrangement,inspiration,tracks),plan=backgroundPlan(input),track=inspirationTrack(inspiration,tracks);
  return {
-  version:BACKGROUND_REQUEST_VERSION,workId:arrangement.id,seconds:input.seconds,sounding:input.sounding.map(span=>({...span})),
+  version:BACKGROUND_REQUEST_VERSION,workId:arrangement.id,seconds:input.seconds,sounding:input.sounding.map(({start,end})=>({start,end})),
   tempo:plan.tempo,metre:plan.metre,mode:plan.mode,mood:input.mood,
   arrangement:{density:summary.density,repetition:summary.repetition,register:summary.register},
   textbook:track?textbookFeatures(track):null,

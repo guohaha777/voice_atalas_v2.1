@@ -3,6 +3,7 @@ import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
 import {composeCopy} from '../config/copy';
 import type {Compose} from '../model/useCompose';
 import styles from './FooterBar.module.css';
+import {TalkProgress} from './TalkProgress';
 import {ui} from '../../../shared/ui/controls';
 
 /**
@@ -28,6 +29,7 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{compose:Compose;onSav
    <div>
     <h3 id="discovery-title">{composeCopy.discoveryTitle}</h3>
     <p aria-live="polite">{discovery?discovery.line:composeCopy.notices['need-event']}</p>
+    <TalkProgress active={compose.talk.polishing}/>
    </div>
    {discoveries.length>1&&<button type="button" className={styles.discoveryNext} onClick={()=>setIndex(value=>value+1)}>{composeCopy.discoveryNext}</button>}
   </section>
@@ -49,6 +51,7 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{compose:Compose;onSav
     <button type="button" className={styles.teachClose} aria-label={composeCopy.bulbClose} onClick={()=>setTeaching(false)}><Glyph name="plus"/></button>
    </header>
    <p className={styles.teachLead}>{composeCopy.teachLead}</p>
+   <TalkProgress active={compose.talk.polishing}/>
    {/* Only this list scrolls (wheel, touch, or arrow keys once focused); the title row above stays in place. */}
    <ol tabIndex={0} aria-label={composeCopy.teachTitle}>
     {/* 课本讲解 first when a textbook song is chosen: feature → this shape → what happened → one thing to try. */}

@@ -11,7 +11,7 @@ import {backgroundInput} from '../src/shared/background/backgroundLayer.ts';
 import {offlineTalkPolisher} from '../src/shared/talk/polisher.ts';
 import type {TalkPolisher} from '../src/shared/talk/polisher.ts';
 import {localTalk,mergeTalk,polishTalk} from '../src/shared/talk/talkView.ts';
-import {exampleTracks} from '../src/mocks/exampleTracks.ts';
+import {exampleTracks} from './fixtures/exampleTracks.ts';
 import {parseRoute,routeHref} from '../src/app/router.ts';
 
 const now='2026-10-24T08:00:00.000Z';
@@ -86,10 +86,10 @@ test('课本灵感 opens on the same page everywhere: teaching music, the chosen
 
 test('the sound library is one source: 声音诞生 and 万物声场 list the same examples',async()=>{
  const {bundledSoundLibrary}=await import('../src/shared/creation/soundLibrary.ts');
- const {mockSoundWorldRepository}=await import('../src/mocks/soundWorldRepository.ts');
+ const {localSoundWorldRepository}=await import('../src/shared/local/soundWorldRepository.ts');
  const {exampleLibraryItem}=await import('../src/pages/sound-birth/services/soundLibrary.ts');
  const {examples}=await bundledSoundLibrary.list();
- const world=await mockSoundWorldRepository.scope('example');
+ const world=await localSoundWorldRepository.scope('example');
  assert.equal(world.status,'ready');
  if(world.status==='ready')assert.deepEqual(world.units.map(unit=>unit.sourceId),examples.map(example=>exampleLibraryItem(example).source.id));
  assert.ok(examples.length>=8);

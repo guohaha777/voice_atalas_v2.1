@@ -1,4 +1,5 @@
-// In-memory original bytes and decoded/canonical playback buffers. Nothing persists merely by entering this archive.
+// In-memory original bytes and decoded/canonical playback buffers. A visitor's entries are also kept on this device by
+// shared/storage/guestStore.ts (originals, not buffers), which decodes them back into this archive on the next visit.
 // The authenticated cloud adapter explicitly uploads original Blob/File bytes, freezes a new immutable object, and
 // replaces preview buffers with server-normalized audio. Upload completion never admits anything to a library.
 // Originals captured inside an account remain account-scoped here; unclaimed guest work is not silently imported.
@@ -29,6 +30,8 @@ export class SessionSourceArchive{
  setAccount(id:string|null){this.activeAccount=id;this.emit();}
  claim(id:string,ownerId:string){const entry=this.entries.get(id);if(entry){this.entries.set(id,{...entry,ownerId});this.emit();}}
  ownedBy(id:string){return [...this.entries.values()].some(entry=>entry.ownerId===id);}
+ /** A visitor's sounds (not claimed by an account), with their original bytes when there are any, for the device store. */
+ guestEntries(){return [...this.entries.values()].filter(entry=>!entry.ownerId&&entry.source.kind!=='uploaded').map(entry=>({source:entry.source,original:entry.original??null}));}
  list=():ArchiveSnapshot=>this.snapshot;
  subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
  /** Most recent first, distinct, non-empty values of a provenance field — for one-tap reuse. */

@@ -13,7 +13,10 @@ import {shapeOf} from '@wanwu-v2/sound-rules/textbook-variation';
 import {rhythmWords} from '@wanwu-v2/prompts/corpus';
 import type {BackgroundMode} from '@wanwu-v2/sound-rules/rules';
 import {backgroundCopy} from '../src/shared/background/copy.ts';
-import {exampleTracks} from '../src/mocks/exampleTracks.ts';
+import {exampleTracks} from './fixtures/exampleTracks.ts';
+import {textbookTracks} from '../src/shared/inspiration/textbookTracks.ts';
+/** The real catalogue and the made-up fixtures: every title and child line the page may say. */
+const tracks=[...textbookTracks,...exampleTracks];
 import {guideLines as squirrel} from '../src/pages/compose/config/guideLines.ts';
 import {guideLines as frog} from '../src/pages/sound-world/config/guideLines.ts';
 
@@ -32,7 +35,7 @@ const SPECIAL=new Set(['inspirationSong','volume','shapeTap']);
 const longest=<T,>(items:readonly T[],text:(item:T)=>string)=>items.map(text).sort((a,b)=>charCount(b)-charCount(a))[0]!;
 
 test('guide lines fit two lines of the bubble: at most 36 characters, child words only',()=>{
- const titles=exampleTracks.map(track=>track.title);
+ const titles=tracks.map(track=>track.title);
  const shapes=TEXTBOOK_VARIATIONS.filter(shape=>shape!=='original');
  const pairs=shapes.flatMap(a=>shapes.filter(b=>b!==a).map(b=>['original',a,b] as TextbookVariation[]));
  const moods=['none',...MOODS] as const,modes=Object.keys(BACKGROUND_RULES.modes) as BackgroundMode[];
@@ -40,10 +43,10 @@ test('guide lines fit two lines of the bubble: at most 36 characters, child word
   ({title,...plan})=>backgroundCopy.describe(plan,title));
  const composed=[
   longest(titles.flatMap(title=>pairs.map(pair=>({title,pair}))),({title,pair})=>squirrel.inspirationSong(title,pair)),
-  longest(exampleTracks,track=>frog.inspirationSong(track.title,track.childLine)),
+  longest(tracks,track=>frog.inspirationSong(track.title,track.childLine)),
   squirrel.backgroundOn(describe),frog.backgroundOn(describe),
   ...(['soft','medium','loud'] as const).map(level=>squirrel.volume(level)),
-  ...exampleTracks.flatMap(track=>TEXTBOOK_VARIATIONS.map(shape=>squirrel.shapeTap(shape,rhythmWords(track.rhythmCell),rhythmWords(shapeOf(track.rhythmCell,shape).cell)))),
+  ...tracks.flatMap(track=>TEXTBOOK_VARIATIONS.map(shape=>squirrel.shapeTap(shape,rhythmWords(track.rhythmCell),rhythmWords(shapeOf(track.rhythmCell,shape).cell)))),
   squirrel.instruments(backgroundCopy.parts({chord:['organ'],bass:['organ'],melody:['marimba'],rhythm:['drum']},{organ:'风琴',marimba:'木琴',drum:'小鼓'})),
  ];
  const said=[...lines(squirrel),...lines(frog),...composed];

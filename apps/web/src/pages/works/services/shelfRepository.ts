@@ -1,6 +1,6 @@
-// Repository port for 作品书架. The implementation is chosen in app/services.ts — today the mock in
-// mocks/shelfRepository.ts (the in-memory shelf of this visit; a refresh empties it). Later: the child's works from the
-// server, filtered by account and visibility on the server.
+// Repository port for 作品书架. The implementation is chosen in app/services.ts — for visitors
+// shared/local/shelfRepository.ts (the shelf kept on this device); for signed-in teachers the cloud shelf, filtered by
+// account and visibility on the server.
 //
 // Reading stays synchronous (the page reads a snapshot with useSyncExternalStore): a server adapter keeps the shelf it
 // last fetched on this device and `refresh` fetches it again. Changes go to the server, so they return promises.

@@ -52,7 +52,7 @@
 - 一次做多个声音（2026-10-24）：“做好了”旁边的“再做一个”把当前声音放进作品（和“做好了”同样的检查），页面清空、换下一个编号接着做；做完点“做好了”一起进声场，空页面点“做好了”也会带着已放进的声音进声场。交接逻辑在 `model/useFinish.ts`，`App` 的 `finishSound` 负责放进作品；作品最多 12 个声音，满了会提示。手机上两个按钮并排，360px 以下上下排。
 - 首页场景的素材清单放在 `shared/scene/`（`homeScene.ts` + 生成的 JSON），首页、弹窗和声音诞生页都通过它取同一批已缓存的文件。
 - 图标：`shared/ui/PaperIcon.tsx` 里的 `PaperIcon`（彩色纸片图标，按色卡上色）和 `Glyph`（实心小图标，跟随文字颜色）；心情脸是 `MoodFace.tsx`。作品书架保留原版的 `KidIcon` 与 `shared/scene/WorkBackdrop`（首页灌木淡背景）。
-- 屏幕档位只有一份：`styles/breakpoints.ts`（`phone / tiny / one-column / narrow / narrow-compose / short / shorter / tablet-short / header-compact / sheet-narrow / reduced-motion`）。CSS 写 `@media(--short)`，构建时由 `vite.config.ts` 的小插件展开；代码里用 `media.phone` 等。`scripts/check-styles.mjs`（随 `npm run build` 运行）拒绝写死像素的媒体查询、未知档位，以及超过 220 行的源文件。组件内部按容器宽度的 `@container` 仍写在组件里。
+- 屏幕档位只有一份：`styles/breakpoints.ts`（`phone / tiny / one-column / narrow / narrow-compose / short / shorter / tablet-short / header-compact / sheet-narrow / reduced-motion`）。CSS 写 `@media(--short)`，构建时由 `vite.config.ts` 的小插件展开；代码里用 `media.phone` 等。`scripts/check-styles.mjs`（随 `npm run build` 运行）拒绝写死像素的媒体查询和未知档位（不再限制源文件行数）。组件内部按容器宽度的 `@container` 仍写在组件里。
 - 每个组件的外观和它的响应式规则放在同名 `components/Xxx.module.css`；页面级 `XxxPage.module.css` 只放页面布局。页面内多个组件共用的少量样式放在 `components/controls.module.css`（声音诞生）、`components/sheet.module.css`（万物声场）。
 - 样式分三层：`styles/global.css` 的 `--wk-*` 令牌（颜色、阴影、胶带、页面底色、`wk-rise` 入场动画，cascade layer `wk-base`）；`shared/ui/controls.module.css` 的共用外观（胶囊按钮 `pill` + `go / outline / back`，胶带绿卡 `limeCard + tape`，layer `wk-ui`，在代码里用 `ui.*`）；各页、各组件的模块只管尺寸和位置。页面样式不在任何 layer 里，所以总能覆盖共用外观，与 CSS 加载顺序无关。
 

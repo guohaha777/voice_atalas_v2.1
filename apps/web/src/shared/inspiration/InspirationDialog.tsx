@@ -5,7 +5,6 @@ import {audioSupported} from '../audio/audioContext';
 import {SequencePlayer} from '../audio/SequencePlayer';
 import {Glyph,PaperIcon} from '../ui/PaperIcon';
 import {WorkSheet,sheetStyles} from '../ui/WorkSheet';
-import {trackRhythm} from './catalog';
 import {inspirationCopy as copy} from './copy';
 import type {InspirationMatch} from './matches';
 import {renderRhythmPreview} from './rhythmPreview';
@@ -33,7 +32,7 @@ function useListening(){
   if(playing===key)return stop();
   stop();if(!audioSupported())return;
   let render=previews.current.get(item.id);
-  if(!render){render=renderRhythmPreview(trackRhythm(item));previews.current.set(item.id,render);}
+  if(!render){render=renderRhythmPreview(item);previews.current.set(item.id,render);}
   setPlaying(key);
   try{await player.playOne(key,await render);}catch{setPlaying(null);}
  };

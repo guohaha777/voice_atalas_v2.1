@@ -21,5 +21,5 @@ export type TalkPolisher={
 
 export const offlineTalkPolisher:TalkPolisher={open:false,async workTalk(){return null;},async textbookTalk(){return null;}};
 
-/** The corpus sentences are already showing; an AI rewording that takes longer than this is not waited for. */
-export const TALK_TIMEOUT_MS=6000;
+/** The corpus sentences are already showing; an AI rewording that takes longer than this is not waited for (qwen3.8-flash takes 4–6 s for a full piece). */
+export const TALK_TIMEOUT_MS=10_000;

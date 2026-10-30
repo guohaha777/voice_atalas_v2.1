@@ -1,5 +1,5 @@
 // Repository port for 万物成曲. The page only talks to this interface; the implementation is chosen in app/services.ts
-// (today the mock in mocks/composeRepository.ts: the in-memory work of this visit and the in-memory 作品书架). A server
+// (for visitors shared/local/composeRepository.ts: the work and 作品书架 kept on this device). A server
 // adapter implements the same interface later — the page won't change.
 //
 // Intended server endpoints (protocol v0.4; not implemented; all need sign-in — a visitor's work stays on this device;

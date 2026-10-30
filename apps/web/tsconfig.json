@@ -6,5 +6,5 @@
   "resolveJsonModule":true,"verbatimModuleSyntax":true,"isolatedModules":true,"allowImportingTsExtensions":true,
   "types":["vite/client","node"]
  },
- "include":["src","tests","vite.config.ts","../../packages/sound-rules/src","../../packages/sound-rules/tests","../../packages/prompts/src","../../packages/prompts/tests"]
+ "include":["src","tests","vite.config.ts","../../packages/sound-rules/src","../../packages/sound-rules/tests","../../packages/prompts/src","../../packages/prompts/tests","../../packages/music-features/src","../../packages/music-features/tests"]
 }

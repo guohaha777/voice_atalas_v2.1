@@ -1,5 +1,5 @@
-// Mock data: made-up textbook feature cards, shown as 示例 until the real catalogue is connected. They are not real
-// textbook songs (`source: null`, extraction `example`); the numbers are only plausible values for trying the page.
+// Test fixtures: made-up textbook feature cards (not real textbook songs: `source: null`, extraction `example`). The page
+// ships the real catalogue in src/shared/inspiration/textbookTracks.ts; these stay for tests that need many shapes.
 import {TEXTBOOK_CONTRACT_VERSION} from '@wanwu-v2/contracts/textbook';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 

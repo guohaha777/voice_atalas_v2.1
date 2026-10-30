@@ -12,6 +12,7 @@ import {CloudProvider,useCloud} from '../shared/cloud/CloudProvider';
 import {CloudToolbar} from '../shared/cloud/CloudToolbar';
 import {ModelConfigDialog} from '../shared/model-config/ModelConfigDialog';
 import {emptyModelConfig} from '../shared/model-config/modelConfig';
+import {visitorModels} from '../shared/model-config/visitorModels';
 import {PageFallback} from './PageFallback';
 import {prefetchWhenIdle} from './prefetch';
 import type {HomeDestination} from './navigation';
@@ -62,6 +63,8 @@ function AppContent(){
  // Keys exist only in React memory for this page session; never write them to browser storage.
  const [modelConfig,setModelConfig]=useState(emptyModelConfig);
  useEffect(()=>{setModelConfig(emptyModelConfig);},[cloud.accountId]);
+ // The guest AI client reads the applied settings when it sends; it holds them in memory only, like this state.
+ useEffect(()=>{visitorModels.set(modelConfig);},[modelConfig]);
  useEffect(()=>{if(route.page==='home')return prefetchWhenIdle(loadSoundBirth,birthPrefetchDelayMs);},[route.page]);
  // 万物声场 follows 声音诞生, so warm its code while the child shapes a sound.
  useEffect(()=>{if(route.page==='sound-birth')return prefetchWhenIdle(loadSoundWorld,nextPagePrefetchDelayMs);},[route.page]);

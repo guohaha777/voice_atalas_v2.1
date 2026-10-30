@@ -9,8 +9,8 @@ import {DEFAULT_COMPOSE_SETTINGS,parseComposeSettings} from '@wanwu-v2/contracts
 import type {ComposeSettings,SavedWork} from '@wanwu-v2/contracts/work';
 import {newId} from './ids.ts';
 
-/** Result of keeping something through a repository port. `session` means kept for this visit only — never shown as saved. */
-export type SaveResult={status:'session'}|{status:'saved';version:string}|{status:'failed'};
+/** Result of keeping something through a repository port. `device` means kept on this device for a visitor (not in an account). */
+export type SaveResult={status:'device'}|{status:'saved';version:string}|{status:'failed'};
 export type AddUnitResult={status:'added';unit:SoundUnitDraft}|{status:'full'};
 
 export class WorkSession{

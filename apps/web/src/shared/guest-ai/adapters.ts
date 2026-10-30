@@ -1,0 +1,53 @@
+// The three guest AI ports, backed by the server (GuestAiClient). Pages see the same ports as before; whatever the server
+// sends is still checked by the page's own parsers, and every failure leaves the local result in place.
+import {AI_BACKGROUND_STEPS} from '@wanwu-v2/contracts/background';
+import type {AiBackgroundStep,BackgroundResult,BackgroundUnavailable} from '@wanwu-v2/contracts/background';
+import type {BackgroundGenerator} from '../background/generator.ts';
+import type {TalkPolisher} from '../talk/polisher.ts';
+import type {MoodInterpreter} from '../../pages/sound-world/services/moodInterpreter.ts';
+import type {GuestAiClient,GuestReply} from './guestAiClient.ts';
+
+/** First look after this long, then every interval: AI notes are quick, AI audio takes a while. */
+const POLL={'notes-ai':{first:400,every:600},'audio-ai':{first:3000,every:2000}} as const;
+
+const unavailableReason=(reply:Extract<GuestReply,{ok:false}>):BackgroundUnavailable=>
+ reply.reason==='not-open'?'not-open':reply.status===429?'quota':reply.reason==='timeout'?'timeout':'failed';
+const wait=(ms:number,signal:AbortSignal)=>new Promise<void>((resolve,reject)=>{
+ const timer=setTimeout(resolve,ms);
+ signal.addEventListener('abort',()=>{clearTimeout(timer);reject(new Error('aborted'));},{once:true});
+});
+
+export function guestTalkPolisher(client:GuestAiClient):TalkPolisher{
+ return {
+  get open(){return client.open('language');},
+  async workTalk(brief,signal){const reply=await client.post('/api/v1/talk/work',brief,signal);return reply.ok?reply.data:null;},
+  async textbookTalk(brief,signal){const reply=await client.post('/api/v1/talk/textbook',brief,signal);return reply.ok?reply.data:null;},
+ };
+}
+
+export function guestMoodInterpreter(client:GuestAiClient):MoodInterpreter{
+ return {
+  get available(){return client.open('language');},
+  async interpret(text,signal){const reply=await client.post('/api/v1/moods/interpret',{text},signal);return reply.ok?reply.data as never:null;},
+ };
+}
+
+export function guestBackgroundGenerator(client:GuestAiClient):BackgroundGenerator{
+ return {
+  get open(){return AI_BACKGROUND_STEPS.filter(step=>client.open(step==='audio-ai'?'music':'language'));},
+  async generate(brief,step:AiBackgroundStep,signal):Promise<unknown>{
+   const started=await client.post('/api/v1/backgrounds',{step,brief},signal);
+   if(!started.ok)return {status:'unavailable',reason:unavailableReason(started)} satisfies BackgroundResult;
+   const jobId=(started.data as {jobId?:unknown}|null)?.jobId;
+   if(typeof jobId!=='string'||!/^[a-f0-9-]{36}$/.test(jobId))return {status:'unavailable',reason:'failed'} satisfies BackgroundResult;
+   // runBackgroundChain aborts this at the step's timeout; until then look again now and then.
+   await wait(POLL[step].first,signal);
+   for(;;){
+    const reply=await client.get(`/api/v1/backgrounds/${jobId}`,signal);
+    if(!reply.ok)return {status:'unavailable',reason:unavailableReason(reply)} satisfies BackgroundResult;
+    if((reply.data as {status?:unknown}|null)?.status!=='pending')return reply.data;
+    await wait(POLL[step].every,signal);
+   }
+  },
+ };
+}

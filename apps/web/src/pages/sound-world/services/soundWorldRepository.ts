@@ -1,5 +1,5 @@
 // Repository port for 万物声场. The page only talks to this interface; the implementation is chosen in app/services.ts
-// (today the mock in mocks/soundWorldRepository.ts: examples and the in-memory work of this visit). A server adapter
+// (for visitors shared/local/soundWorldRepository.ts: examples and the work kept on this device). A server adapter
 // implements the same interface later — the page won't change.
 //
 // Intended server endpoints (protocol v0.4; not implemented; the server owns auth and visibility):

@@ -7,7 +7,7 @@ import type {SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {DEFAULT_COMPOSE_SETTINGS,MAX_INSTRUMENTS,WORK_CONTRACT_VERSION,cleanWorkTitle,isValidInspiration,parseComposeSettings,parseSavedWork} from '@wanwu-v2/contracts/work';
 import {pieceSeconds,planPlayback,withSpan} from '../src/shared/creation/arrangementTiming.ts';
 import {WorkSession} from '../src/shared/creation/workSession.ts';
-import {WorkShelf} from '../src/mocks/workShelf.ts';
+import {WorkShelf} from '../src/shared/creation/workShelf.ts';
 import {clockText,scoreLayout,scorePosition,secondsAt,soundingAt,spanChoices} from '../src/pages/compose/model/scoreLayout.ts';
 import {composeReducer,initialCompose,isShelved,shelfEntry} from '../src/pages/compose/model/composeState.ts';
 import type {ComposeState} from '../src/pages/compose/model/composeState.ts';
@@ -18,12 +18,13 @@ import {isBackgroundBrief,parseBackgroundResult} from '@wanwu-v2/contracts/backg
 import {backgroundBrief,backgroundInput} from '../src/shared/background/backgroundLayer.ts';
 import {offlineBackgroundGenerator,runBackgroundChain} from '../src/shared/background/generator.ts';
 import type {BackgroundGenerator} from '../src/shared/background/generator.ts';
-import {exampleTracks} from '../src/mocks/exampleTracks.ts';
+import {exampleTracks} from './fixtures/exampleTracks.ts';
 import {inspirationMatches} from '../src/shared/inspiration/matches.ts';
 import {rhythmWords,songFeature,textbookTalk} from '../src/shared/inspiration/talk.ts';
 import {isTextbookTrack} from '@wanwu-v2/contracts/textbook';
 import {parseRoute,routeHref} from '../src/app/router.ts';
-import {previewNotes} from '../src/shared/inspiration/rhythmPreview.ts';
+import {PREVIEW_MAX_SECONDS,previewPlan} from '../src/shared/inspiration/rhythmPreview.ts';
+import {textbookTracks} from '../src/shared/inspiration/textbookTracks.ts';
 
 const now=new Date('2026-10-23T08:00:00.000Z');
 const rendering={background:'local-rules' as const,prompt:null,rules:{...RULE_VERSIONS}};
@@ -145,7 +146,8 @@ test('the local background is made from the work: its length, when its sounds pl
  const piece=work({events:[ev('a',0,0,4),ev('b',.5,0,3)],mood:{kind:'custom',text:'像打雷',nearest:'angry'}});
  const input=backgroundInput(piece,{kind:'none'},exampleTracks);
  assert.equal(input.seconds,pieceSeconds(piece));
- assert.deepEqual(input.sounding,[{start:0,end:4},{start:15,end:18}],'the same times the score and the playback use');
+ assert.deepEqual(input.sounding.map(({start,end})=>({start,end})),[{start:0,end:4},{start:15,end:18}],'the same times the score and the playback use');
+ assert.deepEqual(input.sounding.map(({pitch,contour,intensity})=>({pitch,contour,intensity})),[{pitch:'mid',contour:'flat',intensity:'soft'},{pitch:'mid',contour:'flat',intensity:'soft'}],'and how each sound sounds, for the melody\'s answer');
  assert.equal(input.mood,'angry','a custom mood uses the nearest preset');
  assert.equal(input.seed,piece.id);
  const borrowed=backgroundInput(piece,{kind:'textbook',entryId:'tb:mock:lullaby'},exampleTracks);
@@ -284,13 +286,14 @@ test('课本灵感: example rhythm or teaching music; chosen in 万物声场 it 
  assert.deepEqual(session.settings().inspiration,{kind:'none'});
 });
 
-test('textbook rhythm preview: whole bars at the entry’s tempo and metre, a bell on every downbeat',()=>{
- const notes=previewNotes({tempo:60,metre:3});
- const beats=notes.filter(note=>note.voice!=='pad');
- assert.equal(beats.length,6,'two 3-second bars fit in the 8-second preview');
- assert.deepEqual(beats.map(note=>note.voice),['bell','tick','tick','bell','tick','tick']);
- assert.deepEqual(beats.map(note=>note.at),[0,1,2,3,4,5]);
- assert.equal(previewNotes({tempo:120,metre:2}).filter(note=>note.voice==='bell').length,8);
+test('textbook preview: the song\'s own background (its rhythm and key) in whole bars, the drum playing its rhythm',()=>{
+ const bird=textbookTracks[0]!,horn=textbookTracks[1]!;
+ const plan=previewPlan(bird),beat=60/bird.tempoBpm;
+ assert.ok(plan.seconds<=PREVIEW_MAX_SECONDS+1e-9&&plan.seconds>=2*beat*bird.meter);
+ assert.ok(Math.abs(plan.seconds/(beat*bird.meter)-Math.round(plan.seconds/(beat*bird.meter)))<1e-9,'whole bars');
+ const drums=plan.notes.filter(note=>note.part==='rhythm'&&note.at<plan.cadenceAt-1e-9).map(note=>Math.round(note.at/beat*4)/4%bird.meter);
+ assert.deepEqual([...new Set(drums)].sort(),[0,.5,1],'嘀嘀嗒: notes at 0, ½ and 1 of every bar');
+ assert.notEqual(((previewPlan(horn).tonic%12)+12)%12,((plan.tonic%12)+12)%12,'two songs, two keys');
 });
 
 test('the squirrel has something to say after every card control: no textbook, the volume, each shape',()=>{

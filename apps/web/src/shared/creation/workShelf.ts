@@ -1,9 +1,8 @@
-// 作品书架 for this visit: works the child put on the shelf from 万物成曲. In memory only — a refresh empties it, and
-// nothing is uploaded or saved to an account. A server adapter replaces this behind 万物成曲's repository port and the
-// shelf page's port; pages never treat this as saved.
+// 作品书架 for a visitor: works the child put on the shelf from 万物成曲, kept on this device (shared/storage/guestStore.ts
+// saves and restores them). Nothing is uploaded or saved to an account; signed-in teachers use the cloud shelf.
 import {cleanWorkTitle,parseSavedWork} from '@wanwu-v2/contracts/work';
 import type {SavedWork} from '@wanwu-v2/contracts/work';
-import type {ShelfSnapshot} from '../pages/works/services/shelfRepository';
+import type {ShelfSnapshot} from '../../pages/works/services/shelfRepository';
 
 export class WorkShelf{
  private works:SavedWork[]=[];

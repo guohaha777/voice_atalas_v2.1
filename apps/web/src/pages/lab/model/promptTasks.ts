@@ -7,8 +7,8 @@ import type {SoundDimension,SoundKind} from '@wanwu-v2/contracts/sound';
 import type {TextbookTrack,TextbookVariation} from '@wanwu-v2/contracts/textbook';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
 import {hintLines} from '@wanwu-v2/prompts/corpus';
-import {TASKS,buildBackgroundAudio,buildBackgroundNotes,buildMoodWords,buildSoundHint,buildTextbookTalk,buildTextbookWords,buildWorkTalk,
- readBackgroundNotes,readMoodWords,readSoundHint,readTextbookTalk,readTextbookWords,readWorkTalk} from '@wanwu-v2/prompts/tasks';
+import {TASKS,buildBackgroundAudio,buildBackgroundNotes,buildMoodWords,buildSoundHint,buildTextbookFeatures,buildTextbookTalk,buildTextbookWords,buildWorkTalk,
+ readBackgroundNotes,readMoodWords,readSoundHint,readTextbookTalk,readTextbookFeatures,readTextbookWords,readWorkTalk} from '@wanwu-v2/prompts/tasks';
 import type {BuiltPrompt,TaskId} from '@wanwu-v2/prompts/tasks';
 import {backgroundPlan} from '@wanwu-v2/sound-rules/background';
 import {backgroundBrief,backgroundInput} from '../../../shared/background/backgroundLayer';
@@ -72,10 +72,22 @@ export function taskView(id:TaskId,input:PromptLabInput):TaskView{
     check:reply=>{const {repairs,acceptance}=readMoodWords(reply),nearest=acceptance.value?.nearest;
      return {repairs,status:acceptance.status,notes:acceptance.notes,shown:acceptance.value?[`「${text}」→ ${nearest?moodLabels[nearest]:'都不像（null）'}`]:[]};}};
   }
+  case 'textbook-features':{
+   // The lab has no recording: the card's own numbers stand in for the measurement, and no audio is attached.
+   const card=track??tracks[0];
+   if(!card)return empty(promptCopy.notes.needSong);
+   const brief={title:card.title,listenSeconds:0,tempoBpm:card.tempoBpm,meter:card.meter,meterConfidence:1,mode:card.mode,onsetDensity:card.onsetDensity,
+    brightness:card.brightness,candidates:[{cell:card.rhythmCell,bars:1}],fallbackCell:card.rhythmCell,
+    others:tracks.filter(other=>other.id!==card.id).map(other=>({title:other.title,rhythmCell:other.rhythmCell,childLine:other.childLine}))};
+   return {brief,local:[`${card.title}：${moodLabels[card.mood]} · ${card.childLine}`],built:buildTextbookFeatures(brief),note:null,
+    check:reply=>{const {repairs,acceptance}=readTextbookFeatures(reply,brief),value=acceptance.value;
+     return {repairs,status:acceptance.status,notes:acceptance.notes,shown:value?[`[${value.rhythmCell.join(', ')}] · ${value.meter} 拍 · ${value.tempoBpm} BPM`,`${moodLabels[value.mood]} · ${value.childLine??'（这句退回）'}`,value.teacherNote??'（老师说明退回）']:[]};}};
+  }
   case 'textbook-words':{
    const card=track??tracks[0];
    if(!card)return empty(promptCopy.notes.needSong);
-   const {tempoBpm,meter,rhythmCell,onsetDensity,pitchRange,brightness,mode,repetition}=card,brief={tempoBpm,meter,rhythmCell,onsetDensity,pitchRange,brightness,mode,repetition};
+   const {title,tempoBpm,meter,rhythmCell,onsetDensity,pitchRange,brightness,mode,repetition}=card;
+   const brief={title,tempoBpm,meter,rhythmCell,onsetDensity,pitchRange,brightness,mode,repetition,others:tracks.filter(other=>other.id!==card.id)};
    return {brief,local:[`${card.extraction.words==='example'?promptCopy.notes.example:card.title}：${moodLabels[card.mood]} · ${card.childLine}`],built:buildTextbookWords(brief),note:null,
     check:reply=>{const {repairs,acceptance}=readTextbookWords(reply);return {repairs,status:acceptance.status,notes:acceptance.notes,shown:acceptance.value?[`${moodLabels[acceptance.value.mood]} · ${acceptance.value.childLine}`]:[]};}};
   }

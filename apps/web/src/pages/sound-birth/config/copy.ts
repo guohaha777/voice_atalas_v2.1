@@ -60,7 +60,7 @@ export const birthCopy={
   visibility:'可见范围',visibilityLocal:'仅这台设备 · 共享未开放',
   archived:(path:string)=>`记入「${path}」。`,
   privacy:'只写昵称和大致地点，不写真实姓名和具体位置。',
-  sessionOnly:'仅本次打开期间保留',
+  sessionOnly:'保存在这台设备上',
  },
  // Record dialog
  recordDialog:{title:'录一段声音',description:`最长 ${SOUND_SOURCE_MAX_MS/1000} 秒，录好后先听一听再用。`,start:'开始录音',stop:'停止',retake:'重录',use:'用这段声音',starting:'正在打开麦克风…'},

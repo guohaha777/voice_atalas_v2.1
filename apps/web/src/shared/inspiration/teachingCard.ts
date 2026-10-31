@@ -8,10 +8,12 @@
 import {MOODS} from '@wanwu-v2/contracts/arrangement';
 import type {MoodId} from '@wanwu-v2/contracts/arrangement';
 import {TEXTBOOK_CONTRACT_VERSION,isTextbookTrack} from '@wanwu-v2/contracts/textbook';
-import type {Brightness,Density,Metre,TextbookMode,TextbookTrack} from '@wanwu-v2/contracts/textbook';
+import type {Brightness,Density,Level,Metre,TextbookMode,TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import {measure,modelExcerpt,pickMood,pickRhythm} from '@wanwu-v2/music-features';
 import type {Measurement} from '@wanwu-v2/music-features';
 import {pulseLine,teachingLine} from '@wanwu-v2/prompts/corpus';
+import {explainCard,isExplainReply} from '@wanwu-v2/prompts/explain';
+import type {ExplainReply,FactSource} from '@wanwu-v2/prompts/explain';
 
 /** The whole wait, from tapping a file to the card (decided 2026-10-30). */
 export const CARD_BUDGET_MS=15_000;
@@ -25,10 +27,22 @@ export type CardMaker='audio'|'language'|'program';
 /** A teaching-music card: the same feature card textbook songs have, plus the note for teachers and who made it. */
 export type TeachingCard={track:TextbookTrack;teacherNote:string|null;madeBy:CardMaker;
  /** Part of the model's answer was replaced by the program's measurement (its checks said so). */
- partly:boolean};
+ partly:boolean;
+ /** The explanation card's checked sentences from the model (null = all corpus; a card kept before 2026-10-31 has none). */
+ explain?:ExplainReply|null};
+
+/** Where a card's numbers and bar came from, for the teacher's facts line: measured here; the bar is the AI's when it heard it. */
+export const cardSources=(card:Pick<TeachingCard,'madeBy'>):{numbers:FactSource;rhythm:FactSource}=>({numbers:'measured',rhythm:card.madeBy==='audio'?'ai':'measured'});
+/** The same for a song from the catalogue: 课本 when read from the score, 示例 for made-up examples, else measured. */
+export const trackSources=(track:Pick<TextbookTrack,'extraction'>):{numbers:FactSource;rhythm:FactSource}=>{
+ const from:FactSource=track.extraction.numbers==='score'?'textbook':track.extraction.numbers==='example'?'example':'measured';
+ return {numbers:from,rhythm:from};
+};
 /** The request body (the server checks it with @wanwu-v2/prompts isTextbookFeaturesBrief): numbers, candidates, title. */
 export type FeaturesBrief={title:string;listenSeconds:number;tempoBpm:number;meter:Metre;meterConfidence:number;mode:TextbookMode;onsetDensity:Density;
- brightness:Brightness;candidates:{cell:number[];bars:number}[];fallbackCell:number[];others:{title:string;rhythmCell:number[];childLine:string}[]};
+ brightness:Brightness;candidates:{cell:number[];bars:number}[];fallbackCell:number[];others:{title:string;rhythmCell:number[];childLine:string}[];
+ /** For the explanation card's points (@wanwu-v2/prompts/explain), and the card lines other songs use (not to be copied). */
+ pitchRange:{low:number;high:number};repetition:Level;pulse?:'even'|'none';otherLines:string[]};
 export type FeaturesRequest={brief:FeaturesBrief;audio:string};
 /** The server's answer, or null when there is none (offline, not open, failed, too slow). */
 export type AskFeatures=(request:FeaturesRequest,signal:AbortSignal)=>Promise<unknown>;
@@ -66,13 +80,25 @@ export function excerptWav(samples:Float32Array,rate:number,start:number,end:num
  return btoa(binary);
 }
 
-/** What the model is told: the file name as the title, the numbers, the rhythm candidates and the program's pick. */
-export function featuresBrief(name:string,m:Measurement,listenSeconds:number):FeaturesBrief{
+/**
+ * What the model is told: the file name as the title, the numbers, the rhythm candidates and the program's pick, the
+ * features the explanation card's points come from, and the card lines of songs already here.
+ */
+export function featuresBrief(name:string,m:Measurement,listenSeconds:number,otherLines:readonly string[]=[]):FeaturesBrief{
+ const pulse=pulseOf(m);
  return {title:[...name.trim()].slice(0,24).join('')||'教学音乐',listenSeconds,tempoBpm:m.tempoBpm,meter:m.meter,meterConfidence:m.meterConfidence,mode:m.mode,
-  onsetDensity:m.onsetDensity,brightness:m.brightness,candidates:m.candidates.slice(0,8),fallbackCell:pickRhythm(m.candidates,m.meter),others:[]};
+  onsetDensity:m.onsetDensity,brightness:m.brightness,candidates:m.candidates.slice(0,8),fallbackCell:pickRhythm(m.candidates,m.meter),others:[],
+  pitchRange:{...m.pitchRange},repetition:m.repetition,...(pulse?{pulse}:{}),otherLines:otherLines.slice(0,90).map(line=>line.slice(0,60))};
 }
+/** Whether any of a card's explanation came from the model (the page marks it with a small AI bubble). */
+export const madeByAi=(card:Pick<TeachingCard,'explain'>)=>{
+ const e=card.explain;
+ return !!e&&[e.title,e.sound,e.listen,e.move,e.play,e.teacher.listen,e.teacher.move,e.teacher.play].some(Boolean);
+};
+/** The child lines a card shows (听一听 / 动一动 / 玩一玩), so a new card does not copy them. */
+export const cardLines=(card:TeachingCard)=>Object.values(explainCard(card.track,card.explain??null,cardSources(card)).child);
 
-type Reply={rhythmCell:number[];meter:Metre;tempoBpm:number;mood:MoodId;childLine:string|null;teacherNote:string|null;checked:'accepted'|'partly';source:'audio'|'language'};
+type Reply={rhythmCell:number[];meter:Metre;tempoBpm:number;mood:MoodId;childLine:string|null;teacherNote:string|null;checked:'accepted'|'partly';source:'audio'|'language';explain?:unknown};
 const isReply=(value:unknown):value is Reply=>{
  if(!value||typeof value!=='object')return false;
  const raw=value as Record<string,unknown>,text=(field:unknown)=>field===null||field===undefined||typeof field==='string';
@@ -82,7 +108,7 @@ const isReply=(value:unknown):value is Reply=>{
 
 /** Pure: the card from the measurement and the server's answer (null or anything that does not check out = the program's). */
 export function cardFrom(music:{id:string;name:string},m:Measurement,answer:unknown):TeachingCard{
- const program=():TeachingCard=>({track:track(null),teacherNote:null,madeBy:'program',partly:false});
+ const program=():TeachingCard=>({track:track(null),teacherNote:null,madeBy:'program',partly:false,explain:null});
  const track=(reply:Reply|null):TextbookTrack=>{
   const meter=reply?.meter??m.meter,pulse=pulseOf(m),childLine=reply?.childLine?.trim()||(pulse?pulseLine(pulse):teachingLine(meter));
   return {version:TEXTBOOK_CONTRACT_VERSION,id:music.id,title:music.name,source:null,
@@ -94,7 +120,7 @@ export function cardFrom(music:{id:string;name:string},m:Measurement,answer:unkn
  if(!isReply(answer))return program();
  const card=track(answer);
  if(!isTextbookTrack(card))return program();
- return {track:card,teacherNote:answer.teacherNote?.trim()||null,madeBy:answer.source,partly:answer.checked==='partly'};
+ return {track:card,teacherNote:answer.teacherNote?.trim()||null,madeBy:answer.source,partly:answer.checked==='partly',explain:isExplainReply(answer.explain)?answer.explain:null};
 }
 
 /**
@@ -104,7 +130,7 @@ export function cardFrom(music:{id:string;name:string},m:Measurement,answer:unkn
  * `decode` should give MEASURE_RATE (@wanwu-v2/music-features), the rate the measurement was set for.
  */
 export async function makeTeachingCard(music:{id:string;name:string},bytes:ArrayBuffer,decode:(bytes:ArrayBuffer)=>Promise<AudioBuffer>,
- ask:AskFeatures|null,onStage:(stage:CardStage)=>void=()=>{},now:()=>number=()=>performance.now()):Promise<TeachingCard>{
+ ask:AskFeatures|null,onStage:(stage:CardStage)=>void=()=>{},now:()=>number=()=>performance.now(),otherLines:readonly string[]=[]):Promise<TeachingCard>{
  const started=now();onStage('reading');
  const buffer=await decode(bytes),samples=monoOf(buffer),m=measure(samples,buffer.sampleRate);
  if(!m.musical)throw new NotMusicError();
@@ -114,6 +140,6 @@ export async function makeTeachingCard(music:{id:string;name:string},bytes:Array
  if(left<=0)return cardFrom(music,m,null);
  onStage('listening');
  const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),left);
- try{return cardFrom(music,m,await ask({brief:featuresBrief(music.name,m,cut.end-cut.start),audio},abort.signal).catch(()=>null));}
+ try{return cardFrom(music,m,await ask({brief:featuresBrief(music.name,m,cut.end-cut.start,otherLines),audio},abort.signal).catch(()=>null));}
  finally{clearTimeout(timer);}
 }

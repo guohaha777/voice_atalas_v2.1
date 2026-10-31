@@ -56,14 +56,8 @@ dialog.songSheet>.panel{flex:0 1 430px;min-height:0;display:flex;flex-direction:
 .analysingTrack i{position:absolute;inset:0 auto 0 0;width:92%;border-radius:inherit;background:var(--wk-green-text);transform-origin:left;animation:fill linear both;animation-timing-function:cubic-bezier(.2,.7,.3,1)}
 @keyframes fill{from{transform:scaleX(.04)}to{transform:scaleX(1)}}
 /* The card: beat and rhythm, the line for children, the note for teachers, who made it. */
-.teachingCard{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:17px;background:#fff;box-shadow:0 3px 0 var(--wk-line-strong)}
-.teachingCard b{font-size:var(--font-control);font-weight:800;color:var(--wk-ink)}
-.teachingCard p{margin:0;font-size:var(--font-body);font-weight:600;line-height:1.6;color:#56615a}
-.teachingCard .teacherNote{font-size:var(--font-small);color:var(--wk-muted)}
-.teacherNote small{margin-right:6px;padding:0 7px;border-radius:8px;background:var(--wk-soft);font-size:var(--font-caption);font-weight:700}
-.madeBy{font-size:var(--font-caption);font-weight:700;color:var(--wk-green-text)}
 /* On a short screen the tab scrolls; the new pieces keep their height instead of being squeezed. */
-.analysing,.teachingCard{flex-shrink:0}
+.analysing{flex-shrink:0}
 /* 案例 in 课本歌曲 (built-in recordings): the arrow turns down when the explanation is open; the explanation takes a full row. */
 .caseBody{flex-basis:100%;min-width:0;display:flex;flex-direction:column;gap:8px;padding:0 4px 6px}
 .caseListen{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:0;border-radius:999px;background:#fff;color:var(--wk-on-fill);font-size:var(--font-small);font-weight:700;box-shadow:inset 0 0 0 2px var(--wk-lime)}
@@ -85,3 +79,6 @@ button.playDot{padding:0;border:0;cursor:pointer}
 /* 上传歌曲: 加入教学音乐 first, then 再解析一次 / 重新上传 / 取消. */
 .uploadActions{display:flex;flex-wrap:wrap;gap:8px}
 .uploadActions>button{flex:1 1 120px}
+/* The small AI bubble beside a song whose card the model helped write (a speech-bubble tail on its lower left). */
+.entryText em.ai{position:relative;padding:0 7px;border-radius:8px 8px 8px 2px;background:var(--wk-sky);color:#1f5566;letter-spacing:.02em}
+.entries li[data-using] .entryText em.ai{background:var(--wk-sky);color:#1f5566}

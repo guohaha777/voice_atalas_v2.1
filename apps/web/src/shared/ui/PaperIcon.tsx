@@ -59,6 +59,8 @@ const glyphs={
  sound:<><path d="M5 12.4h4.4l6.8-5.6v18.4l-6.8-5.6H5a1.6 1.6 0 0 1-1.6-1.6v-4A1.6 1.6 0 0 1 5 12.4z" fill="currentColor"/><path d="M20.6 12c1.9 2.2 1.9 5.8 0 8M24.6 8.4c3.9 4.4 3.9 10.8 0 15.2" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"/></>,
  muted:<><path d="M5 12.4h4.4l6.8-5.6v18.4l-6.8-5.6H5a1.6 1.6 0 0 1-1.6-1.6v-4A1.6 1.6 0 0 1 5 12.4z" fill="currentColor"/><path d="M20.5 12.5l7 7m0-7-7 7" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"/></>,
  sounds:<path d="M6 14v4M11 10v12M16 6v20M21 10v12M26 14v4" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round"/>,
+ /** 动一动 on the explanation card: a footprint. */
+ step:<><path d="M9.4 15.2c1.6-3 7.6-3.6 10.6.2 2.6 3.3 2.2 9-.6 11.6-2.6 2.4-7 2.2-9.4-.6-2.4-2.9-2.4-8 -.6-11.2z" fill="currentColor"/><ellipse cx="8.2" cy="9.6" rx="2.3" ry="2.7" fill="currentColor"/><ellipse cx="12.6" cy="6.4" rx="2.4" ry="2.9" fill="currentColor"/><ellipse cx="17.8" cy="6.2" rx="2.3" ry="2.8" fill="currentColor"/><ellipse cx="22.2" cy="9.2" rx="2.1" ry="2.5" fill="currentColor"/></>,
  volume:<><path d="M5 12.4h4.4l6.8-5.6v18.4l-6.8-5.6H5a1.6 1.6 0 0 1-1.6-1.6v-4A1.6 1.6 0 0 1 5 12.4z" fill="currentColor"/><path d="M20.6 12c1.9 2.2 1.9 5.8 0 8M24.6 8.4c3.9 4.4 3.9 10.8 0 15.2" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"/></>,
  plus:<path d="M16 6.5v19M6.5 16h19" fill="none" stroke="currentColor" strokeWidth="3.6" strokeLinecap="round"/>,
  pause:<><rect x="8" y="7" width="6" height="18" rx="2.6" fill="currentColor"/><rect x="18" y="7" width="6" height="18" rx="2.6" fill="currentColor"/></>,

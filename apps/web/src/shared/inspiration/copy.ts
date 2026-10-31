@@ -14,6 +14,8 @@ export const inspirationCopy={
  tabs:{examples:'教学音乐',upload:'上传歌曲'},
  /** A song uploaded on this device, listed under 教学音乐 after the system songs. */
  mine:'我的',
+ /** The small bubble beside a song whose card the model helped write. */
+ ai:'AI',aiTitle:'这张卡的讲解由 AI 听过音乐后写的',
  example:'示例',
  catalogueNote:'现在是几首示例歌曲，课本曲库还没有开放。',
  use:'用这个',using:'正在用',none:'先不用',done:'好了',
@@ -31,17 +33,14 @@ export const inspirationCopy={
   off:'AI 没接通，卡片由程序听出来。',
   /** While the card is made: reading = decoding and measuring on this device, listening = the AI hears the excerpt. */
   analysing:{reading:'正在读这段音乐…',listening:'AI 正在听这段音乐…'},
-  card:(metre:string,rhythm:string|null)=>rhythm?`${metre} · 节奏「${rhythm}」`:metre,
-  noteLabel:'给老师',
-  madeBy:{audio:'AI 听过这段音乐',language:'AI 只看了数字，节奏是程序听的',program:'AI 没接通，这张卡是程序听出来的'},
-  partly:'有一部分是程序测的',
-  /** A free-rhythm card is the program's on purpose: the AI's task is about a beat, which it does not have. */
-  freeMadeBy:'没有固定拍子，这张卡由程序听出来',
 
   errors:{'not-audio':'这不是音频文件，换一个试试。','too-large':'文件太大了（最大 10MB）。','unreadable':'这段音频读不出来，换一个试试。'},
   /** The precheck found almost no steady pitch: no teaching card. */
   notMusic:'这段听起来像普通声音，不像音乐。可以拿去声音诞生做声音素材。',
  },
+ /** 讲解卡 (./ExplainCardView.tsx): who it is for, the row labels, the rhythm bar read aloud. */
+ explain:{readers:'讲给谁听',child:'给孩子',teacher:'给老师',childRows:{listen:'听一听',move:'动一动',play:'玩一玩'},teacherRows:{listen:'听',move:'动',play:'玩'},
+  bar:(said:string)=>`节奏：${said}`},
  /** One line describing the current choice, for the cards that open the dialog. */
  summary:(value:Inspiration,entries:readonly TextbookTrack[])=>{
   if(value.kind==='textbook'){const entry=entries.find(item=>item.id===value.entryId);return entry?`借了「${entry.title}」的节奏`:'课本节奏';}

@@ -22,7 +22,7 @@ import {MEASURE_RATE} from '@wanwu-v2/music-features';
 import {decodeAudio} from '../audio/loadAudio';
 import {newId} from '../creation/ids';
 import type {KeyValue} from '../storage/guestStore';
-import {NotMusicError,makeTeachingCard} from './teachingCard';
+import {NotMusicError,cardLines,makeTeachingCard} from './teachingCard';
 import type {AskFeatures,CardStage,TeachingCard} from './teachingCard';
 
 /** Only the file size is limited (10 MB); any length is accepted (decided 2026-10-30). */
@@ -150,7 +150,9 @@ export class TeachingMusicStore{
   stage('reading');
   try{
    // Decoded at the rate the measurement was set for (MEASURE_RATE), whatever the file's own rate.
-   const card=await makeTeachingCard({id,name:item.name},await item.blob.arrayBuffer(),bytes=>decodeAudio(bytes,MEASURE_RATE),ask,stage);
+   // The lines of the songs already in 教学音乐: the model may not copy them.
+   const others=[...this.items.values()].flatMap(other=>other.id!==id&&other.confirmed&&other.card?cardLines(other.card):[]);
+   const card=await makeTeachingCard({id,name:item.name},await item.blob.arrayBuffer(),bytes=>decodeAudio(bytes,MEASURE_RATE),ask,stage,undefined,others);
    const current=this.items.get(id);if(!current)return;
    this.items.set(id,{...current,card,analysing:null});this.persist(id);
   }catch(error){

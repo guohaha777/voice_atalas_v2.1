@@ -1,6 +1,5 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {ReactNode} from 'react';
-import {beatName,rhythmWords,songFeature} from '@wanwu-v2/prompts/corpus';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
 import {audioSupported} from '../audio/audioContext';
@@ -14,7 +13,8 @@ import {MIX_RULES} from '@wanwu-v2/sound-rules/rules';
 import {INSPIRATION_TABS,openingTab} from './tabs';
 import type {InspirationTab,InspirationVariant} from './tabs';
 import {useBuiltInTeaching} from './builtInTeaching';
-import {CARD_BUDGET_MS} from './teachingCard';
+import {ExplainCardView} from './ExplainCardView';
+import {CARD_BUDGET_MS,cardSources,madeByAi,trackSources} from './teachingCard';
 import type {TeachingCard} from './teachingCard';
 import {teachingMusic} from './teachingMusic';
 import type {PickResult,TeachingItem} from './teachingMusic';
@@ -125,14 +125,14 @@ export function InspirationDialog({value,entries,variant='full',initialTab,teach
       return <SongRowView key={entry.id} track={entry} url={recording?.url??null} tags={<>{!entry.source&&<em>{copy.example}</em>}{recording&&<em>{copy.cases.tag}</em>}</>}
        open={opened.open===entry.id} onToggle={()=>opened.toggle(entry.id)} listening={listening}
        using={value.kind==='textbook'&&value.entryId===entry.id} onUse={()=>{onChange({kind:'textbook',entryId:entry.id});onClose();}}>
-       <div className={styles.teachingCard}><p>{songFeature(entry)}</p></div>
+       <ExplainCardView track={entry} reply={null} sources={trackSources(entry)}/>
       </SongRowView>;
      })}
-     {mine.map(item=><SongRowView key={item.id} track={item.card!.track} url={item.url} tags={<em>{copy.mine}</em>}
+     {mine.map(item=><SongRowView key={item.id} track={item.card!.track} url={item.url} tags={<MineTags card={item.card!}/>}
       open={opened.open===item.id} onToggle={()=>opened.toggle(item.id)} listening={listening}
       using={value.kind==='teaching-music'&&value.musicId===item.id}
       onUse={()=>{onChange({kind:'teaching-music',musicId:item.id,name:item.name,durationMs:item.durationMs});onClose();}}>
-      <div className={styles.teachingCard}><p>{songFeature(item.card!.track)}</p></div>
+      <ExplainCardView track={item.card!.track} reply={item.card!.explain??null} sources={cardSources(item.card!)}/>
      </SongRowView>)}
     </ul>
    </>:<TeachingMusicPanel open={teachingOpen} items={teachingItems} listening={listening} onAnalyse={onAnalyse}
@@ -145,15 +145,14 @@ export function InspirationDialog({value,entries,variant='full',initialTab,teach
  </WorkSheet>;
 }
 
-/** A teaching-music card: its beat and rhythm, the line for children, the note for teachers, and who made it. */
+/** An upload's card: the explanation card. */
 function CardView({card}:{card:TeachingCard}){
- const {track}=card;
- return <div className={styles.teachingCard}>
-  <b>{copy.upload.card(beatName(track),track.pulse==='none'?null:rhythmWords(track.rhythmCell))}</b>
-  <p>{track.childLine}</p>
-  {card.teacherNote&&<p className={styles.teacherNote}><small>{copy.upload.noteLabel}</small>{card.teacherNote}</p>}
-  <small className={styles.madeBy}>{track.pulse==='none'&&card.madeBy==='program'?copy.upload.freeMadeBy:copy.upload.madeBy[card.madeBy]}{card.partly&&`（${copy.upload.partly}）`}</small>
- </div>;
+ return <ExplainCardView track={card.track} reply={card.explain??null} sources={cardSources(card)}/>;
+}
+
+/** Beside an upload's name: 我的, and a small AI bubble when the model wrote part of its card (nothing when the program did). */
+function MineTags({card}:{card:TeachingCard}){
+ return <><em>{copy.mine}</em>{madeByAi(card)&&<em className={styles.ai} title={copy.aiTitle}>{copy.ai}</em>}</>;
 }
 
 /**
@@ -184,7 +183,7 @@ function TeachingMusicPanel({open,items,listening,onAnalyse,onAdded}:{open:boole
    <span className={styles.analysingTrack} aria-hidden="true"><i style={{animationDuration:`${CARD_BUDGET_MS}ms`}}/></span>
   </div>}
   {item?.card&&<ul className={styles.entries}>
-   <SongRowView track={item.card.track} url={item.url} tags={<em>{copy.mine}</em>} open={cardOpen} onToggle={()=>setCardOpen(current=>!current)} listening={listening}>
+   <SongRowView track={item.card.track} url={item.url} tags={<MineTags card={item.card}/>} open={cardOpen} onToggle={()=>setCardOpen(current=>!current)} listening={listening}>
     <CardView card={item.card}/>
    </SongRowView>
   </ul>}

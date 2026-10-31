@@ -23,7 +23,10 @@ export const inspirationCopy={
  /** 案例: a textbook song with a built-in recording (听原曲 in its explanation). */
  cases:{tag:'案例',listen:'听原曲'},
  upload:{
-  pick:'上传一首歌曲',repick:'换一首',
+  pick:'上传一首歌曲',repick:'重新上传',
+  /** After the card: the song joins 教学音乐 only on 加入教学音乐; 再解析一次 makes the card again; 取消 lets it go. */
+  confirm:'加入教学音乐',reanalyse:'再解析一次',cancel:'取消',
+  already:(name:string)=>`「${name}」已经在教学音乐里了。`,
   hint:'请老师选一段课堂上唱的歌。',
   off:'AI 没接通，卡片由程序听出来。',
   /** While the card is made: reading = decoding and measuring on this device, listening = the AI hears the excerpt. */

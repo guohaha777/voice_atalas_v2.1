@@ -33,13 +33,16 @@ const KEY='teaching:';
 
 /** Picked on this device; `url` is a local object URL for listening. */
 export type LocalTeachingMusic={id:string;name:string;durationMs:number;bytes:number;url:string};
-export type PickResult={status:'picked';music:LocalTeachingMusic}|{status:'not-audio'|'too-large'|'unreadable'};
+/** `already`: the same file is in 教学音乐 already (confirmed before). */
+export type PickResult={status:'picked'|'already';music:LocalTeachingMusic}|{status:'not-audio'|'too-large'|'unreadable'};
 /**
  * A piece with its card: `analysing` while the card is being made (with the stage), `failed` when it could not be read
- * (`unreadable`) or is not music (`not-music`: the precheck found almost no steady pitch).
+ * (`unreadable`) or is not music (`not-music`: the precheck found almost no steady pitch). An upload is `confirmed`
+ * once the teacher has looked at its card and added it to 教学音乐; until then it waits in 上传歌曲 (one at a time).
  */
-export type TeachingItem=LocalTeachingMusic&{card:TeachingCard|null;analysing:CardStage|null;failed:false|'unreadable'|'not-music'};
-type Kept={music:Omit<LocalTeachingMusic,'url'>;blob:Blob;card:TeachingCard|null;at:number};
+export type TeachingItem=LocalTeachingMusic&{card:TeachingCard|null;analysing:CardStage|null;failed:false|'unreadable'|'not-music';confirmed:boolean};
+/** `confirmed` missing = kept before uploads needed confirming: it was already listed. */
+type Kept={music:Omit<LocalTeachingMusic,'url'>;blob:Blob;card:TeachingCard|null;at:number;confirmed?:boolean};
 
 /** Reads the length from the file's own metadata (no decoding of the whole file). */
 function readDuration(url:string){
@@ -63,8 +66,8 @@ export class TeachingMusicStore{
  private changed(){this.snapshot=[...this.items.values()].sort((a,b)=>b.at-a.at).map(({blob:_blob,at:_at,...item})=>item);for(const listener of this.listeners)listener();}
  private persist(id:string){
   const item=this.items.get(id);if(!this.kept||!item)return;
-  const {url:_url,card,blob,at,analysing:_a,failed:_f,...music}=item;
-  void this.kept.set(KEY+id,{music,blob,card,at} satisfies Kept).catch(()=>{});
+  const {url:_url,card,blob,at,confirmed,analysing:_a,failed:_f,...music}=item;
+  void this.kept.set(KEY+id,{music,blob,card,at,confirmed} satisfies Kept).catch(()=>{});
  }
 
  /** Brings back the pieces kept on this device (once, at start). Storage that fails is skipped. */
@@ -75,7 +78,7 @@ export class TeachingMusicStore{
     if(!key.startsWith(KEY))continue;
     const value=await kept.get(key) as Kept|undefined;
     if(!value?.blob||!value.music?.id||this.items.has(value.music.id))continue;
-    this.items.set(value.music.id,{...value.music,url:URL.createObjectURL(value.blob),blob:value.blob,card:value.card??null,analysing:null,failed:false,at:value.at??0});
+    this.items.set(value.music.id,{...value.music,url:URL.createObjectURL(value.blob),blob:value.blob,card:value.card??null,analysing:null,failed:false,at:value.at??0,confirmed:value.confirmed??true});
    }
    this.changed();
   }catch{/* nothing kept, or storage unavailable */}
@@ -88,16 +91,18 @@ export class TeachingMusicStore{
   const name=(file.name??'').replace(/\.[^.]+$/,'').slice(0,24)||'教学音乐';
   const known=[...this.items.values()].find(item=>item.name===name&&item.bytes===file.size);
   if(known){
-   this.items.set(known.id,{...known,at:Date.now()});this.persist(known.id);this.changed();
-   const {blob:_blob,at:_at,card:_card,analysing:_analysing,failed:_failed,...music}=known;
-   return {status:'picked',music};
+   if(!known.confirmed){this.dropPending(known.id);this.items.set(known.id,{...known,at:Date.now()});this.persist(known.id);this.changed();}
+   const {blob:_blob,at:_at,card:_card,analysing:_analysing,failed:_failed,confirmed,...music}=known;
+   return {status:confirmed?'already':'picked',music};
   }
   const url=URL.createObjectURL(file);
   try{
    const durationMs=Math.round(await readDuration(url));
    if(durationMs<=0){URL.revokeObjectURL(url);return {status:'unreadable'};}
    const music={id:newId('teaching'),name,durationMs,bytes:file.size,url};
-   this.items.set(music.id,{...music,blob:file,card:null,analysing:null,failed:false,at:Date.now()});
+   // One upload waits for confirming at a time: a new one replaces the one before.
+   this.dropPending();
+   this.items.set(music.id,{...music,blob:file,card:null,analysing:null,failed:false,at:Date.now(),confirmed:false});
    for(const old of [...this.items.values()].sort((a,b)=>b.at-a.at).slice(KEEP)){
     this.items.delete(old.id);URL.revokeObjectURL(old.url);void this.kept?.delete(KEY+old.id).catch(()=>{});
    }
@@ -113,6 +118,29 @@ export class TeachingMusicStore{
    return this.pick(Object.assign(new Blob([blob],{type:blob.type.startsWith('audio/')?blob.type:'audio/mpeg'}),{name}));
   }catch{return {status:'unreadable'};}
  }
+
+ /** The upload waiting in 上传歌曲 (picked, not yet added to 教学音乐), if any. */
+ pending(){return this.snapshot.find(item=>!item.confirmed)??null;}
+ /** 确认: the upload joins 教学音乐 (only once it has its card). */
+ confirm(id:string){
+  const item=this.items.get(id);if(!item?.card||item.confirmed)return;
+  this.items.set(id,{...item,confirmed:true,at:Date.now()});this.persist(id);this.changed();
+ }
+ /** 取消: the upload is let go, file and card (only one not yet confirmed). */
+ remove(id:string){
+  const item=this.items.get(id);if(!item||item.confirmed)return;
+  this.forget(id);this.changed();
+ }
+ /** 再解析一次: the card is made again from the file. */
+ reanalyse(id:string){
+  const item=this.items.get(id);if(!item||item.analysing||item.confirmed)return;
+  this.items.set(id,{...item,card:null,failed:false});this.persist(id);this.changed();
+ }
+ private forget(id:string){
+  const item=this.items.get(id);if(!item)return;
+  this.items.delete(id);URL.revokeObjectURL(item.url);void this.kept?.delete(KEY+id).catch(()=>{});
+ }
+ private dropPending(keep?:string){for(const item of [...this.items.values()])if(!item.confirmed&&item.id!==keep)this.forget(item.id);}
 
  /** Makes the piece's card once (again only after a failure); `ask` reaches the server, null = the program alone. */
  async analyse(id:string,ask:AskFeatures|null){

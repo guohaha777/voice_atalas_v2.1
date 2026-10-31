@@ -78,3 +78,10 @@ dialog.songSheet>.panel{flex:0 1 430px;min-height:0;display:flex;flex-direction:
  .entryText small{line-height:var(--line-body)}
 }
 @media(--reduced-motion){.analysingTrack i{animation:none;transform:scaleX(.5);opacity:.6}}
+/* A row is two buttons: the play dot plays, the rest opens or closes the explanation (looks as the one button did). */
+button.playDot{padding:0;border:0;cursor:pointer}
+.playDot[aria-pressed=true]{background:var(--wk-sun-fill);box-shadow:0 0 0 4px #ffe57666}
+.entryOpen{flex:1;min-width:0;display:flex;align-self:stretch;align-items:center;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+/* 上传歌曲: 加入教学音乐 first, then 再解析一次 / 重新上传 / 取消. */
+.uploadActions{display:flex;flex-wrap:wrap;gap:8px}
+.uploadActions>button{flex:1 1 120px}

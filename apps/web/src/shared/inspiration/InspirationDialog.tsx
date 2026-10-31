@@ -1,4 +1,5 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
+import type {ReactNode} from 'react';
 import {beatName,rhythmWords,songFeature} from '@wanwu-v2/prompts/corpus';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
@@ -13,29 +14,27 @@ import {MIX_RULES} from '@wanwu-v2/sound-rules/rules';
 import {INSPIRATION_TABS,openingTab} from './tabs';
 import type {InspirationTab,InspirationVariant} from './tabs';
 import {useBuiltInTeaching} from './builtInTeaching';
-import type {BuiltInTeaching} from './builtInTeaching';
 import {CARD_BUDGET_MS} from './teachingCard';
 import type {TeachingCard} from './teachingCard';
 import {teachingMusic} from './teachingMusic';
-import type {LocalTeachingMusic,PickResult,TeachingItem} from './teachingMusic';
+import type {PickResult,TeachingItem} from './teachingMusic';
 import styles from './InspirationDialog.module.css';
 
 export type {InspirationTab,InspirationVariant} from './tabs';
 
 /**
  * One thing sounds at a time in the dialog: a song's preview (rendered in the browser: its background, or only its beat
- * in 万物声场), a 案例's recording with its beat (听原曲, ./originalBeat.ts) or the picked teaching music (a local file).
+ * in 万物声场), or a recording with its beat (听原曲, ./originalBeat.ts: a 案例's, or a song uploaded on this device).
  * Tapping what plays stops it; switching tabs or closing the dialog stops everything.
  */
 function useListening(variant:InspirationVariant){
  const [playing,setPlaying]=useState<string|null>(null);
- const player=useMemo(()=>new SequencePlayer(key=>setPlaying(current=>key??(current?.startsWith('music:')?current:null))),[]);
- const audio=useRef<HTMLAudioElement|null>(null);
+ const player=useMemo(()=>new SequencePlayer(key=>setPlaying(key)),[]);
  const previews=useRef(new Map<string,Promise<AudioBuffer>>());
  // A tap while a recording is still loading wins: the load that finishes later does not start.
  const asked=useRef(0);
- const stop=()=>{asked.current++;player.stop();audio.current?.pause();setPlaying(null);};
- useEffect(()=>()=>{player.stop();audio.current?.pause();},[player]);
+ const stop=()=>{asked.current++;player.stop();setPlaying(null);};
+ useEffect(()=>()=>player.stop(),[player]);
  const entry=async(item:TextbookTrack)=>{
   const key=`entry:${item.id}`;
   if(playing===key)return stop();
@@ -57,66 +56,45 @@ function useListening(variant:InspirationVariant){
    await player.play(key,[{at:0,buffer:made.original},{at:made.beatAt,buffer:made.beat,layer:'beat'}],MIX_RULES.childGain,{layers:{beat:made.beatGain},limiter:MIX_RULES.limiter});
   }catch{if(asked.current===ask)setPlaying(null);}
  };
- const music=(item:LocalTeachingMusic)=>{
-  const key=`music:${item.id}`;
-  if(playing===key)return stop();
-  stop();
-  const element=audio.current??new Audio();audio.current=element;
-  element.onended=()=>setPlaying(null);element.src=item.url;
-  setPlaying(key);void element.play().catch(()=>setPlaying(null));
- };
- return {playing,entry,original,music,stop};
+ return {playing,entry,original,stop};
 }
 
 type Listening=ReturnType<typeof useListening>;
 
 /**
- * One song: tap the row to hear it (again to stop) — the tap also opens its explanation (its beat, rhythm and feel, from
- * the song's card — no model call), and for a 案例 (a built-in recording of the song) 听原曲; 用这个 chooses it.
+ * One row of 教学音乐 (and the upload waiting in 上传歌曲): the play button plays the song's beat or background preview
+ * (again to stop); tapping the rest of the row opens or closes its explanation — only one is open at a time — where 听原曲
+ * plays the recording with its beat. 用这个 chooses it.
  */
-function SongRow({entry,recording,value,listening,onChange,onClose}:{entry:TextbookTrack;recording?:BuiltInTeaching;value:Inspiration;listening:Listening;onChange:(next:Inspiration)=>void;onClose:()=>void}){
- const [open,setOpen]=useState(false);
- const using=value.kind==='textbook'&&value.entryId===entry.id;
- const sounding=listening.playing===`entry:${entry.id}`,playingOriginal=!!recording&&listening.playing===`original:${entry.id}`;
+function SongRowView({track,url,tags,open,onToggle,listening,using,onUse,children}:{track:TextbookTrack;url:string|null;tags:ReactNode;open:boolean;
+ onToggle:()=>void;listening:Listening;using?:boolean;onUse?:()=>void;children:ReactNode}){
+ const sounding=listening.playing===`entry:${track.id}`,playingOriginal=!!url&&listening.playing===`original:${track.id}`;
  // The explanation is open: get 听原曲 ready (the recording is loaded and measured once).
- useEffect(()=>{if(open&&recording&&audioSupported())void originalWithBeat(entry,recording.url).catch(()=>{});},[open,recording,entry]);
+ useEffect(()=>{if(open&&url&&audioSupported())void originalWithBeat(track,url).catch(()=>{});},[open,url,track]);
  return <li data-using={using||undefined}>
-  <button type="button" className={styles.entryPlay} aria-pressed={sounding} aria-expanded={open} aria-label={`${sounding?copy.stopListen:copy.listen}「${entry.title}」`}
-   onClick={()=>{setOpen(true);void listening.entry(entry);}}>
-   <span className={styles.playDot}><Glyph name={sounding?'stop':'play'}/></span>
-   <span className={styles.entryText}><b>{entry.title}{!entry.source&&<em>{copy.example}</em>}{recording&&<em>{copy.cases.tag}</em>}</b><small>{copy.feel(entry)}</small></span>
-  </button>
-  <button type="button" className={styles.use} aria-pressed={using} onClick={()=>{onChange({kind:'textbook',entryId:entry.id});onClose();}}>{using?copy.using:copy.use}</button>
+  <div className={styles.entryPlay}>
+   <button type="button" className={styles.playDot} aria-pressed={sounding} aria-label={`${sounding?copy.stopListen:copy.listen}「${track.title}」`}
+    onClick={()=>void listening.entry(track)}><Glyph name={sounding?'stop':'play'}/></button>
+   <button type="button" className={styles.entryOpen} aria-expanded={open} onClick={onToggle}>
+    <span className={styles.entryText}><b>{track.title}{tags}</b><small>{copy.feel(track)}</small></span>
+   </button>
+  </div>
+  {onUse&&<button type="button" className={styles.use} aria-pressed={using} onClick={onUse}>{using?copy.using:copy.use}</button>}
   {open&&<div className={styles.caseBody}>
-   <div className={styles.teachingCard}><p>{songFeature(entry)}</p></div>
-   {recording&&<button type="button" className={styles.caseListen} aria-pressed={playingOriginal} onClick={()=>void listening.original(entry,recording.url)}><Glyph name={playingOriginal?'stop':'play'}/>{playingOriginal?copy.stopListen:copy.cases.listen}</button>}
+   {children}
+   {url&&<button type="button" className={styles.caseListen} aria-pressed={playingOriginal} onClick={()=>void listening.original(track,url)}><Glyph name={playingOriginal?'stop':'play'}/>{playingOriginal?copy.stopListen:copy.cases.listen}</button>}
   </div>}
  </li>;
 }
 
-/**
- * A song uploaded on this device, once it has its card: listed under 教学音乐 after the system songs. Tap the row to hear
- * the recording (again to stop) and open its card; 用这个 chooses it.
- */
-function MySongRow({item,card,value,listening,onChange,onClose}:{item:TeachingItem;card:TeachingCard;value:Inspiration;listening:Listening;onChange:(next:Inspiration)=>void;onClose:()=>void}){
- const [open,setOpen]=useState(false);
- const using=value.kind==='teaching-music'&&value.musicId===item.id;
- const sounding=listening.playing===`music:${item.id}`;
- return <li data-using={using||undefined}>
-  <button type="button" className={styles.entryPlay} aria-pressed={sounding} aria-expanded={open} aria-label={`${sounding?copy.stopListen:copy.listen}「${item.name}」`}
-   onClick={()=>{setOpen(true);listening.music(item);}}>
-   <span className={styles.playDot}><Glyph name={sounding?'stop':'play'}/></span>
-   <span className={styles.entryText}><b>{item.name}<em>{copy.mine}</em></b><small>{copy.feel(card.track)}</small></span>
-  </button>
-  <button type="button" className={styles.use} aria-pressed={using} onClick={()=>{onChange({kind:'teaching-music',musicId:item.id,name:item.name,durationMs:item.durationMs});onClose();}}>{using?copy.using:copy.use}</button>
-  {open&&<div className={styles.caseBody}><CardView card={card}/></div>}
- </li>;
-}
+/** Which row of 教学音乐 is open (one at a time; tapping it again closes it). */
+type Opened={open:string|null;toggle:(id:string)=>void};
 
 /**
- * 课本灵感: 教学音乐 lists the system songs and then the songs uploaded on this device; 上传歌曲 uploads one. One dialog for both pages: in 万物声场 (`beat`) a song lends
- * only its beat, so 听一听 plays the beat; in 万物成曲 (`full`) its background. Teaching music stays on this device and
- * gets a feature card within about 15 s (./teachingCard.ts); with it, the page borrows the music like a song.
+ * 课本灵感: 教学音乐 lists the system songs and then the songs added from this device; 上传歌曲 uploads one, shows its card
+ * and waits for 加入教学音乐. One dialog for both pages: in 万物声场 (`beat`) a song lends only its beat, so the play
+ * button plays the beat; in 万物成曲 (`full`) its background. Uploads stay on this device and get a feature card within
+ * about 15 s (./teachingCard.ts); with it, the page borrows the music like a song.
  */
 export function InspirationDialog({value,entries,variant='full',initialTab,teachingOpen=false,teachingItems=[],onAnalyse=()=>{},onChange,onClose}:{value:Inspiration;entries:readonly TextbookTrack[];
  variant?:InspirationVariant;
@@ -126,9 +104,12 @@ export function InspirationDialog({value,entries,variant='full',initialTab,teach
  initialTab?:InspirationTab;
  /** Whether teaching music can be analysed (the server is connected); until then the tab says it is not open. */
  teachingOpen?:boolean;onChange:(next:Inspiration)=>void;onClose:()=>void}){
- const [tab,setTab]=useState<InspirationTab>(initialTab??openingTab(value));
+ const [tab,setTab]=useState<InspirationTab>(initialTab??openingTab(teachingItems.some(item=>!item.confirmed)));
+ const [open,setOpen]=useState<string|null>(null);
+ const opened:Opened={open,toggle:id=>setOpen(current=>current===id?null:id)};
  const listening=useListening(variant);
  const builtIns=useBuiltInTeaching();
+ const mine=teachingItems.filter(item=>item.confirmed&&item.card);
  return <WorkSheet title={copy.title} description={variant==='beat'?copy.beatDescription:copy.description} className={styles.songSheet} onClose={onClose}>
   <div className={styles.tabs} role="tablist" data-count={INSPIRATION_TABS.length}>
    {INSPIRATION_TABS.map(id=><button key={id} type="button" role="tab" aria-selected={tab===id} onClick={()=>{listening.stop();setTab(id);}}>
@@ -139,10 +120,23 @@ export function InspirationDialog({value,entries,variant='full',initialTab,teach
    {tab==='examples'?<>
     <p className={styles.note}><Glyph name="lock"/>{copy.catalogueNote}</p>
     <ul className={styles.entries}>
-     {entries.map(entry=><SongRow key={entry.id} entry={entry} recording={builtIns.find(item=>item.name===entry.title)} value={value} listening={listening} onChange={onChange} onClose={onClose}/>)}
-     {teachingItems.map(item=>item.card&&<MySongRow key={item.id} item={item} card={item.card} value={value} listening={listening} onChange={onChange} onClose={onClose}/>)}
+     {entries.map(entry=>{
+      const recording=builtIns.find(item=>item.name===entry.title);
+      return <SongRowView key={entry.id} track={entry} url={recording?.url??null} tags={<>{!entry.source&&<em>{copy.example}</em>}{recording&&<em>{copy.cases.tag}</em>}</>}
+       open={opened.open===entry.id} onToggle={()=>opened.toggle(entry.id)} listening={listening}
+       using={value.kind==='textbook'&&value.entryId===entry.id} onUse={()=>{onChange({kind:'textbook',entryId:entry.id});onClose();}}>
+       <div className={styles.teachingCard}><p>{songFeature(entry)}</p></div>
+      </SongRowView>;
+     })}
+     {mine.map(item=><SongRowView key={item.id} track={item.card!.track} url={item.url} tags={<em>{copy.mine}</em>}
+      open={opened.open===item.id} onToggle={()=>opened.toggle(item.id)} listening={listening}
+      using={value.kind==='teaching-music'&&value.musicId===item.id}
+      onUse={()=>{onChange({kind:'teaching-music',musicId:item.id,name:item.name,durationMs:item.durationMs});onClose();}}>
+      <div className={styles.teachingCard}><p>{songFeature(item.card!.track)}</p></div>
+     </SongRowView>)}
     </ul>
-   </>:<TeachingMusicPanel value={value} open={teachingOpen} items={teachingItems} onAnalyse={onAnalyse} onChange={onChange}/>}
+   </>:<TeachingMusicPanel open={teachingOpen} items={teachingItems} listening={listening} onAnalyse={onAnalyse}
+    onAdded={id=>{listening.stop();setOpen(id);setTab('examples');}}/>}
   </div>
   <div className={sheetStyles.actions}>
    <button type="button" className={sheetStyles.secondary} onClick={()=>{onChange({kind:'none'});onClose();}}>{copy.none}</button>
@@ -162,33 +156,46 @@ function CardView({card}:{card:TeachingCard}){
  </div>;
 }
 
-/** 上传歌曲: only the upload area — pick a file, then its card (being made, made, or why it could not be read). */
-function TeachingMusicPanel({value,open,items,onAnalyse,onChange}:{value:Inspiration;open:boolean;items:readonly TeachingItem[];onAnalyse:(musicId:string)=>void;onChange:(next:Inspiration)=>void}){
- const [pickedId,setPickedId]=useState<string|null>(value.kind==='teaching-music'?value.musicId:null);
- const [error,setError]=useState<Exclude<PickResult['status'],'picked'>|null>(null);
+/**
+ * 上传歌曲: pick a file; while its card is made, the progress; then the song as a row like 教学音乐's (play, open, 听原曲)
+ * with its card, and 加入教学音乐 / 再解析一次 / 重新上传 / 取消. Only 加入教学音乐 puts it in the list.
+ */
+function TeachingMusicPanel({open,items,listening,onAnalyse,onAdded}:{open:boolean;items:readonly TeachingItem[];listening:Listening;
+ onAnalyse:(musicId:string)=>void;onAdded:(id:string)=>void}){
+ const [error,setError]=useState<Exclude<PickResult['status'],'picked'|'already'>|null>(null);
+ const [already,setAlready]=useState<string|null>(null);
+ const [cardOpen,setCardOpen]=useState(true);
  const input=useRef<HTMLInputElement>(null);
- const item=items.find(entry=>entry.id===pickedId)??null;
- // A piece without its card (just picked, or closed before it was done) gets one now.
+ const item=items.find(entry=>!entry.confirmed)??null;
+ // A piece without its card (just picked, made again, or closed before it was done) gets one now.
  useEffect(()=>{if(item&&!item.card&&!item.analysing&&!item.failed)onAnalyse(item.id);},[item,onAnalyse]);
- const picked=(result:PickResult)=>{
-  if(result.status!=='picked'){setError(result.status);return;}
-  setError(null);setPickedId(result.music.id);
-  onChange({kind:'teaching-music',musicId:result.music.id,name:result.music.name,durationMs:result.music.durationMs});
- };
  const pick=async(file:File|undefined)=>{
   if(!file)return;
-  picked(await teachingMusic.pick(file));
+  listening.stop();
+  const result=await teachingMusic.pick(file);
+  setAlready(result.status==='already'?result.music.name:null);
+  setError(result.status==='picked'||result.status==='already'?null:result.status);setCardOpen(true);
  };
  return <div className={styles.upload}>
   <input ref={input} type="file" accept="audio/*" hidden onChange={event=>{void pick(event.target.files?.[0]);event.target.value='';}}/>
-  {!item&&<p className={styles.hint}>{copy.upload.hint}</p>}
+  {!item&&<p className={styles.hint}>{already?copy.upload.already(already):copy.upload.hint}</p>}
   {item?.analysing&&<div className={styles.analysing} role="status">
    <span>{copy.upload.analysing[item.analysing]}</span>
    <span className={styles.analysingTrack} aria-hidden="true"><i style={{animationDuration:`${CARD_BUDGET_MS}ms`}}/></span>
   </div>}
-  {item?.card&&<CardView card={item.card}/>}
+  {item?.card&&<ul className={styles.entries}>
+   <SongRowView track={item.card.track} url={item.url} tags={<em>{copy.mine}</em>} open={cardOpen} onToggle={()=>setCardOpen(current=>!current)} listening={listening}>
+    <CardView card={item.card}/>
+   </SongRowView>
+  </ul>}
   {item?.failed&&<p className={styles.error} role="alert">{item.failed==='not-music'?copy.upload.notMusic:copy.upload.errors.unreadable}</p>}
-  <button type="button" className={styles.pick} onClick={()=>input.current?.click()}><Glyph name="upload"/>{item?copy.upload.repick:copy.upload.pick}</button>
+  {item?<div className={styles.uploadActions}>
+   {item.card&&<button type="button" className={styles.use} onClick={()=>{teachingMusic.confirm(item.id);onAdded(item.id);}}>{copy.upload.confirm}</button>}
+   {(item.card||item.failed==='unreadable')&&<button type="button" className={styles.pick} onClick={()=>{listening.stop();teachingMusic.reanalyse(item.id);}}>{copy.upload.reanalyse}</button>}
+   <button type="button" className={styles.pick} onClick={()=>input.current?.click()}><Glyph name="upload"/>{copy.upload.repick}</button>
+   <button type="button" className={styles.pick} onClick={()=>{listening.stop();teachingMusic.remove(item.id);}}>{copy.upload.cancel}</button>
+  </div>
+  :<button type="button" className={styles.pick} onClick={()=>input.current?.click()}><Glyph name="upload"/>{copy.upload.pick}</button>}
   {error&&<p className={styles.error} role="alert">{copy.upload.errors[error]}</p>}
   {!open&&<p className={styles.note}><Glyph name="lock"/>{copy.upload.off}</p>}
  </div>;

@@ -78,12 +78,11 @@ test('the prompt lab has its own address next to the tuning lab',()=>{
  assert.deepEqual(parseRoute('/lab/sound-rules'),{page:'lab'});
 });
 
-test('课本灵感 has two pages on both pages — 课本歌曲 and 教学音乐 — and opens on teaching music when that is chosen',async()=>{
+test('课本灵感 has two pages on both pages — 教学音乐 and 上传歌曲 — and opens on 上传歌曲 while an upload waits',async()=>{
  const {INSPIRATION_TABS,openingTab}=await import('../src/shared/inspiration/tabs.ts');
  assert.deepEqual(INSPIRATION_TABS,['examples','upload']);
- assert.equal(openingTab({kind:'teaching-music',musicId:'m',name:'歌',durationMs:1000}),'upload');
- assert.equal(openingTab({kind:'textbook',entryId:'tb:mock:lullaby'}),'examples');
- assert.equal(openingTab({kind:'none'}),'examples');
+ assert.equal(openingTab(true),'upload','an upload waits for 加入教学音乐');
+ assert.equal(openingTab(false),'examples');
  const page=readFileSync(new URL('../src/pages/sound-world/SoundWorldPage.tsx',import.meta.url),'utf8');
  assert.match(page,/<InspirationDialog variant="beat"/);
 });

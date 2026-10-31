@@ -38,13 +38,16 @@ export const composeCopy={
  // Length
  spanTitle:'想听多久？',
  spanOptions:{20:'短一点',30:'刚刚好',45:'长一点'} satisfies Record<SpanSeconds,string>,
- spanReal:(seconds:string)=>`实际 ${seconds} 秒`,
  spanTooShort:'放不下',
- spanNote:'和声场的长度是同一个；最后的声音会完整唱完。',
+ spanNote:'和声场的长度是同一个；最多多唱 5 秒，再长就剪掉。',
  // Inspiration
  inspirationTitle:'课本灵感',inspirationOptional:'（可跳过）',
  inspirationLead:'让背景跟着课本歌曲的节奏走。',
- inspirationNone:'先不用',inspirationTextbook:'跟着课本',
+ /** Choose / change the song (opens 课本灵感), and the 课本 switch shared with 万物声场. */
+ inspirationPick:'选课本歌曲',inspirationChange:'换课本歌曲',
+ inspirationToggle:'课本开关：打开就用选好的课本歌曲做背景',
+ inspirationSwitchOff:'课本开关关着，打开就用它做背景。',
+ inspirationAiPlays:'现在播的是 AI 配曲，打开课本开关就换回它。',
  inspirationTeachingWait:'正在听这段音乐，听完背景就跟着它走。',
  inspirationBackgroundOff:'背景关着，打开背景音乐才听得到。',
  // Background

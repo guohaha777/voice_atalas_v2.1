@@ -5,7 +5,7 @@ import type {Inspiration} from '@wanwu-v2/contracts/work';
 import {audioSupported} from '../audio/audioContext';
 import {SequencePlayer} from '../audio/SequencePlayer';
 import {Glyph} from '../ui/PaperIcon';
-import {WorkSheet,sheetStyles} from '../ui/WorkSheet';
+import {WorkSheet} from '../ui/WorkSheet';
 import {inspirationCopy as copy} from './copy';
 import {renderRhythmPreview} from './rhythmPreview';
 import {originalWithBeat} from './originalBeat';
@@ -110,6 +110,8 @@ export function InspirationDialog({value,entries,variant='full',initialTab,teach
  const listening=useListening(variant);
  const builtIns=useBuiltInTeaching();
  const mine=teachingItems.filter(item=>item.confirmed&&item.card);
+ /** The chosen row is the one in use (正在用): tapping it again lets it go (the dialog stays open); 用这个 chooses and closes. */
+ const choose=(using:boolean,next:Inspiration)=>{if(using){onChange({kind:'none'});return;}onChange(next);onClose();};
  return <WorkSheet title={copy.title} description={variant==='beat'?copy.beatDescription:copy.description} className={styles.songSheet} onClose={onClose}>
   <div className={styles.tabs} role="tablist" data-count={INSPIRATION_TABS.length}>
    {INSPIRATION_TABS.map(id=><button key={id} type="button" role="tab" aria-selected={tab===id} onClick={()=>{listening.stop();setTab(id);}}>
@@ -124,23 +126,19 @@ export function InspirationDialog({value,entries,variant='full',initialTab,teach
       const recording=builtIns.find(item=>item.name===entry.title);
       return <SongRowView key={entry.id} track={entry} url={recording?.url??null} tags={<>{!entry.source&&<em>{copy.example}</em>}{recording&&<em>{copy.cases.tag}</em>}</>}
        open={opened.open===entry.id} onToggle={()=>opened.toggle(entry.id)} listening={listening}
-       using={value.kind==='textbook'&&value.entryId===entry.id} onUse={()=>{onChange({kind:'textbook',entryId:entry.id});onClose();}}>
+       using={value.kind==='textbook'&&value.entryId===entry.id} onUse={()=>choose(value.kind==='textbook'&&value.entryId===entry.id,{kind:'textbook',entryId:entry.id})}>
        <ExplainCardView track={entry} reply={null} sources={trackSources(entry)}/>
       </SongRowView>;
      })}
      {mine.map(item=><SongRowView key={item.id} track={item.card!.track} url={item.url} tags={<MineTags card={item.card!}/>}
       open={opened.open===item.id} onToggle={()=>opened.toggle(item.id)} listening={listening}
       using={value.kind==='teaching-music'&&value.musicId===item.id}
-      onUse={()=>{onChange({kind:'teaching-music',musicId:item.id,name:item.name,durationMs:item.durationMs});onClose();}}>
+      onUse={()=>choose(value.kind==='teaching-music'&&value.musicId===item.id,{kind:'teaching-music',musicId:item.id,name:item.name,durationMs:item.durationMs})}>
       <ExplainCardView track={item.card!.track} reply={item.card!.explain??null} sources={cardSources(item.card!)}/>
      </SongRowView>)}
     </ul>
    </>:<TeachingMusicPanel open={teachingOpen} items={teachingItems} listening={listening} onAnalyse={onAnalyse}
     onAdded={id=>{listening.stop();setOpen(id);setTab('examples');}}/>}
-  </div>
-  <div className={sheetStyles.actions}>
-   <button type="button" className={sheetStyles.secondary} onClick={()=>{onChange({kind:'none'});onClose();}}>{copy.none}</button>
-   <button type="button" className={sheetStyles.primary} onClick={onClose}>{copy.done}</button>
   </div>
  </WorkSheet>;
 }

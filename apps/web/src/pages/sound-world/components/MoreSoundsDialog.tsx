@@ -29,7 +29,8 @@ export function MoreSoundsDialog({world,initial,onMakeNew,onClose}:{world:SoundW
  // A sound already in the work keeps its marker; one not yet added shows the marker it would get.
  const work=world.state.arrangement,nextIndex=work?nextMarkerIndex(work):0;
  const markerOf=(id:string)=>work?.units.find(unit=>unit.id===id)?.markerIndex??nextIndex;
- return <WorkSheet title={copy.title} description={copy.description} onClose={onClose}>
+ // Only the list of sounds scrolls; the title, tabs and note stay in place.
+ return <WorkSheet title={copy.title} description={copy.description} className={styles.sheet} onClose={onClose}>
   <div className={styles.tabs} role="tablist" aria-label={copy.title}>
    {libraryScopes.map(item=><button key={item} type="button" role="tab" id={`scope-${item}`} aria-selected={scope===item} aria-controls="scope-panel"
     onClick={()=>setScope(item)}>{copy.scopes[item]}</button>)}

@@ -87,7 +87,7 @@ export function ComposePage({onNavigate}:{onNavigate:(path:string)=>void}){
    <FooterBar compose={compose} onSave={requestSave} onBack={()=>onNavigate('/world')} onAgain={again}/>
   </main>
   {dialog==='save'&&<SaveDialog compose={compose} onClose={()=>setDialog(null)}/>}
-  {typeof dialog==='object'&&dialog&&<InspirationDialog value={compose.state.settings.inspiration} entries={compose.entries} initialTab={dialog.textbook} teachingOpen={compose.teachingOpen} teachingItems={compose.teachingItems} onAnalyse={compose.analyseTeaching} onChange={compose.setInspiration} onClose={()=>setDialog(null)}/>}
+  {typeof dialog==='object'&&dialog&&<InspirationDialog value={compose.state.settings.inspiration} entries={compose.entries} initialTab={dialog.textbook} teachingOpen={compose.teachingOpen} teachingItems={compose.teachingItems} onAnalyse={compose.analyseTeaching} onChange={compose.setInspiration} onClose={()=>{compose.applyChosenSong();setDialog(null);}}/>}
   {dialog==='again'&&<AgainDialog onClose={()=>setDialog(null)} onSave={()=>setDialog(compose.canSave()?'save':null)} onDiscard={()=>void startAgain()}/>}
  </div>;
 }

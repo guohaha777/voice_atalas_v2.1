@@ -11,7 +11,7 @@ export const worldCopy={
  paletteTitle:'选一个声音',listen:'试听',stop:'停',example:'示例',placedTimes:(count:number)=>`放了 ${count} 次`,
  more:'找更多声音',
  inspiration:'课本灵感',
- backgroundToggle:'拍子开关：听的时候带上课本歌曲的拍子',
+ backgroundToggle:'课本开关：打开就用选好的课本歌曲（声场里带拍子，万物成曲跟着它）',
  // Field
  fieldLabel:'声场',rowName:(row:number)=>`第 ${row} 行`,
  // Invisible layout reference only: preserve the pre-removal spacing at every font/viewport size.

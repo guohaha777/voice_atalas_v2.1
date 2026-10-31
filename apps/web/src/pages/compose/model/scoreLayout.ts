@@ -40,7 +40,7 @@ export function scoreLayout(arrangement:Arrangement):ScoreLayout{
  };
 }
 
-/** The three lengths with how long the piece would really last at each (a sound may run past the end). */
+/** The three lengths with how long the piece would really last at each (a last sound may run a little past the end). */
 export function spanChoices(arrangement:Arrangement):{seconds:SpanSeconds;real:number}[]{
  return SPAN_CHOICES.map(seconds=>({seconds,real:pieceSeconds({...arrangement,spanSeconds:seconds})}));
 }

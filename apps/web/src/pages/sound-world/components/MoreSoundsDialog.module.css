@@ -19,3 +19,9 @@
 .scopeAdd:active:not(:disabled){transform:scale(.95)}
 .makeNew{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;margin-top:12px;border:0;border-radius:999px;background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift);font-size:var(--font-body);font-weight:800}
 .makeNew svg{width:20px;height:20px}
+/* Only the list of sounds scrolls (wheel, touch): the sheet itself holds still, its title, tabs and note stay in place. */
+dialog.sheet[open]{display:flex;flex-direction:column;overflow:hidden}
+dialog.sheet>*{flex-shrink:0}
+dialog.sheet .scopePanel{flex:0 1 auto;min-height:0;display:flex;flex-direction:column}
+dialog.sheet .scopePanel>*{flex-shrink:0}
+dialog.sheet .scopeList{flex:0 1 auto;min-height:120px;overflow-y:auto;overscroll-behavior:contain}

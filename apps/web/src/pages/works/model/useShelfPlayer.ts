@@ -57,7 +57,7 @@ export function useShelfPlayer(instruments:readonly Instrument[],tracks:readonly
     if(under)voices.push({at:0,buffer:under,layer:'background'});
    }
    if(mine!==token.current)return;
-   await player.play(work.id,voices,MIX_RULES.childGain,{length:total,layers:{background:background.volume*MIX_RULES.backgroundMaxGain},limiter:MIX_RULES.limiter});
+   await player.play(work.id,voices,MIX_RULES.childGain,{length:total,layers:{background:background.volume*MIX_RULES.backgroundMaxGain},limiter:MIX_RULES.limiter,fadeOut:MIX_RULES.ending.fadeSeconds});
   }catch(reason){if(mine===token.current){const failure=soundFailure(reason);if(failure)onFailure(failure);}}
   finally{if(mine===token.current)setPreparing(null);}
  };

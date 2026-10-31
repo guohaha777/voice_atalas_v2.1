@@ -13,7 +13,7 @@ import {composeReducer,initialCompose,isShelved,shelfEntry} from '../src/pages/c
 import type {ComposeState} from '../src/pages/compose/model/composeState.ts';
 import {findDiscoveries} from '../src/shared/talk/discoveries.ts';
 import {backgroundPlan} from '@wanwu-v2/sound-rules/background';
-import {RULE_VERSIONS} from '@wanwu-v2/sound-rules/rules';
+import {MIX_RULES,RULE_VERSIONS} from '@wanwu-v2/sound-rules/rules';
 import {isBackgroundBrief,parseBackgroundResult} from '@wanwu-v2/contracts/background';
 import {backgroundBrief,backgroundInput} from '../src/shared/background/backgroundLayer.ts';
 import {offlineBackgroundGenerator,runBackgroundChain} from '../src/shared/background/generator.ts';
@@ -48,12 +48,23 @@ test('the score is derived from the field arrangement: same order, start times, 
  assert.deepEqual(layout.ticks.map(tick=>tick.seconds),[0,10,20,30]);
 });
 
-test('a sound outlasting the chosen length makes the piece longer, marked — never cut',()=>{
+test('a last sound may run a little past the chosen length: the piece grows by at most the overrun, marked',()=>{
  const arrangement=work({events:[ev('a',.9,0,6)]});
+ assert.equal(MIX_RULES.ending.overrunSeconds,5);
  assert.equal(pieceSeconds(arrangement),33);
  const layout=scoreLayout(arrangement);
  assert.equal(layout.totalSeconds,33);assert.equal(layout.spanMark,30/33);
  assert.deepEqual(spanChoices(arrangement).map(choice=>[choice.seconds,choice.real]),[[20,24],[30,33],[45,46.5]]);
+});
+
+test('what would sound past the overrun is cut — only what is heard; the clip stays as placed',()=>{
+ const arrangement=work({events:[ev('a',.9,0,12)]});
+ assert.equal(pieceSeconds(arrangement),35,'30 s + 5 s at most');
+ const [item]=scoreLayout(arrangement).items;
+ assert.equal(item!.seconds,8);assert.equal(item!.end,35);
+ assert.deepEqual(spanChoices(arrangement).map(choice=>[choice.seconds,choice.real]),[[20,25],[30,35],[45,50]]);
+ assert.equal(arrangement.events[0]!.clip.endMs,12000,'the child\'s excerpt is not changed');
+ assert.equal(backgroundInput(arrangement,{kind:'none'},[]).seconds,35,'the background is as long as the piece');
 });
 
 test('playhead, progress bar and highlights share one time: positions invert, sounding follows start/end',()=>{

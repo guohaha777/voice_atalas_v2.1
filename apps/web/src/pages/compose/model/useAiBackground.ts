@@ -91,6 +91,8 @@ export function useAiBackground(arrangement:Arrangement|null,settings:ComposeSet
   kept,
   /** Back to the local background (a song was chosen: one or the other). */
   useLocal:()=>setUsing(false),
+  /** The AI background again when this piece has one (the song was let go); otherwise the local one plays. */
+  preferAi:()=>setUsing(true),
   /** Switch between the AI background (when one is ready) and the local one. */
   toggle:()=>{if(result)setUsing(current=>!current);}};
 }

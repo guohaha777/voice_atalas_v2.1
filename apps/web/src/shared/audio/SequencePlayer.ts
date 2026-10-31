@@ -5,11 +5,11 @@ export type SequenceVoice={at:number;buffer:AudioBuffer;layer?:string};
 /** A limiter on the sum (numbers from the mix rules), so layered sounds never clip. */
 export type Limiter={thresholdDb:number;kneeDb:number;ratio:number;attackSeconds:number;releaseSeconds:number};
 /**
- * `from`: start this many seconds into the sequence (resume / seek). `length`: how long the sequence lasts, when it
- * should run past its last sound (silence keeps the clock going until then). `layers`: starting gain per layer.
- * `limiter`: put a limiter on the sum.
+ * `from`: start this many seconds into the sequence (resume / seek). `length`: how long the sequence lasts — silence
+ * keeps the clock going until then, and anything still sounding then is cut. `layers`: starting gain per layer.
+ * `limiter`: put a limiter on the sum. `fadeOut`: with `length`, everything fades out over these last seconds.
  */
-export type SequenceOptions={from?:number;length?:number;layers?:Record<string,number>;limiter?:Limiter};
+export type SequenceOptions={from?:number;length?:number;layers?:Record<string,number>;limiter?:Limiter;fadeOut?:number};
 type Playing={key:string;nodes:AudioBufferSourceNode[];master:GainNode;limiter:DynamicsCompressorNode|null;layers:Map<string,GainNode>;startedAt:number;from:number;duration:number;remaining:number};
 
 /**
@@ -21,7 +21,7 @@ export class SequencePlayer{
  private current:Playing|null=null;
  private onChange:(key:string|null)=>void;
  constructor(onChange:(key:string|null)=>void){this.onChange=onChange;}
- async play(key:string,voices:readonly SequenceVoice[],gain=1,{from=0,length,layers={},limiter}:SequenceOptions={}){
+ async play(key:string,voices:readonly SequenceVoice[],gain=1,{from=0,length,layers={},limiter,fadeOut=0}:SequenceOptions={}){
   this.stop();
   if(!voices.length)return;
   const duration=length??Math.max(...voices.map(voice=>voice.at+voice.buffer.duration));
@@ -44,6 +44,12 @@ export class SequencePlayer{
   };
   // A short lead keeps the first sound from being clipped while the graph starts.
   const startedAt=ctx.currentTime+.04;
+  // With a length the sequence ends there: what still sounds is cut, after a short fade so it does not click.
+  const endAt=startedAt+Math.max(0,duration-start);
+  if(length!==undefined&&fadeOut>0){
+   const fadeFrom=Math.max(startedAt,endAt-fadeOut);
+   master.gain.setValueAtTime(gain,fadeFrom);master.gain.linearRampToValueAtTime(0,endAt);
+  }
   const playing:Playing={key,nodes:[],master,limiter:limit,layers:layerNodes,startedAt,from:start,duration,remaining:0};
   const finish=()=>{if(this.current!==playing)return;if(--playing.remaining===0){this.release(playing);this.current=null;this.onChange(null);}};
   for(const voice of voices){
@@ -51,11 +57,12 @@ export class SequencePlayer{
    if(voice.at+voice.buffer.duration<=start)continue;
    const node=ctx.createBufferSource();node.buffer=voice.buffer;node.connect(output(voice.layer));
    node.onended=finish;
-   node.start(startedAt+Math.max(0,voice.at-start),Math.max(0,start-voice.at));playing.nodes.push(node);
+   node.start(startedAt+Math.max(0,voice.at-start),Math.max(0,start-voice.at));if(length!==undefined)node.stop(endAt);
+   playing.nodes.push(node);
   }
   // A silent end mark keeps the sequence (and its clock) alive until `duration`, even after the last sound.
   const end=ctx.createBufferSource();end.buffer=ctx.createBuffer(1,1,ctx.sampleRate);end.connect(master);
-  end.onended=finish;end.start(startedAt+Math.max(0,duration-start));playing.nodes.push(end);
+  end.onended=finish;end.start(endAt);playing.nodes.push(end);
   playing.remaining=playing.nodes.length;
   this.current=playing;this.onChange(key);
  }

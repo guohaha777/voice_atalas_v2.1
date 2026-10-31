@@ -5,7 +5,7 @@ import {SPAN_CHOICES,eventsInOrder} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement,PlacedEvent,SourceClip,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import type {SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {heardSeconds,unitOf} from '@wanwu-v2/audio-engine/timeline';
-export {heardSeconds,unitOf,planPlayback,timedEvents,pieceSeconds} from '@wanwu-v2/audio-engine/timeline';
+export {heardSeconds,heardInPiece,cutSeconds,soundsEnd,unitOf,planPlayback,timedEvents,pieceSeconds} from '@wanwu-v2/audio-engine/timeline';
 export type {PlannedEvent,TimedEvent} from '@wanwu-v2/audio-engine/timeline';
 
 /** Room a marker takes on either side of its start, in field units (keeps markers and names apart). */

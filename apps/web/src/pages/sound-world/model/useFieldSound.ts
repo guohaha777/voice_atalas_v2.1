@@ -6,7 +6,7 @@ import type {ChosenShape,SoundAnalysis,SoundUnitDraft} from '@wanwu-v2/contracts
 import {audioSupported} from '../../../shared/audio/audioContext';
 import {SequencePlayer} from '../../../shared/audio/SequencePlayer';
 import {originalGainOf} from '../../../shared/audio/soundAnalysis';
-import {pieceSeconds} from '../../../shared/creation/arrangementTiming';
+import {cutSeconds,pieceSeconds} from '../../../shared/creation/arrangementTiming';
 import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds';
 import {WorkSoundBank,soundFailure} from '../../../shared/creation/workSounds';
 import {eventOf,planPlayback,unitOf} from './soundWorldState';
@@ -99,11 +99,15 @@ export function useFieldSound(latest:RefObject<SoundWorldState>,dispatch:Dispatc
    // The beat is its own layer: if it cannot be made, the child's sounds still play.
    const under=layer.enabled?await layer.buffer(work).catch(()=>{notify('background-failed');return null;}):null;
    if(mine!==token.current)return;
-   timeline.current=plan.map((item,index)=>({eventId:item.eventId,start:item.startSeconds,end:item.startSeconds+sounds[index]!.duration}));
+   // Nothing is heard past where the piece stops (the chosen length plus a little, mix rules `ending`).
+   const cut=cutSeconds(work);
+   timeline.current=plan.map((item,index)=>({eventId:item.eventId,start:item.startSeconds,end:Math.min(cut,item.startSeconds+sounds[index]!.duration)}));
    const voices=plan.map((item,index)=>({at:item.startSeconds,buffer:sounds[index]!}));
-   // With the beat, the whole chosen length plays (the beat ends there); without it, until the last sound.
+   // With the beat, the whole chosen length plays (the beat ends there); without it, until the last sound — either way
+   // a sound still going where the piece stops is cut there.
+   const lastEnd=Math.max(0,...timeline.current.map(item=>item.end));
    await player.play('all',under?[...voices,{at:0,buffer:under,layer:'background'}]:voices,MIX_RULES.childGain,
-    {length:under?pieceSeconds(work):undefined,layers:{background:layer.gain},limiter:MIX_RULES.limiter});
+    {length:under?pieceSeconds(work):lastEnd,layers:{background:layer.gain},limiter:MIX_RULES.limiter,fadeOut:MIX_RULES.ending.fadeSeconds});
   }catch(reason){if(mine===token.current)report(reason);}
   finally{if(mine===token.current)setPreparing(null);}
  };

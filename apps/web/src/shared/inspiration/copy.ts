@@ -18,7 +18,7 @@ export const inspirationCopy={
  ai:'AI',aiTitle:'这张卡的讲解由 AI 听过音乐后写的',
  example:'示例',
  catalogueNote:'现在是几首示例歌曲，课本曲库还没有开放。',
- use:'用这个',using:'正在用',none:'先不用',done:'好了',
+ use:'用这个',using:'正在用',
  listen:'听一听',stopListen:'停止',
  /** The second line of a song: its beat and what it is like. */
  feel:(track:TextbookTrack)=>`${beatName(track)} · ${track.childLine}`,

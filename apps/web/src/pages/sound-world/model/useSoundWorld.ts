@@ -13,7 +13,7 @@ import type {LibraryScope,SoundWorldRepository} from '../services/soundWorldRepo
 import type {MoodInterpreter} from '../services/moodInterpreter';
 import {eventOf,initialSoundWorld,nudge,placedClip,rowEndSpot,soundWorldReducer,spanHolds,unitOf} from './soundWorldState';
 import type {NoticeKey} from './soundWorldState';
-import {beatSwitch} from '../../../shared/storage/beatSwitch';
+import {textbookSwitch} from '../../../shared/inspiration/textbookSwitch';
 import {useBeatLayer} from './useBeatLayer';
 import {useFieldSound} from './useFieldSound';
 import {useMood} from './useMood';
@@ -31,8 +31,8 @@ export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,r
  const notify=useCallback((key:NoticeKey,tone:'info'|'error'='error')=>dispatch({type:'notice',notice:{tone,key}}),[]);
  // 课本灵感 is kept with the work for 万物成曲 (the same settings); it never moves a sound.
  const [settings,setSettingsState]=useState<ComposeSettings>(DEFAULT_COMPOSE_SETTINGS);
- // The beat switch beside 课本灵感 is 万物声场's own (on this device), apart from 万物成曲's 背景 switch.
- const [beatOn,setBeatOn]=useState(beatSwitch.get);
+ // The switch beside 课本灵感 is the one 万物成曲 reads too (on this device): here it plays the chosen song's beat.
+ const [beatOn,setBeatOn]=useState(textbookSwitch.get);
  // 课本灵感: the same songs as 万物成曲 (shared/inspiration); here a song lends only its beat.
  const {entries,tracks,teachingItems,analyseTeaching,teachingOpen}=useInspirationCatalog(inspirations,teaching);
  // Teaching music lends its beat too, once its card is made.
@@ -48,11 +48,15 @@ export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,r
   return()=>{live=false;};
  },[repository]);
  const saveSettings=(next:ComposeSettings)=>{setSettingsState(next);void repository.saveSettings(next);};
- /** A new song changes the beat (or takes it away): a running full playback stops (like any edit). */
- const setInspiration=(next:Inspiration)=>{stopAll();saveSettings({...settings,inspiration:next});dispatch({type:'said',lastAction:'inspiration'});};
- /** The switch beside 课本灵感: turns the song's beat on or off here (万物成曲's 背景 switch is not touched). */
+ const switchTo=(on:boolean)=>{setBeatOn(on);textbookSwitch.set(on);};
+ /** A new song changes the beat (or takes it away): a running full playback stops (like any edit). Choosing a song
+  *  turns the 课本 switch on; letting it go turns it off. */
+ const setInspiration=(next:Inspiration)=>{stopAll();switchTo(next.kind!=='none');saveSettings({...settings,inspiration:next});dispatch({type:'said',lastAction:'inspiration'});};
+ /** Closing 课本灵感 with a song chosen: the chosen song is the one in use, so the switch goes on. */
+ const applyChosenSong=()=>{if(settings.inspiration.kind!=='none'&&!beatOn){stopAll();switchTo(true);}};
+ /** The 课本 switch beside 课本灵感 (shared with 万物成曲): the song's beat here, the song's background there. */
  const setBackgroundEnabled=(enabled:boolean)=>{
-  stopAll();setBeatOn(enabled);beatSwitch.set(enabled);
+  stopAll();switchTo(enabled);
   dispatch({type:'said',lastAction:enabled?'background-on':'background-off'});
  };
 
@@ -143,7 +147,7 @@ export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,r
   addUnit:(unit:SoundUnitDraft)=>{stopAll();dispatch({type:'add-unit',unit,now:new Date()});},
   clearEvents:()=>{stopAll();dispatch({type:'clear-events',now:new Date()});},
   scope:(scope:LibraryScope)=>repository.scope(scope),
-  inspiration:settings.inspiration,inspirationEntries:entries,setInspiration,teachingOpen,teachingItems,analyseTeaching,
+  inspiration:settings.inspiration,inspirationEntries:entries,setInspiration,applyChosenSong,teachingOpen,teachingItems,analyseTeaching,
   backgroundEnabled:beatOn,setBackgroundEnabled,
   /** The chosen song (its beat plays while the switch is on), or null. */
   beatTrack:beat.track,beatOn:beat.enabled,

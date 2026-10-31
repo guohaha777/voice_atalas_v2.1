@@ -74,7 +74,7 @@ export function usePiecePlayback(latest:RefObject<ComposeState>,notify:(key:Comp
    if(under)voices.push({at:0,buffer:under,layer:'background'});
    const at=from==='continue'?player.elapsed()??positionRef.current:from;
    halt();
-   await player.play(PIECE,voices,MIX_RULES.childGain,{from:at,length:total,layers:{background:latestGain.current},limiter:MIX_RULES.limiter});
+   await player.play(PIECE,voices,MIX_RULES.childGain,{from:at,length:total,layers:{background:latestGain.current},limiter:MIX_RULES.limiter,fadeOut:MIX_RULES.ending.fadeSeconds});
    setClock(at);setEnded(false);
   }catch(reason){if(mine===token.current){const failure=soundFailure(reason);if(failure)notify(failure);}}
   finally{if(mine===token.current)setPreparing(false);}

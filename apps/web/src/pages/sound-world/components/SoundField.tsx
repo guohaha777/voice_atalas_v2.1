@@ -7,7 +7,7 @@ import {Glyph} from '../../../shared/ui/PaperIcon';
 import {worldCopy} from '../config/copy';
 import {secondsText} from '../model/clipEditing';
 import {FIELD_INSET,spotPosition,timePosition} from '../model/fieldGeometry';
-import {MARKER_HALF,canRemoveRow,eventOf,heardSeconds,minSpan,unitOf} from '../model/soundWorldState';
+import {MARKER_HALF,canRemoveRow,eventOf,heardInPiece,minSpan,unitOf} from '../model/soundWorldState';
 import type {DragState,useFieldDrag} from '../model/useFieldDrag';
 import type {FieldSpot,SoundWorld} from '../model/useSoundWorld';
 import {EventToolbar} from './EventToolbar';
@@ -85,10 +85,11 @@ export function SoundField({world,area,locate,drag,bind,onTrim}:Props){
     {/* Length tails sit under the markers: a bar as long as the sound is heard, on the same seconds scale as the ruler. */}
     {arrangement.events.map(event=>{
      const unit=unitOf(arrangement,event.unitId);if(!unit)return null;
-     const seconds=heardSeconds(unit,event),length=seconds/spanSeconds;
+     const seconds=heardInPiece(arrangement,unit,event),length=seconds/spanSeconds;
      const selected=selectedEvent?.id===event.id,dragging=drag?.item.kind==='event'&&drag.item.eventId===event.id;
      // The length reads on the tail when the tail clears the marker; a short sound shows it beside the name instead.
-     // A sound that outlasts the field is cut off at the edge with a fade (it still plays in full).
+     // Seconds as heard: a sound is cut where the piece stops (the field's length plus a little, mix rules `ending`).
+     // One that outlasts the field is drawn to the edge with a fade.
      const onTail=length>MARKER_HALF*2.4,position=spotPosition(event,rows),overflow=event.at+length>1;
      return <button key={event.id} type="button" data-tail className={styles.tail} data-marker={markerFor(unit.markerIndex).id}
       data-selected={selected||undefined} data-sounding={world.sounding.has(event.id)||undefined} data-dragging={dragging||undefined} data-overflow={overflow||undefined}
@@ -104,7 +105,7 @@ export function SoundField({world,area,locate,drag,bind,onTrim}:Props){
      {arrangement.events.map(event=>{
       const unit=unitOf(arrangement,event.unitId);if(!unit)return null;
       const selected=selectedEvent?.id===event.id,dragging=drag?.item.kind==='event'&&drag.item.eventId===event.id;
-      const seconds=heardSeconds(unit,event),short=seconds/spanSeconds<=MARKER_HALF*2.4;
+      const seconds=heardInPiece(arrangement,unit,event),short=seconds/spanSeconds<=MARKER_HALF*2.4;
       return <li key={event.id} className={styles.placed} style={spotPosition(event,rows)} data-selected={selected||undefined}
        data-sounding={world.sounding.has(event.id)||undefined} data-dragging={dragging||undefined}>
        <button type="button" data-event className={styles.placedButton} aria-pressed={selected}

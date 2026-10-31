@@ -21,7 +21,7 @@ export const guideLines={
  // (chords, key, the song's rhythm, the mood's colour) is heard in 万物成曲.
  beatOn:(title:string,metre:string)=>`拍子开啦：跟着「${title}」的${metre}摆吧。`,
  beatNoSong:'先在课本灵感里选一首歌，才有拍子哦。',
- beatOff:'拍子关啦，现在只听自己的声音。',
+ beatOff:'课本关啦，声场没有拍子，万物成曲也不跟课本。',
  inspirationSong:(title:string,metre:string)=>`跟着「${title}」的${metre}摆吧！完整的音乐到万物成曲去听。`,
  /** A free-rhythm song (散板, 山歌): it has no beat to play. */
  freeSong:(title:string)=>`「${title}」没有固定的拍子，跟着感觉摆吧。`,

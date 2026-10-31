@@ -26,20 +26,13 @@
 .spanOption{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;padding:4px;border:0;border-radius:17px;background:#fff;color:var(--wk-ink);box-shadow:var(--wk-key);transition:box-shadow .15s,background .25s,transform .15s var(--wk-ease)}
 .spanOption b{font-size:var(--font-subtitle);font-weight:800;font-variant-numeric:tabular-nums}
 .spanOption small{font-size:var(--font-label);font-weight:600;color:var(--wk-muted)}
-.spanOption small[data-longer]{color:var(--wk-sun-deep)}
 .spanOption:hover{transform:translateY(-2px);box-shadow:var(--wk-key-lg)}
 .spanOption[aria-checked=true]{background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift);transform:translateY(-1px)}
-.spanOption[aria-checked=true] small,.spanOption[aria-checked=true] small[data-longer]{color:#3f4f16}
+.spanOption[aria-checked=true] small{color:#3f4f16}
 .spanOption:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wk-line-strong)}
 /* Too short for the longest sound: greyed and flat, still tappable so the squirrel can say why. */
 .spanOption[aria-disabled=true]{background:var(--wk-soft);color:#b4baa9;box-shadow:none;cursor:not-allowed;transform:none}
 .spanOption[aria-disabled=true] small{color:#b4baa9}
-/* The button row sits at the bottom; the card's spare height stays under the lead. */
-.choiceRow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:5px;border-radius:20px;background:var(--wk-field);box-shadow:var(--wk-inset)}
-.choiceRow button{min-width:0;overflow-wrap:anywhere;position:relative;min-height:44px;padding:0 4px;border:0;border-radius:15px;background:#fff;color:var(--wk-ink-soft);font-size:var(--font-body);font-weight:700;white-space:nowrap;box-shadow:var(--wk-key);transition:box-shadow .15s,background .25s,transform .15s var(--wk-ease)}
-.choiceRow button:hover{transform:translateY(-2px);box-shadow:var(--wk-key-lg)}
-.choiceRow button[aria-pressed=true]{background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift)}
-.choiceRow button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wk-line-strong)}
 /* On / off switch: a solid pill with a white knob and the word inside. */
 .switch{position:relative;display:flex;align-items:center;flex-shrink:0;width:66px;height:36px;padding:0;border:0;border-radius:999px;background:#dfe3d8;transition:background .2s}
 .switch::before{content:"";position:absolute;inset:-4px}
@@ -70,7 +63,7 @@
 .card[data-off] .trackRow,.card[data-off] .volume{opacity:.5}
 .cardTop+.trackRow{margin-top:12px}
 @media(--reduced-motion){
- .spanOption,.choiceRow button,.trackRow button,.badge svg{transition:none}
+ .spanOption,.trackRow button,.badge svg{transition:none}
 }
 @media(--short){
  .card{padding:10px 14px}
@@ -80,7 +73,6 @@
  .spanOption{min-height:52px}
  .spanOption b{font-size:var(--font-control)}
  .cardLead{margin:4px 0 8px;font-size:var(--font-label)}
- .choiceRow button{min-width:0;overflow-wrap:anywhere;min-height:40px;font-size:var(--font-small)}
  .trackRow button{min-height:34px}
  .volume{margin-top:4px}
 }
@@ -90,11 +82,17 @@
 @media(--phone){
  .card{border-radius:22px}
 }
-/* Song or AI background, one or the other: the side not playing is greyed but stays tappable (tapping switches to it). */
-.card[data-dimmed]>:not(h3),.sourceTag[data-dimmed]{opacity:.45;filter:grayscale(1);transition:opacity .2s,filter .2s}
-.card[data-dimmed]>:not(h3):hover,.sourceTag[data-dimmed]:hover{opacity:.8}
-/* 课本灵感 has two choices (先不用 · 跟着课本) since 帮我找找 was removed: two columns. */
-.choiceRow:has(>button:nth-child(2):last-child){grid-template-columns:repeat(2,1fr)}
+/* Song or AI background, one or the other: the side not playing is greyed but stays tappable (tapping switches to it).
+   The AI chip is never greyed: its colour says it can be tapped. */
+.card[data-dimmed]>:not(h3){opacity:.45;filter:grayscale(1);transition:opacity .2s,filter .2s}
+.card[data-dimmed]>:not(h3):hover{opacity:.8}
+/* 课本灵感: choose / change the song, and the 课本 switch (the same one as 万物声场's). */
+.songRow{display:flex;align-items:center;gap:10px;padding:5px 8px 5px 5px;border-radius:20px;background:var(--wk-field);box-shadow:var(--wk-inset)}
+.songPick{flex:1;min-width:0;min-height:44px;padding:0 10px;border:0;border-radius:15px;background:#fff;color:var(--wk-ink-soft);font-size:var(--font-body);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:var(--wk-key);transition:box-shadow .15s,transform .15s var(--wk-ease)}
+.songPick:hover{transform:translateY(-2px);box-shadow:var(--wk-key-lg)}
+.songPick:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wk-line-strong)}
+@media(--short){.songPick{min-height:40px;font-size:var(--font-small)}}
+@media(--reduced-motion){.songPick{transition:none}}
 /* While a song's background plays, the background card is greyed too (switch, instruments, volume); the title stays. */
 .card[data-song]>:not(.cardTop),.card[data-song] .cardTop>:not(h3){opacity:.45;filter:grayscale(1);transition:opacity .2s,filter .2s}
 .card[data-song]>:not(.cardTop):hover,.card[data-song] .cardTop>:not(h3):hover{opacity:.8}

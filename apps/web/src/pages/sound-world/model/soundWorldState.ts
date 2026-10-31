@@ -9,7 +9,7 @@ import type {SoundAnalysis,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {defaultClipFor} from '@wanwu-v2/sound-rules/shaping';
 import {MARKER_HALF,coverageEnd,fitSpan,freeRow,rowIsFree,spanHolds,unitOf,withSpan} from '../../../shared/creation/arrangementTiming.ts';
 // Timing and row tidying live in shared/creation (万物成曲 reads the same); re-exported for this page's modules.
-export {MARKER_HALF,clipSeconds,freeRow,heardSeconds,longestSound,minSpan,planPlayback,resettleRows,rowIsFree,spanHolds,unitOf} from '../../../shared/creation/arrangementTiming.ts';
+export {MARKER_HALF,clipSeconds,freeRow,heardInPiece,heardSeconds,longestSound,minSpan,planPlayback,resettleRows,rowIsFree,spanHolds,unitOf} from '../../../shared/creation/arrangementTiming.ts';
 export type {PlannedEvent} from '../../../shared/creation/arrangementTiming.ts';
 
 export type Selection={kind:'unit';unitId:string}|{kind:'event';eventId:string}|null;

@@ -41,7 +41,7 @@ export function SoundPalette({world,bind,onMore,onInspiration}:{world:SoundWorld
    <div className={styles.inspirationRow} data-on={world.inspiration.kind!=='none'||undefined}>
     <button type="button" className={styles.inspiration} aria-label={`${worldCopy.inspiration}：${inspirationCopy.summary(world.inspiration,world.inspirationEntries)}`} onClick={onInspiration}>
      <span className={styles.inspirationBadge}><PaperIcon name="book" tone="pink"/></span>
-     <b>{worldCopy.inspiration}</b>{world.inspiration.kind!=='none'&&<Glyph name="check" className={styles.inspirationCheck}/>}
+     <b>{worldCopy.inspiration}</b>
     </button>
     <button type="button" role="switch" aria-checked={world.backgroundEnabled} aria-label={worldCopy.backgroundToggle} className={styles.switch}
      onClick={()=>world.setBackgroundEnabled(!world.backgroundEnabled)}>

@@ -137,6 +137,6 @@ export function SoundWorldPage({onNavigate,onFinish}:{onNavigate:(path:string)=>
   {/* Here a song lends only its beat: no 帮我找找, and 听一听 plays the beat (the full background is 万物成曲's). */}
   {inspiring&&<InspirationDialog variant="beat" value={world.inspiration} entries={world.inspirationEntries}
    teachingOpen={world.teachingOpen} teachingItems={world.teachingItems} onAnalyse={world.analyseTeaching}
-   onChange={world.setInspiration} onClose={()=>setInspiring(false)}/>}
+   onChange={world.setInspiration} onClose={()=>{world.applyChosenSong();setInspiring(false);}}/>}
  </div>;
 }

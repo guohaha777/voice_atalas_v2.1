@@ -1,6 +1,6 @@
 import type {Metre,TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
-import {metreNames as corpusMetreNames} from '@wanwu-v2/prompts/corpus';
+import {beatName,metreNames as corpusMetreNames} from '@wanwu-v2/prompts/corpus';
 
 /** 二拍子 / 三拍子 / 四拍子 — corpus words, so the guide and the 课本讲解 say the same. */
 export const metreNames:Record<Metre,string>=corpusMetreNames();
@@ -8,30 +8,36 @@ export const metreNames:Record<Metre,string>=corpusMetreNames();
 
 export const inspirationCopy={
  title:'课本灵感',
- description:'选一首课本歌曲，听听它的节奏和你的声音碰在一起。',
+ description:'选一首教学音乐，听听它的节奏和你的声音碰在一起。',
  /** 万物声场: a song lends only its beat there. */
- beatDescription:'选一首课本歌曲，跟着它的拍子摆你的声音。',
- tabs:{examples:'课本歌曲',upload:'教学音乐'},
+ beatDescription:'选一首教学音乐，跟着它的拍子摆你的声音。',
+ tabs:{examples:'教学音乐',upload:'上传歌曲'},
+ /** A song uploaded on this device, listed under 教学音乐 after the system songs. */
+ mine:'我的',
  example:'示例',
  catalogueNote:'现在是几首示例歌曲，课本曲库还没有开放。',
  use:'用这个',using:'正在用',none:'先不用',done:'好了',
  listen:'听一听',stopListen:'停止',
  /** The second line of a song: its beat and what it is like. */
- feel:(track:TextbookTrack)=>`${metreNames[track.meter]} · ${track.childLine}`,
+ feel:(track:TextbookTrack)=>`${beatName(track)} · ${track.childLine}`,
  /** 案例: a textbook song with a built-in recording (听原曲 in its explanation). */
  cases:{tag:'案例',listen:'听原曲'},
  upload:{
-  pick:'选一段教学音乐',repick:'换一段',
+  pick:'上传一首歌曲',repick:'换一首',
   hint:'请老师选一段课堂上唱的歌。',
   off:'AI 没接通，卡片由程序听出来。',
   /** While the card is made: reading = decoding and measuring on this device, listening = the AI hears the excerpt. */
   analysing:{reading:'正在读这段音乐…',listening:'AI 正在听这段音乐…'},
-  card:(metre:string,rhythm:string)=>`${metre} · 节奏「${rhythm}」`,
+  card:(metre:string,rhythm:string|null)=>rhythm?`${metre} · 节奏「${rhythm}」`:metre,
   noteLabel:'给老师',
   madeBy:{audio:'AI 听过这段音乐',language:'AI 只看了数字，节奏是程序听的',program:'AI 没接通，这张卡是程序听出来的'},
   partly:'有一部分是程序测的',
+  /** A free-rhythm card is the program's on purpose: the AI's task is about a beat, which it does not have. */
+  freeMadeBy:'没有固定拍子，这张卡由程序听出来',
 
   errors:{'not-audio':'这不是音频文件，换一个试试。','too-large':'文件太大了（最大 10MB）。','unreadable':'这段音频读不出来，换一个试试。'},
+  /** The precheck found almost no steady pitch: no teaching card. */
+  notMusic:'这段听起来像普通声音，不像音乐。可以拿去声音诞生做声音素材。',
  },
  /** One line describing the current choice, for the cards that open the dialog. */
  summary:(value:Inspiration,entries:readonly TextbookTrack[])=>{

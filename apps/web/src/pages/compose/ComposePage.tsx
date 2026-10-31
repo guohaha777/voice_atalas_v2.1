@@ -23,7 +23,7 @@ import styles from './ComposePage.module.css';
 function spokenBackground(compose:Compose){
  const plan=compose.backgroundPlan,{volume}=compose.state.settings.background;
  switch(compose.state.lastAction){
-  case 'background-on':return plan?guideLines.backgroundOn(backgroundCopy.describe(plan,compose.entry?.title??null)):null;
+  case 'background-on':return plan?guideLines.backgroundOn(backgroundCopy.describe(plan,compose.entry&&compose.entry.pulse!=='none'?compose.entry.title:null)):null;
   case 'background-off':return guideLines.backgroundOff;
   case 'background-volume':return guideLines.volume(volume<.3?'soft':volume>.7?'loud':'medium');
   case 'instrument':

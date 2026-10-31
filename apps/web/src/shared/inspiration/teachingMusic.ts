@@ -18,10 +18,11 @@
 //      (shared/background/generator.ts). The server combines the music's features with how the child arranged the
 //      sounds (where they cluster, rests, length, mood) and generates a matching background layer. It never alters the
 //      child's sounds or placement and never copies the teaching music's melody into the piece.
+import {MEASURE_RATE} from '@wanwu-v2/music-features';
 import {decodeAudio} from '../audio/loadAudio';
 import {newId} from '../creation/ids';
 import type {KeyValue} from '../storage/guestStore';
-import {makeTeachingCard} from './teachingCard';
+import {NotMusicError,makeTeachingCard} from './teachingCard';
 import type {AskFeatures,CardStage,TeachingCard} from './teachingCard';
 
 /** Only the file size is limited (10 MB); any length is accepted (decided 2026-10-30). */
@@ -33,8 +34,11 @@ const KEY='teaching:';
 /** Picked on this device; `url` is a local object URL for listening. */
 export type LocalTeachingMusic={id:string;name:string;durationMs:number;bytes:number;url:string};
 export type PickResult={status:'picked';music:LocalTeachingMusic}|{status:'not-audio'|'too-large'|'unreadable'};
-/** A piece with its card: `analysing` while the card is being made (with the stage), `failed` when it could not be read. */
-export type TeachingItem=LocalTeachingMusic&{card:TeachingCard|null;analysing:CardStage|null;failed:boolean};
+/**
+ * A piece with its card: `analysing` while the card is being made (with the stage), `failed` when it could not be read
+ * (`unreadable`) or is not music (`not-music`: the precheck found almost no steady pitch).
+ */
+export type TeachingItem=LocalTeachingMusic&{card:TeachingCard|null;analysing:CardStage|null;failed:false|'unreadable'|'not-music'};
 type Kept={music:Omit<LocalTeachingMusic,'url'>;blob:Blob;card:TeachingCard|null;at:number};
 
 /** Reads the length from the file's own metadata (no decoding of the whole file). */
@@ -117,11 +121,12 @@ export class TeachingMusicStore{
   const stage=(analysing:CardStage)=>{const current=this.items.get(id);if(current){this.items.set(id,{...current,analysing,failed:false});this.changed();}};
   stage('reading');
   try{
-   const card=await makeTeachingCard({id,name:item.name},await item.blob.arrayBuffer(),decodeAudio,ask,stage);
+   // Decoded at the rate the measurement was set for (MEASURE_RATE), whatever the file's own rate.
+   const card=await makeTeachingCard({id,name:item.name},await item.blob.arrayBuffer(),bytes=>decodeAudio(bytes,MEASURE_RATE),ask,stage);
    const current=this.items.get(id);if(!current)return;
    this.items.set(id,{...current,card,analysing:null});this.persist(id);
-  }catch{
-   const current=this.items.get(id);if(current)this.items.set(id,{...current,analysing:null,failed:true});
+  }catch(error){
+   const current=this.items.get(id);if(current)this.items.set(id,{...current,analysing:null,failed:error instanceof NotMusicError?'not-music':'unreadable'});
   }
   this.changed();
  }

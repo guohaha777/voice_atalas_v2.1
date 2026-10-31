@@ -7,13 +7,15 @@ import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import type {Measurement} from '@wanwu-v2/music-features';
 import {pickMood} from '@wanwu-v2/music-features';
 import {isTextbookFeaturesBrief} from '@wanwu-v2/prompts/tasks';
-import {teachingLine} from '@wanwu-v2/prompts/corpus';
-import {CARD_BUDGET_MS,cardFrom,excerptWav,featuresBrief,makeTeachingCard,monoOf} from '../src/shared/inspiration/teachingCard.ts';
+import {beatName,pulseLine,teachingLine} from '@wanwu-v2/prompts/corpus';
+import {BACKGROUND_RULES} from '@wanwu-v2/sound-rules/rules';
+import {hasBeat,songBeat} from '../src/shared/inspiration/beat.ts';
+import {CARD_BUDGET_MS,NotMusicError,cardFrom,excerptWav,featuresBrief,makeTeachingCard,monoOf,pulseOf} from '../src/shared/inspiration/teachingCard.ts';
 import {builtInEntries} from '../src/shared/inspiration/builtInTeaching.ts';
 import {backgroundBrief,inspirationTrack} from '../src/shared/background/backgroundLayer.ts';
 import {INSPIRATION_TABS} from '../src/shared/inspiration/tabs.ts';
 
-const m:Measurement={version:'music-features-v1',seconds:120,tempoBpm:136,meter:3,meterConfidence:.72,downbeatSeconds:.14,onsetsPerBeat:1.4,onsetDensity:'medium',
+const m:Measurement={version:'music-features-v2',seconds:120,musical:true,features:{rhythm:'steady',texture:'accompanied',drums:false},path:'accompanied',traits:{steady:.84,tonal:.58,solo:.29,drums:.24},steady:true,strongBeat:true,tempoBpm:136,meter:3,meterConfidence:.72,downbeatSeconds:.14,onsetsPerBeat:1.4,onsetDensity:'medium',
  centroidHz:2100,brightness:'mid',mode:'major',tonic:5,keyConfidence:.8,pitchRange:{low:58,high:82},repetition:'low',
  candidates:[{cell:[1,1,1],bars:25},{cell:[.75,.25,1,1],bars:10}]};
 const music={id:'teaching:1',name:'法国号'};
@@ -95,4 +97,42 @@ test('the program\'s mood and line: quick major songs are lively, slow minor one
  assert.deepEqual([pickMood({mode:'major',tempoBpm:120}),pickMood({mode:'major',tempoBpm:80}),pickMood({mode:'minor',tempoBpm:70}),pickMood({mode:'minor',tempoBpm:96}),pickMood({mode:'dorian',tempoBpm:96})],
   ['lively','happy','sad','calm','curious']);
  assert.notEqual(teachingLine(2),teachingLine(3));
+});
+test('听原曲: the beat starts on the recording\'s first strong beat, a whole number of bars from the one measured',async()=>{
+ const {firstStrongBeat}=await import('../src/shared/inspiration/originalBeat.ts');
+ // 小鸟在唱歌 (96, two beats, measured 1.229 s): a bar is 1.25 s, so the first strong beat is the measured one.
+ assert.ok(Math.abs(firstStrongBeat(1.229,{tempoBpm:96,meter:2})-1.229)<1e-9);
+ // Measured later in the song: back by whole bars to the first one in the recording.
+ assert.ok(Math.abs(firstStrongBeat(61.229,{tempoBpm:96,meter:2})-1.229)<1e-9);
+ assert.ok(Math.abs(firstStrongBeat(2.1,{tempoBpm:120,meter:4})-.1)<1e-9);
+ assert.ok(Math.abs(firstStrongBeat(.139,{tempoBpm:136,meter:3})-.139)<1e-9);
+});
+
+test('how the card may use its beat: free rhythm has none, a single line an even one, non-music gets no card',async()=>{
+ const free={...m,steady:false,strongBeat:false,features:{...m.features,rhythm:'free'},path:'free'} as Measurement;
+ const solo={...m,strongBeat:false,features:{...m.features,texture:'solo'},path:'solo'} as Measurement;
+ assert.deepEqual([pulseOf(m),pulseOf(solo),pulseOf(free)],[undefined,'even','none']);
+ const loose=cardFrom(music,free,null).track,even=cardFrom(music,solo,reply).track;
+ assert.ok(isTextbookTrack(loose)&&isTextbookTrack(even));
+ assert.deepEqual([loose.pulse,loose.childLine,even.pulse,cardFrom(music,m,reply).track.pulse],['none',pulseLine('none'),'even',undefined]);
+ assert.equal(isTextbookTrack({...loose,pulse:'sometimes'}),false);
+ assert.deepEqual([beatName(loose),beatName(even),beatName({meter:3})],['自由节奏','拍子均匀','三拍子']);
+ // 万物声场: no ticks for free rhythm, every tick the light one when the strong beats are not sure.
+ assert.deepEqual([songBeat(loose,10).notes.length,hasBeat(loose),hasBeat(even)],[0,false,true]);
+ assert.ok(songBeat(even,10).notes.every(note=>note.accent===BACKGROUND_RULES.beat.weak));
+ assert.ok(songBeat(cardFrom(music,m,reply).track,10).notes.some(note=>note.accent===BACKGROUND_RULES.beat.strong));
+ // 万物成曲: a free-rhythm song does not lead the background (and is not sent as an unknown piece either).
+ const inspiration={kind:'teaching-music',musicId:music.id,name:'山歌',durationMs:60_000} as const;
+ const work={id:'w1',version:'arrangement-v2',origin:'child',spanSeconds:30,rows:3,mood:null,
+  units:[{id:'u1',name:'鸟鸣',markerIndex:0,sourceId:'s1',input:'example-preset',shape:{},analysis:null}],
+  events:[{id:'e1',unitId:'u1',at:.1,row:0,clip:{startMs:0,endMs:2000}}],createdAt:'2026-10-30T00:00:00.000Z',updatedAt:'2026-10-30T00:00:00.000Z'} as unknown as Arrangement;
+ const brief=backgroundBrief(work,inspiration,[loose],[]);
+ assert.deepEqual([brief?.textbook,brief?.teachingMusic],[null,null]);
+ // A free-rhythm recording is not asked about (the model's task is a beat and a bar rhythm); non-music gets no card.
+ const decode=(data:Float32Array)=>async()=>({sampleRate:22050,numberOfChannels:1,length:data.length,duration:data.length/22050,getChannelData:()=>data}) as unknown as AudioBuffer;
+ let seed=3;const noise=()=>{seed=(seed*16807)%2147483647;return seed/2147483647*2-1;};
+ const hiss=new Float32Array(22050*20).map(()=>.3*noise());
+ let asked=false;
+ await assert.rejects(makeTeachingCard(music,new ArrayBuffer(8),decode(hiss),async()=>{asked=true;return null;}),NotMusicError);
+ assert.equal(asked,false);
 });

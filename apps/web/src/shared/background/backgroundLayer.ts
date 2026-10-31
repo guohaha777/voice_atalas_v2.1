@@ -17,6 +17,8 @@ export function inspirationTrack(inspiration:Inspiration,tracks:readonly Textboo
  const id=inspiration.kind==='textbook'?inspiration.entryId:inspiration.kind==='teaching-music'?inspiration.musicId:null;
  return id?tracks.find(track=>track.id===id)??null:null;
 }
+/** The song the background follows: a free-rhythm one (散板, 山歌) has no tempo or bar to follow, so none. */
+const followedTrack=(track:TextbookTrack|null)=>track&&track.pulse!=='none'?track:null;
 
 /** Plan input: the piece's real length, when the child's sounds are heard, the mood and the chosen textbook song. */
 export function backgroundInput(arrangement:Arrangement,inspiration:Inspiration,tracks:readonly TextbookTrack[]):BackgroundInput{
@@ -28,7 +30,7 @@ export function backgroundInput(arrangement:Arrangement,inspiration:Inspiration,
    return {start,end,...(pitch?{pitch}:{}),...(contour?{contour}:{}),...(intensity?{intensity}:{})};
   }),
   mood:presetMood(arrangement.mood),
-  textbook:inspirationTrack(inspiration,tracks),
+  textbook:followedTrack(inspirationTrack(inspiration,tracks)),
   seed:arrangement.id,
  };
 }
@@ -53,7 +55,7 @@ export function backgroundBrief(arrangement:Arrangement,inspiration:Inspiration,
   version:BACKGROUND_REQUEST_VERSION,workId:arrangement.id,seconds:input.seconds,sounding:input.sounding.map(({start,end})=>({start,end})),
   tempo:plan.tempo,metre:plan.metre,mode:plan.mode,mood:input.mood,
   arrangement:{density:summary.density,repetition:summary.repetition,register:summary.register},
-  textbook:track?textbookFeatures(track):null,
+  textbook:followedTrack(track)?textbookFeatures(track!):null,
   teachingMusic:inspiration.kind==='teaching-music'&&!track?{musicId:inspiration.musicId}:null,
   instruments:[...instruments],rules:{...RULE_VERSIONS},
  };

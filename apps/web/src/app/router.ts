@@ -1,8 +1,8 @@
 // Minimal history routing for the approved pages; no router library. Unknown paths fall back to home.
 import {useCallback,useEffect,useState} from 'react';
 
-/** `lab`: 调音台, `lab-prompts`: 提示词台 — only built in development or a preview build (the app falls back to home elsewhere). */
-export type Route={page:'home'}|{page:'sound-birth'}|{page:'sound-world'}|{page:'compose'}|{page:'works'}|{page:'lab'}|{page:'lab-prompts'}|{page:'reset-password'}|{page:'admin'}|{page:'share';token:string};
+/** `lab`: 调音台, `lab-prompts`: 提示词台, `lab-music`: 系统音乐上传 — only built in development or a preview build (the app falls back to home elsewhere). */
+export type Route={page:'home'}|{page:'sound-birth'}|{page:'sound-world'}|{page:'compose'}|{page:'works'}|{page:'lab'}|{page:'lab-prompts'}|{page:'lab-music'}|{page:'reset-password'}|{page:'admin'}|{page:'share';token:string};
 
 export function parseRoute(pathname:string):Route{
  const path=pathname.replace(/\/+$/,'');
@@ -15,6 +15,7 @@ export function parseRoute(pathname:string):Route{
  if(path==='/reset-password')return {page:'reset-password'};
  if(path==='/lab/sound-rules')return {page:'lab'};
  if(path==='/lab/prompts')return {page:'lab-prompts'};
+ if(path==='/lab/music')return {page:'lab-music'};
  return {page:'home'};
 }
 export function routeHref(route:Route){
@@ -26,6 +27,7 @@ export function routeHref(route:Route){
  if(route.page==='reset-password')return '/reset-password';
  if(route.page==='lab')return '/lab/sound-rules';
  if(route.page==='lab-prompts')return '/lab/prompts';
+ if(route.page==='lab-music')return '/lab/music';
  return route.page==='home'?'/':'/create';
 }
 

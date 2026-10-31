@@ -3,7 +3,9 @@
 export const guideLines={
  loading:'等我一下，声场马上就好～',
  playing:'听，声音一个接一个响起来～',
- unitSelected:(name:string)=>`把「${name}」放到哪里？点空白处就放下。`,
+ /** 试听 on a card: what the child made this sound into in 声音诞生 (its five choices), or that it is the original. */
+ unitHeard:(name:string,words:string)=>words?`听，「${name}」${words}～`:`听，这是「${name}」原来的声音～`,
+ unitSelected:(name:string)=>`把「${name}」拖进声场，和别的声音组合试试吧！`,
  eventSelected:'点它就能再听一次；按住可以拖到别处。换一行只是错开，声音不变。',
  moved:'挪好啦！左右换的是先后，上下只是错开，声音不变。',
  cleared:'清空啦！从左边点一个声音，重新摆一首吧。',
@@ -21,6 +23,8 @@ export const guideLines={
  beatNoSong:'先在课本灵感里选一首歌，才有拍子哦。',
  beatOff:'拍子关啦，现在只听自己的声音。',
  inspirationSong:(title:string,metre:string)=>`跟着「${title}」的${metre}摆吧！完整的音乐到万物成曲去听。`,
+ /** A free-rhythm song (散板, 山歌): it has no beat to play. */
+ freeSong:(title:string)=>`「${title}」没有固定的拍子，跟着感觉摆吧。`,
  /** Teaching music before its card is made (then it is spoken of like a song). */
  inspirationMusic:'正在听老师的这段音乐，听完就有拍子啦。',
  inspirationNone:'先不用课本，声场里只听你自己的声音。',

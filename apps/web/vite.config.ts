@@ -1,6 +1,7 @@
 import {defineConfig} from 'vite';
 import react from '@vitejs/plugin-react';
 import {media} from './src/styles/breakpoints.ts';
+import {labMusicStore} from './dev/labMusicStore.ts';
 
 /** `@media (--short)` → the query named in src/styles/breakpoints.ts, so every page shares one list of screen tiers. */
 const customMedia={
@@ -15,7 +16,8 @@ const customMedia={
 };
 
 export default defineConfig({
-  plugins:[react()],
+  // labMusicStore: 系统音乐上传 (/lab/music) saves to local folders through the dev server only.
+  plugins:[react(),labMusicStore()],
   css:{postcss:{plugins:[customMedia]}},
   // Local preview with a guest-AI dev server (wanwu-sound-backend: npm run guest-ai:dev): WANWU_DEV_API=http://127.0.0.1:3199
   server:{port:5290,strictPort:true,...(process.env.WANWU_DEV_API?{proxy:{'/api/v1':{target:process.env.WANWU_DEV_API,changeOrigin:true}}}:{})},

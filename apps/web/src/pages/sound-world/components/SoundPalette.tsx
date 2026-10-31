@@ -23,7 +23,7 @@ export function SoundPalette({world,bind,onMore,onInspiration}:{world:SoundWorld
     const key=`unit:${unit.id}`,listening=world.playing===key,waiting=world.preparing===key;
     return <li key={unit.id} className={styles.paletteItem} data-selected={selected||undefined}>
      <button type="button" className={styles.pick} aria-pressed={selected} {...bind({kind:'unit',unitId:unit.id})}>
-      <SoundMarker index={unit.markerIndex} className={styles.paletteMarker} face={listening?'happy':'calm'}/>
+      <SoundMarker index={unit.markerIndex} name={unit.maker} className={styles.paletteMarker} face={listening?'happy':'calm'}/>
       <span className={styles.pickText}>
        <b>{markerNumber(unit.markerIndex)} · {unit.name}</b>
        <small>{unit.input==='example-preset'&&<em>{worldCopy.example}</em>}{count>0&&worldCopy.placedTimes(count)}</small>
@@ -31,7 +31,7 @@ export function SoundPalette({world,bind,onMore,onInspiration}:{world:SoundWorld
      </button>
      <button type="button" className={styles.listen} aria-pressed={listening} aria-label={`${listening?worldCopy.stop:worldCopy.listen}「${unit.name}」`}
       data-waiting={waiting||undefined} onClick={()=>world.previewUnit(unit)}>
-      <span className={styles.listenIcon}><Glyph name={listening?'stop':'play'}/></span>{listening?worldCopy.stop:worldCopy.listen}
+      <span className={styles.listenIcon}><Glyph name={listening?'stop':'play'}/></span>
      </button>
     </li>;
    })}

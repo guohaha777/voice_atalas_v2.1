@@ -2,7 +2,9 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import {DEFAULT_ROWS} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import {flowSteps} from '../../app/navigation';
+import {shapeWords} from '../../shared/creation/dimensionCopy';
 import {moodLabels,presetMood} from '../../shared/creation/moodCopy';
+import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import {metreNames} from '../../shared/inspiration/copy';
 import {InspirationDialog} from '../../shared/inspiration/InspirationDialog';
 import {SoundMarker} from '../../shared/markers/SoundMarker';
@@ -28,16 +30,21 @@ import {SoundPalette} from './components/SoundPalette';
 import styles from './SoundWorldPage.module.css';
 import {ui} from '../../shared/ui/controls';
 
+/** How the frog names a song's beat: its metre, or just 拍子 when its strong beats are not sure. */
+const beatWord=(track:TextbookTrack)=>track.pulse==='even'?'拍子':metreNames[track.meter];
+
 /** What the frog says about the switch, 课本灵感 and the mood (the controls themselves carry no small text). */
 function spokenChoice(world:SoundWorld){
  const {arrangement,lastAction}=world.state;
  if(!arrangement)return null;
  switch(lastAction){
-  case 'background-on':return world.beatTrack?guideLines.beatOn(world.beatTrack.title,metreNames[world.beatTrack.meter]):guideLines.beatNoSong;
+  case 'background-on':return !world.beatTrack?guideLines.beatNoSong:world.beatTrack.pulse==='none'?guideLines.freeSong(world.beatTrack.title)
+   :guideLines.beatOn(world.beatTrack.title,beatWord(world.beatTrack));
   case 'background-off':return guideLines.beatOff;
   case 'inspiration':{
    const track=world.beatTrack;
-   if(track)return world.beatOn?guideLines.inspirationSong(track.title,metreNames[track.meter]):guideLines.inspirationSongQuiet(track.title);
+   if(track?.pulse==='none')return guideLines.freeSong(track.title);
+   if(track)return world.beatOn?guideLines.inspirationSong(track.title,beatWord(track)):guideLines.inspirationSongQuiet(track.title);
    return world.inspiration.kind==='teaching-music'?guideLines.inspirationMusic:guideLines.inspirationNone;
   }
   case 'mood':{const mood=presetMood(arrangement.mood);return mood?guideLines.mood(moodLabels[mood]):guideLines.moodNone;}
@@ -51,6 +58,9 @@ function guideText(world:SoundWorld){
  if(notice)return worldCopy.notices[notice.key];
  if(!arrangement)return guideLines.loading;
  if(world.playing==='all')return guideLines.playing;
+ // 试听 on a card: the frog says what this sound was made into.
+ const heard=world.playing?.startsWith('unit:')&&unitOf(arrangement,world.playing.slice(5));
+ if(heard)return guideLines.unitHeard(heard.name,shapeWords(heard.shape));
  if(lastAction==='span-fitted'||lastAction==='span-blocked'){
   const longest=longestSound(arrangement);
   if(longest){const seconds=Math.ceil(longest.seconds-1e-6),line=lastAction==='span-fitted'?guideLines.spanFitted:guideLines.spanBlocked;
@@ -121,7 +131,7 @@ export function SoundWorldPage({onNavigate,onFinish}:{onNavigate:(path:string)=>
     </div>
    </div>
   </main>
-  {drag&&dragUnit&&<span className={styles.dragGhost} style={{left:drag.x,top:drag.y}} aria-hidden="true"><SoundMarker index={dragUnit.markerIndex} className={styles.ghostMarker} face="happy"/></span>}
+  {drag&&dragUnit&&<span className={styles.dragGhost} style={{left:drag.x,top:drag.y}} aria-hidden="true"><SoundMarker index={dragUnit.markerIndex} name={dragUnit.maker} className={styles.ghostMarker} face="happy"/></span>}
   {more&&<MoreSoundsDialog world={world} initial={more} onClose={()=>setMore(null)} onMakeNew={()=>{setMore(null);onNavigate('/create?new');}}/>}
   {trimming&&<ClipEditor world={world} eventId={trimming} onClose={()=>setTrimming(null)}/>}
   {/* Here a song lends only its beat: no 帮我找找, and 听一听 plays the beat (the full background is 万物成曲's). */}

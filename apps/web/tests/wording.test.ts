@@ -16,6 +16,7 @@ import {metreNames} from '../src/shared/inspiration/copy.ts';
 const tracks=[...textbookTracks,...exampleTracks];
 import {guideLines as squirrel} from '../src/pages/compose/config/guideLines.ts';
 import {guideLines as frog} from '../src/pages/sound-world/config/guideLines.ts';
+import {shapeWords} from '../src/shared/creation/dimensionCopy.ts';
 
 /** A typical sound name: four characters, as the style rules count a name. */
 const NAME='小雨点点';
@@ -28,7 +29,7 @@ function lines(guide:Record<string,unknown>):string[]{
   :typeof value==='function'?(SPECIAL.has(key)?[]:[String(value(NAME,12,30))])
   :value&&typeof value==='object'?lines(value as Record<string,unknown>):[]);
 }
-const SPECIAL=new Set(['inspirationSong','beatOn','inspirationSongQuiet','volume']);
+const SPECIAL=new Set(['inspirationSong','beatOn','inspirationSongQuiet','volume','unitHeard']);
 const longest=<T,>(items:readonly T[],text:(item:T)=>string)=>items.map(text).sort((a,b)=>charCount(b)-charCount(a))[0]!;
 
 test('guide lines fit two lines of the bubble: at most 36 characters, child words only',()=>{
@@ -40,6 +41,7 @@ test('guide lines fit two lines of the bubble: at most 36 characters, child word
   longest(titles,title=>squirrel.inspirationSong(title)),
   longest(tracks,track=>frog.inspirationSong(track.title,metreNames[track.meter])),
   longest(tracks,track=>frog.beatOn(track.title,metreNames[track.meter])),longest(tracks,track=>frog.inspirationSongQuiet(track.title)),
+  frog.unitHeard(NAME,shapeWords({pitch:'high',duration:'medium',contour:'wavy',intensity:'medium',pattern:'fade-in'})),frog.unitHeard(NAME,''),
   squirrel.backgroundOn(describe),
   ...(['soft','medium','loud'] as const).map(level=>squirrel.volume(level)),
   squirrel.instruments(backgroundCopy.parts({chord:['organ'],bass:['organ'],melody:['marimba'],rhythm:['drum']},{organ:'风琴',marimba:'木琴',drum:'小鼓'})),

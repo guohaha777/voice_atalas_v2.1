@@ -1,5 +1,5 @@
-// The 课本灵感 dialog's two pages, the same on both pages that open it, and which one it opens on: teaching music chosen →
-// 教学音乐; otherwise 课本歌曲.
+// The 课本灵感 dialog's two pages, 教学音乐 (examples: system songs + songs uploaded here) and 上传歌曲 (upload), the same
+// on both pages that open it, and which one it opens on: an uploaded song chosen → 上传歌曲; otherwise 教学音乐.
 import type {Inspiration} from '@wanwu-v2/contracts/work';
 
 export type InspirationTab='examples'|'upload';

@@ -48,6 +48,25 @@ test('the marker shows who made the card: suggested from a local recorder, edita
  assert.equal(normalizeMakerName('一二三四五六七八'),'一二三四五六');
  assert.equal(soundBirthReducer(initialSoundBirth(),ready(example)).dialog,null);
 });
+test('the marker name follows 记录人 until the child writes one: a second sound recorded by 小花 is not left as 小林',()=>{
+ const by=(id:string,recordedBy:string)=>({...recording,id,provenance:{...recording.provenance,recordedBy,place:'学校后山'}});
+ let state=soundBirthReducer(initialSoundBirth(),ready(by('recording:1','小林')));
+ state=soundBirthReducer(state,{type:'next',markerIndex:1,notice:{tone:'done',area:'editor',text:''}});
+ // The next recording suggests the last recorder; the teacher changes it.
+ state=soundBirthReducer(state,ready(by('recording:2','小林')));
+ assert.equal(state.maker,'小林');
+ state=soundBirthReducer(state,{type:'source-update',source:by('recording:2','小花')});
+ assert.equal(state.maker,'小花');
+ assert.equal(soundBirthReducer(state,{type:'card',confirmed:true}).maker,'小花');
+ // Another source for the same card follows its recorder too; an example has no maker.
+ assert.equal(soundBirthReducer(state,ready(by('recording:3','小周'))).maker,'小周');
+ assert.equal(soundBirthReducer(state,ready(example)).maker,null);
+ // A name written on the marker stays, whatever 记录人 says.
+ state=soundBirthReducer(state,{type:'maker',name:'花花'});
+ state=soundBirthReducer(state,{type:'source-update',source:by('recording:2','小林')});
+ assert.equal(state.maker,'花花');
+ assert.equal(soundBirthReducer(state,ready(by('recording:3','小周'))).maker,'花花');
+});
 test('provenance: examples are traceable already; local sources need name, recorder, date and place',()=>{
  assert.deepEqual(missingProvenance(example),[]);
  assert.deepEqual(missingProvenance(recording),['recordedBy','place']);

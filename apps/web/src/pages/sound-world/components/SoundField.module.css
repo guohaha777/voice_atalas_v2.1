@@ -21,10 +21,6 @@
 .lane:nth-child(3n+2){border-radius:52px 36px 58px 42px/32px 26px 38px 30px}
 .lane:nth-child(3n){background:linear-gradient(100deg,#f9f8e6,#fcfbf0 55%,#f6f5de);box-shadow:inset 0 2px 6px #4a40001a,inset 0 0 0 1px #ecebcc;border-radius:40px 58px 34px 50px/30px 40px 26px 34px}
 .field[data-armed] .lane{filter:saturate(1.25)}
-/* The chosen song's beat: faint lines on every beat, stronger dashed ones on each bar's first beat. */
-.beats{position:absolute;inset:-4px 0;pointer-events:none}
-.beats i{position:absolute;top:0;bottom:0;width:1px;margin-left:-.5px;background:var(--wk-rule);opacity:.55}
-.beats i[data-bar]{width:0;margin-left:-1px;border-left:2px dashed var(--wk-green-deep);background:none;opacity:.4}
 .events{position:absolute;inset:0;margin:0;padding:0;list-style:none;pointer-events:none}
 .placed{position:absolute;z-index:1;transform:translate(-50%,calc(var(--mk) * -.5 - 4px));pointer-events:auto;transition:left .28s var(--wk-ease),top .28s var(--wk-ease)}
 .placed[data-selected]{z-index:3}

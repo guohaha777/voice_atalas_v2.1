@@ -1,6 +1,6 @@
 /* 找更多声音: scope tabs and the list of sounds to add. */
 /* Dialog panel and note line: shared/ui/WorkSheet. */
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:20px;padding:4px;border-radius:999px;background:var(--wk-soft)}
+.tabs{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;margin-top:20px;padding:4px;border-radius:999px;background:var(--wk-soft)}
 .tabs button{min-height:44px;border:0;border-radius:999px;background:none;color:var(--wk-muted);font-size:var(--font-body);font-weight:700;transition:background .16s,color .16s}
 .tabs button[aria-selected=true]{background:#fff;color:var(--wk-ink);box-shadow:0 4px 12px #26301a14}
 .scopePanel{min-height:240px;margin-top:14px}

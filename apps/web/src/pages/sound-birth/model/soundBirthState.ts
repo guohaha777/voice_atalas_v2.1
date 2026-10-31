@@ -56,14 +56,15 @@ export function soundBirthReducer(state:SoundBirthState,action:SoundBirthAction)
   case 'source-ready':{
    // A new sound brings its own name but keeps the child's five choices (a paper card may be filled in first).
    // The maker starts as whoever recorded a local sound; it is only a suggestion and stays editable.
-   const maker=state.maker??(action.source.kind==='example'?null:normalizeMakerName(action.source.provenance.recordedBy??''));
+   const maker=followsRecorder(state)?recorderName(action.source):state.maker;
    // Bundled examples are documented already; a local sound starts unconfirmed until its info is checked.
    return {...state,source:action.source,name:action.source.label,maker,cardConfirmed:action.source.kind==='example',dialog:null,reading:false,notice:null,
     markerIndex:action.markerIndex??state.markerIndex};
   }
   case 'source-update':
    if(state.source?.id!==action.source.id)return state;
-   return {...state,source:action.source,notice:state.notice?.area==='info'&&!missingProvenance(action.source).length?null:state.notice};
+   // Changing 记录人 changes the marker's name too, until the child writes a name of their own on the marker.
+   return {...state,source:action.source,maker:followsRecorder(state)?recorderName(action.source):state.maker,notice:state.notice?.area==='info'&&!missingProvenance(action.source).length?null:state.notice};
   case 'rename':return {...state,name:normalizeSoundName(action.name,state.source?.label??'')};
   case 'maker':return {...state,maker:normalizeMakerName(action.name)};
   case 'card':
@@ -87,6 +88,11 @@ export function soundBirthReducer(state:SoundBirthState,action:SoundBirthAction)
   case 'next':return {...initialSoundBirth(action.markerIndex),notice:action.notice};
  }
 }
+
+/** Who recorded a local sound, as a marker name (examples have no maker). */
+const recorderName=(source:SoundSource|null)=>!source||source.kind==='example'?null:normalizeMakerName(source.provenance.recordedBy??'');
+/** The marker's name is still the one taken from 记录人 (or none yet), not one the child wrote on the marker. */
+const followsRecorder=(state:SoundBirthState)=>state.maker===null||state.maker===recorderName(state.source);
 
 /** Child-facing summary of the chosen options, in row order, e.g. 「高高的、有起伏」. */
 export function describeShape(shape:Partial<SoundShape>,labels:{[K in SoundDimension]:Record<string,string>}){

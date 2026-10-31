@@ -7,12 +7,13 @@ import styles from './SoundMarker.module.css';
 const INK='#111510';
 
 /**
- * Marker artwork with a live label overlaid: by default the number, or the caller's content (e.g. the maker's name).
+ * Marker artwork with a live label overlaid: by default the number, or the maker's `name` when the card has one, or the
+ * caller's content (e.g. 声音诞生's editable name).
  * Pass `label={null}` for small sizes where a label would not be legible. Size comes from the caller's class (width).
  * `face` gives the marker the sound character's eyes (same places as on 声音诞生): `calm` looks out and blinks now and
  * then, `happy` closes into ^ ^ — for "this one is sounding now". Decorative only.
  */
-export function SoundMarker({index,className='',label,face}:{index:number;className?:string;label?:ReactNode;face?:'calm'|'happy'}){
+export function SoundMarker({index,className='',label,name,face}:{index:number;className?:string;label?:ReactNode;name?:string|null;face?:'calm'|'happy'}){
  const marker=markerFor(index),pose=spiritPoses[marker.id],{crop}=marker;
  return <span className={`${styles.marker} ${className}`} data-marker={marker.id} data-face={face}>
   <ArtPicture variants={marker.variants} className={styles.art} fallback={<span className={styles.shape}/>}/>
@@ -27,6 +28,6 @@ export function SoundMarker({index,className='',label,face}:{index:number;classN
      </g>}
    </g>)}
   </svg>}
-  {label!==null&&<span className={styles.label}>{label??markerNumber(index)}</span>}
+  {label!==null&&<span className={styles.label}>{label??(name?<span className={styles.name}>{name}</span>:markerNumber(index))}</span>}
  </span>;
 }

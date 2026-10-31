@@ -74,6 +74,7 @@ test('talk: accepted AI lines replace corpus lines one by one, with the names pu
 test('the prompt lab has its own address next to the tuning lab',()=>{
  assert.deepEqual(parseRoute('/lab/prompts/'),{page:'lab-prompts'});
  assert.equal(routeHref({page:'lab-prompts'}),'/lab/prompts');
+ assert.deepEqual(parseRoute('/lab/music'),{page:'lab-music'});assert.equal(routeHref({page:'lab-music'}),'/lab/music');
  assert.deepEqual(parseRoute('/lab/sound-rules'),{page:'lab'});
 });
 

@@ -11,7 +11,7 @@ import {TEXTBOOK_CONTRACT_VERSION,isTextbookTrack} from '@wanwu-v2/contracts/tex
 import type {Brightness,Density,Metre,TextbookMode,TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import {measure,modelExcerpt,pickMood,pickRhythm} from '@wanwu-v2/music-features';
 import type {Measurement} from '@wanwu-v2/music-features';
-import {teachingLine} from '@wanwu-v2/prompts/corpus';
+import {pulseLine,teachingLine} from '@wanwu-v2/prompts/corpus';
 
 /** The whole wait, from tapping a file to the card (decided 2026-10-30). */
 export const CARD_BUDGET_MS=15_000;
@@ -33,6 +33,12 @@ export type FeaturesRequest={brief:FeaturesBrief;audio:string};
 /** The server's answer, or null when there is none (offline, not open, failed, too slow). */
 export type AskFeatures=(request:FeaturesRequest,signal:AbortSignal)=>Promise<unknown>;
 export type CardStage='reading'|'listening';
+
+/** The recording is not music (the precheck found almost no steady pitch): no card is made. */
+export class NotMusicError extends Error{constructor(){super('not-music');this.name='NotMusicError';}}
+
+/** How the card's beat may be used, from how it was measured (TextbookTrack.pulse; undefined = steady, strong beats marked). */
+export const pulseOf=(m:Pick<Measurement,'steady'|'strongBeat'>):TextbookTrack['pulse']=>!m.steady?'none':!m.strongBeat?'even':undefined;
 
 /** Mono samples: the channels averaged. */
 export function monoOf(buffer:Pick<AudioBuffer,'numberOfChannels'|'length'|'getChannelData'>){
@@ -78,11 +84,11 @@ const isReply=(value:unknown):value is Reply=>{
 export function cardFrom(music:{id:string;name:string},m:Measurement,answer:unknown):TeachingCard{
  const program=():TeachingCard=>({track:track(null),teacherNote:null,madeBy:'program',partly:false});
  const track=(reply:Reply|null):TextbookTrack=>{
-  const meter=reply?.meter??m.meter,childLine=reply?.childLine?.trim()||teachingLine(meter);
+  const meter=reply?.meter??m.meter,pulse=pulseOf(m),childLine=reply?.childLine?.trim()||(pulse?pulseLine(pulse):teachingLine(meter));
   return {version:TEXTBOOK_CONTRACT_VERSION,id:music.id,title:music.name,source:null,
    tempoBpm:Math.max(40,Math.min(200,Math.round(reply?.tempoBpm??m.tempoBpm))),meter,rhythmCell:reply?[...reply.rhythmCell]:pickRhythm(m.candidates,m.meter),
    onsetDensity:m.onsetDensity,pitchRange:{...m.pitchRange},brightness:m.brightness,mode:m.mode,repetition:m.repetition,
-   mood:reply?.mood??pickMood(m),tonic:m.tonic,childLine,
+   mood:reply?.mood??pickMood(m),tonic:m.tonic,...(pulse?{pulse}:{}),childLine,
    extraction:{numbers:'code',words:reply?.childLine?.trim()?'ai':'code',confidence:Math.max(0,Math.min(1,m.meterConfidence)),earChecked:false}};
  };
  if(!isReply(answer))return program();
@@ -91,12 +97,18 @@ export function cardFrom(music:{id:string;name:string},m:Measurement,answer:unkn
  return {track:card,teacherNote:answer.teacherNote?.trim()||null,madeBy:answer.source,partly:answer.checked==='partly'};
 }
 
-/** Decode, measure, ask (within what is left of the budget), make the card. Throws only when the file cannot be read. */
+/**
+ * Decode, measure, ask (within what is left of the budget), make the card. Throws when the file cannot be read, and
+ * NotMusicError when it is not music. A free-rhythm recording gets the program's card without asking: the model's
+ * task is about a beat and a bar rhythm, which it does not have.
+ * `decode` should give MEASURE_RATE (@wanwu-v2/music-features), the rate the measurement was set for.
+ */
 export async function makeTeachingCard(music:{id:string;name:string},bytes:ArrayBuffer,decode:(bytes:ArrayBuffer)=>Promise<AudioBuffer>,
  ask:AskFeatures|null,onStage:(stage:CardStage)=>void=()=>{},now:()=>number=()=>performance.now()):Promise<TeachingCard>{
  const started=now();onStage('reading');
  const buffer=await decode(bytes),samples=monoOf(buffer),m=measure(samples,buffer.sampleRate);
- if(!ask)return cardFrom(music,m,null);
+ if(!m.musical)throw new NotMusicError();
+ if(!ask||!m.steady)return cardFrom(music,m,null);
  const cut=modelExcerpt(m.seconds),audio=excerptWav(samples,buffer.sampleRate,cut.start,cut.end);
  const left=CARD_BUDGET_MS-LOCAL_RESERVE_MS-(now()-started);
  if(left<=0)return cardFrom(music,m,null);

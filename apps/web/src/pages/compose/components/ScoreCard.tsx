@@ -62,7 +62,7 @@ export function ScoreCard({compose,onBack,shelfLink}:{compose:Compose;onBack:()=
        <button type="button" data-item className={styles.itemButton} aria-pressed={sounding}
         aria-label={composeCopy.itemLabel(markerNumber(item.unit.markerIndex),item.unit.name,secondsLabel(item.start),seconds)}
         onClick={()=>compose.playFrom(item.start)}>
-        <SoundMarker index={item.unit.markerIndex} className={styles.itemMarker} face={sounding?'happy':'calm'}/>
+        <SoundMarker index={item.unit.markerIndex} name={item.unit.maker} className={styles.itemMarker} face={sounding?'happy':'calm'}/>
         <span className={styles.itemName}>{item.unit.name}{short&&<small>{composeCopy.seconds(seconds)}</small>}</span>
        </button>
       </li>;

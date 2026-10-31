@@ -1,6 +1,7 @@
 // Child-facing wording for the five dimensions — the one copy every page uses (声音诞生 editor, 万物声场 excerpt editor,
 // later 万物成曲). Option order follows SOUND_CHOICES in the contract.
-import type {SoundDimension,SoundShape} from '@wanwu-v2/contracts/sound';
+import {SOUND_DIMENSIONS} from '@wanwu-v2/contracts/sound';
+import type {ChosenShape,SoundDimension,SoundShape} from '@wanwu-v2/contracts/sound';
 import type {PaperIconName} from '../ui/PaperIcon';
 
 type DimensionCopy<K extends SoundDimension>={label:string;icon:PaperIconName;options:Record<SoundShape[K],string>};
@@ -12,3 +13,8 @@ export const dimensionCopy:{[K in SoundDimension]:DimensionCopy<K>}={
  intensity:{label:'轻响',icon:'intensity',options:{soft:'轻轻的',medium:'刚刚好',loud:'响亮的'}},
  pattern:{label:'出现方式',icon:'pattern',options:{once:'出现一次',repeat:'重复出现',bursts:'一阵一阵','fade-in':'慢慢出现'}},
 };
+
+/** The chosen options in row order, e.g. 「低低的、慢慢出现」; empty when nothing was chosen (the original sound). */
+export function shapeWords(shape:ChosenShape){
+ return SOUND_DIMENSIONS.flatMap(dimension=>{const value=shape[dimension];return value?[(dimensionCopy[dimension].options as Record<string,string>)[value]!]:[];}).join('、');
+}

@@ -1,11 +1,11 @@
 import {SHAPING_RULES} from '@wanwu-v2/sound-rules/rules';
-import {spanFor} from '../../../shared/creation/arrangementTiming';
-import {WorkSheet} from '../../../shared/ui/WorkSheet';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {worldCopy} from '../config/copy';
-import {secondsText} from '../model/clipEditing';
-import {useClipEditor} from '../model/useClipEditor';
-import type {SoundWorld} from '../model/useSoundWorld';
+import {spanFor} from '../../../shared/creation/arrangementTiming.ts';
+import {WorkSheet} from '../../../shared/ui/WorkSheet.tsx';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {worldCopy} from '../config/copy.ts';
+import {secondsText} from '../model/clipEditing.ts';
+import {useClipEditor} from '../model/useClipEditor.ts';
+import type {SoundWorld} from '../model/useSoundWorld.ts';
 import sheet from './sheet.module.css';
 import styles from './ClipEditor.module.css';
 

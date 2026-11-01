@@ -1,8 +1,8 @@
-import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {birthCopy} from '../config/copy';
-import type {useSoundBirth} from '../model/useSoundBirth';
-import type {LibraryItem} from '../services/soundLibrary';
+import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet.tsx';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {birthCopy} from '../config/copy.ts';
+import type {useSoundBirth} from '../model/useSoundBirth.ts';
+import type {LibraryItem} from '../services/soundLibrary.ts';
 import styles from './LibraryDialog.module.css';
 
 type Birth=ReturnType<typeof useSoundBirth>;

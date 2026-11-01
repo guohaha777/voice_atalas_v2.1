@@ -1,13 +1,13 @@
-import type {ComposeRepository} from '../../pages/compose/services/composeRepository';
-import type {SoundWorldRepository} from '../../pages/sound-world/services/soundWorldRepository';
-import type {ShelfRepository} from '../../pages/works/services/shelfRepository';
-import type {SoundLibraryService} from '../creation/soundLibrary';
+import type {ComposeRepository} from '../ports/composeRepository.ts';
+import type {SoundWorldRepository} from '../ports/soundWorldRepository.ts';
+import type {ShelfRepository} from '../ports/shelfRepository.ts';
+import type {SoundLibraryService} from '../creation/soundLibrary.ts';
 import {workEtag} from '@wanwu-v2/contracts/cloud';
-import {workSession} from '../creation/workSession';
-import {CloudShelf} from './cloudShelf';
-import {cloudError} from './cloudTypes';
-import type {CloudWorkspace} from './cloudWorkspace';
-import {libraryEntries} from './libraryEntries';
+import {workSession} from '../creation/workSession.ts';
+import {CloudShelf} from './cloudShelf.ts';
+import {cloudError} from './cloudTypes.ts';
+import type {CloudWorkspace} from './cloudWorkspace.ts';
+import {libraryEntries} from './libraryEntries.ts';
 
 /**
  * The page ports for a signed-in teacher: the shelf, saving, sharing and the libraries go to the account; signed out,

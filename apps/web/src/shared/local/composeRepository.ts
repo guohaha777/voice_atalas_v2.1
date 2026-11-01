@@ -1,11 +1,11 @@
 // Local 万物成曲 repository for visitors: the current work (shared/creation/workSession) and the 作品书架
 // (shared/creation/workShelf), both kept on this device by shared/storage/guestStore.ts. Nothing is uploaded; `device`
 // results say so. Signed-in teachers use the cloud adapter instead (app/services.ts).
-import type {ComposeRepository} from '../../pages/compose/services/composeRepository';
-import {newId} from '../creation/ids';
-import {workSession} from '../creation/workSession';
-import {exampleArrangement} from '../creation/exampleWork';
-import {workShelf} from '../creation/workShelf';
+import type {ComposeRepository} from '../ports/composeRepository.ts';
+import {newId} from '../creation/ids.ts';
+import {workSession} from '../creation/workSession.ts';
+import {exampleArrangement} from '../creation/exampleWork.ts';
+import {workShelf} from '../creation/workShelf.ts';
 
 export const localComposeRepository:ComposeRepository={
  // The current work on this device; with none, the same example 万物声场 shows.

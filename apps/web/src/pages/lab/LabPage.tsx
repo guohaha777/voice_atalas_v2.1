@@ -1,7 +1,7 @@
-import {labCopy} from './config/copy';
-import {RuleEditor} from './components/RuleEditor';
-import {SoundPanel} from './components/SoundPanel';
-import {useLab} from './model/useLab';
+import {labCopy} from './config/copy.ts';
+import {RuleEditor} from './components/RuleEditor.tsx';
+import {SoundPanel} from './components/SoundPanel.tsx';
+import {useLab} from './model/useLab.ts';
 import styles from './LabPage.module.css';
 
 /**

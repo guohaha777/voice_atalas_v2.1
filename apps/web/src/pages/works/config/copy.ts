@@ -1,5 +1,5 @@
 import type {Visibility} from '@wanwu-v2/contracts/work';
-import {homeLayer} from '../../../shared/scene/homeScene';
+import {homeLayer} from '../../../shared/scene/homeScene.ts';
 
 /** 作品书架 is kept by the snail — slow and careful, it keeps what you made. Reuses the home derivative. */
 export const shelfGuide={label:'小蜗牛向导',variants:homeLayer('snail').variants};

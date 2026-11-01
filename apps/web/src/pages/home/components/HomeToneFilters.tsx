@@ -1,4 +1,4 @@
-import {homeGreenTones} from '../config/scene';
+import {homeGreenTones} from '../config/scene.ts';
 
 /** Green must exceed both red and blue, so neutral paper, stones and blue water stay unchanged. */
 export function HomeToneFilters(){

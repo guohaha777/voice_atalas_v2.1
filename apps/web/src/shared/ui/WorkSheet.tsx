@@ -1,6 +1,6 @@
 import type {ReactNode} from 'react';
-import {Dialog} from './Dialog';
-import {ui} from './controls';
+import {Dialog} from './Dialog.tsx';
+import {ui} from './controls.ts';
 import styles from './WorkSheet.module.css';
 
 /** The shared work-page dialog (record, library, paper card, more sounds, 剪一剪, 自己写…). Focus and Esc come from Dialog. */

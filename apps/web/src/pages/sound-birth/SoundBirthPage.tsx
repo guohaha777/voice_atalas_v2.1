@@ -1,19 +1,19 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {flowSteps} from '../../app/navigation';
-import {FlowHeader} from '../../shared/ui/FlowHeader';
-import {WorkHeaderActions} from '../../shared/ui/WorkHeaderActions';
+import {flowSteps} from '../../app/navigation.ts';
+import {FlowHeader} from '../../shared/ui/FlowHeader.tsx';
+import {WorkHeaderActions} from '../../shared/ui/WorkHeaderActions.tsx';
 import type {SoundDimension} from '@wanwu-v2/contracts/sound';
-import type {EditingSound,FinishResult,FinishThen,FinishedSound} from './model/useSoundBirth';
-import {birthCopy} from './config/copy';
-import {remainingDimensions} from './model/soundBirthState';
-import {useSoundBirth} from './model/useSoundBirth';
-import {CurrentSoundBar} from './components/CurrentSoundBar';
-import {LibraryDialog} from './components/LibraryDialog';
-import {RecordDialog} from './components/RecordDialog';
-import {ShapeEditor} from './components/ShapeEditor';
-import {SoundCard} from './components/SoundCard';
-import {SpiritStage} from './components/SpiritStage';
-import {TrimDialog} from './components/TrimDialog';
+import type {EditingSound,FinishResult,FinishThen,FinishedSound} from './model/useSoundBirth.ts';
+import {birthCopy} from './config/copy.ts';
+import {remainingDimensions} from './model/soundBirthState.ts';
+import {useSoundBirth} from './model/useSoundBirth.ts';
+import {CurrentSoundBar} from './components/CurrentSoundBar.tsx';
+import {LibraryDialog} from './components/LibraryDialog.tsx';
+import {RecordDialog} from './components/RecordDialog.tsx';
+import {ShapeEditor} from './components/ShapeEditor.tsx';
+import {SoundCard} from './components/SoundCard.tsx';
+import {SpiritStage} from './components/SpiritStage.tsx';
+import {TrimDialog} from './components/TrimDialog.tsx';
 import styles from './SoundBirthPage.module.css';
 
 /** 声音诞生 (采集与转译 merged): bring in a sound with its provenance, set the five choices, compare with the original. */

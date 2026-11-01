@@ -1,8 +1,8 @@
 import {useLayoutEffect,useRef,useState} from 'react';
 import type {CSSProperties,ReactNode} from 'react';
-import type {ArtVariants} from './types';
+import type {ArtVariants} from './types.ts';
 import styles from './ArtPicture.module.css';
-import {media} from '../../styles/breakpoints';
+import {media} from '../../styles/breakpoints.ts';
 
 type ArtPictureProps={variants:ArtVariants;className?:string;style?:CSSProperties;priority?:'high'|'low'|'auto';fallback?:ReactNode};
 

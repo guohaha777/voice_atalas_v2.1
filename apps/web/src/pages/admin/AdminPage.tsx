@@ -1,11 +1,11 @@
 import {useEffect,useState} from 'react';
 import {parseAccountView} from '@wanwu-v2/contracts/account';
 import type {AccountView,InvitationView} from '@wanwu-v2/contracts/account';
-import {AccountEntry} from '../account/AccountEntry';
-import {useAccount} from '../account/AccountProvider';
-import {useCloud} from './CloudProvider';
-import {cloudError} from './cloudTypes';
-import styles from './CloudControls.module.css';
+import {AccountEntry} from '../../shared/account/AccountEntry.tsx';
+import {useAccount} from '../../shared/account/AccountProvider.tsx';
+import {useCloud} from '../../shared/cloud/CloudProvider.tsx';
+import {cloudError} from '../../shared/cloud/cloudTypes.ts';
+import styles from '../../shared/cloud/CloudControls.module.css';
 
 /**
  * The smallest admin page: invitations, account recovery, and taking down reported content by its exact id. The server

@@ -1,7 +1,7 @@
-import type {HomeDestination} from '../../../app/navigation';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {Logo} from '../../../shared/ui/Logo';
-import {useAccount} from '../../../shared/account/AccountProvider';
+import type {HomeDestination} from '../../../app/navigation.ts';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {Logo} from '../../../shared/ui/Logo.tsx';
+import {useAccount} from '../../../shared/account/AccountProvider.tsx';
 import styles from '../HomePage.module.css';
 export function HomeHeader({onNavigate}:{onNavigate:(page:HomeDestination)=>void}){
  const {account}=useAccount();

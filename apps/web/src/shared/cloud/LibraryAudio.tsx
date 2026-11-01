@@ -4,8 +4,8 @@ import type {SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {planCard} from '@wanwu-v2/sound-rules/shaping';
 import {renderShaped} from '@wanwu-v2/audio-engine/shaping';
 import {pcm16Wave} from '@wanwu-v2/audio-engine/pcm';
-import type {CloudMedia} from './cloudMedia';
-import {cloudError} from './cloudTypes';
+import type {CloudMedia} from './cloudMedia.ts';
+import {cloudError} from './cloudTypes.ts';
 import styles from './CloudControls.module.css';
 
 /** Confirmation hears the same canonical derivative, rules and five-dimensional parameters as the editor. */

@@ -1,7 +1,7 @@
 import {useState} from 'react';
-import {Glyph} from '../ui/PaperIcon';
-import {useAccount} from './AccountProvider';
-import {AccountDialog} from './AccountDialog';
+import {Glyph} from '../ui/PaperIcon.tsx';
+import {useAccount} from './AccountProvider.tsx';
+import {AccountDialog} from './AccountDialog.tsx';
 
 export function AccountEntry({className}:{className?:string}){
  const [open,setOpen]=useState(false),{account}=useAccount();

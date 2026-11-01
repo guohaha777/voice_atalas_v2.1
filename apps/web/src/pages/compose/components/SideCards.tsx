@@ -1,13 +1,13 @@
 import {useMemo} from 'react';
 import type {CSSProperties} from 'react';
-import {inspirationCopy} from '../../../shared/inspiration/copy';
-import type {InspirationTab} from '../../../shared/inspiration/InspirationDialog';
-import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
-import type {PaperIconName,PaperTone} from '../../../shared/ui/PaperIcon';
-import {composeCopy} from '../config/copy';
-import {minSpan} from '../../../shared/creation/arrangementTiming';
-import {spanChoices} from '../model/scoreLayout';
-import type {Compose} from '../model/useCompose';
+import {inspirationCopy} from '../../../shared/inspiration/copy.ts';
+import type {InspirationTab} from '../../../shared/inspiration/InspirationDialog.tsx';
+import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon.tsx';
+import type {PaperIconName,PaperTone} from '../../../shared/ui/PaperIcon.tsx';
+import {composeCopy} from '../config/copy.ts';
+import {minSpan} from '../../../shared/creation/arrangementTiming.ts';
+import {spanChoices} from '../model/scoreLayout.ts';
+import type {Compose} from '../model/useCompose.ts';
 import styles from './SideCards.module.css';
 
 /** Card icon: a solid paper cut-out in a palette colour (no backing shape), as on 声音诞生. */

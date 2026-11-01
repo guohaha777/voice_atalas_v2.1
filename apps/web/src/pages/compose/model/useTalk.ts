@@ -3,10 +3,10 @@ import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {BackgroundPlan} from '@wanwu-v2/sound-rules/background';
-import type {TalkPolisher} from '../../../shared/talk/polisher';
-import {localTalk,mergeTalk,polishTalk,talkKey} from '../../../shared/talk/talkView';
-import type {Polished} from '../../../shared/talk/talkView';
-import {keptCache} from '../../../shared/storage/keptCache';
+import type {TalkPolisher} from '../../../shared/talk/polisher.ts';
+import {localTalk,mergeTalk,polishTalk,talkKey} from '../../../shared/talk/talkView.ts';
+import type {Polished} from '../../../shared/talk/talkView.ts';
+import {keptCache} from '../../../shared/storage/keptCache.ts';
 
 /** One AI rewording per talk (what would be sent), kept on this device: asked again only by 换一首. */
 const made=keptCache<Polished>('ai-talk');

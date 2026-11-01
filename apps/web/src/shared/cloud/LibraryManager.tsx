@@ -2,14 +2,14 @@ import {useEffect,useState,useSyncExternalStore} from 'react';
 import type {LibraryEntry,SourceView} from '@wanwu-v2/contracts/cloud';
 import {CONFIRMATION_VERSION} from '@wanwu-v2/contracts/cloud';
 import type {SoundUnitDraft} from '@wanwu-v2/contracts/sound';
-import {WorkSheet} from '../ui/WorkSheet';
-import {workSession} from '../creation/workSession';
-import {sessionArchive} from '../creation/sourceArchive';
-import {newId} from '../creation/ids';
-import {useCloud} from './CloudProvider';
-import {cloudError} from './cloudTypes';
-import {LibraryAudio} from './LibraryAudio';
-import {libraryEntries} from './libraryEntries';
+import {WorkSheet} from '../ui/WorkSheet.tsx';
+import {workSession} from '../creation/workSession.ts';
+import {sessionArchive} from '../creation/sourceArchive.ts';
+import {newId} from '../creation/ids.ts';
+import {useCloud} from './CloudProvider.tsx';
+import {cloudError} from './cloudTypes.ts';
+import {LibraryAudio} from './LibraryAudio.tsx';
+import {libraryEntries} from './libraryEntries.ts';
 import styles from './CloudControls.module.css';
 
 /**

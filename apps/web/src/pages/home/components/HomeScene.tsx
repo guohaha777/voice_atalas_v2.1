@@ -1,10 +1,10 @@
 import {useState} from 'react';
 import type {CSSProperties,RefObject} from 'react';
-import {ResponsivePicture} from '../../../shared/media/ResponsivePicture';
-import type {SceneLayer} from '../../../shared/media/types';
-import {sceneLayers,homeAssets,foliageOpacity,sceneGroups,mobilePlacement,characterScale} from '../config/scene';
+import {ResponsivePicture} from '../../../shared/media/ResponsivePicture.tsx';
+import type {SceneLayer} from '../../../shared/media/types.ts';
+import {sceneLayers,homeAssets,foliageOpacity,sceneGroups,mobilePlacement,characterScale} from '../config/scene.ts';
 import styles from '../HomePage.module.css';
-import {HomeToneFilters} from './HomeToneFilters';
+import {HomeToneFilters} from './HomeToneFilters.tsx';
 type Props={
  sceneRef:RefObject<HTMLDivElement|null>;
  waiting:boolean;

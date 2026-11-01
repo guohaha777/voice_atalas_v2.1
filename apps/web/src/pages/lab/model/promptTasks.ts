@@ -14,11 +14,11 @@ import {
 } from '@wanwu-v2/prompts/tasks';
 import type {BuiltPrompt,TaskId} from '@wanwu-v2/prompts/tasks';
 import {backgroundPlan} from '@wanwu-v2/sound-rules/background';
-import {backgroundBrief,backgroundInput} from '../../../shared/background/backgroundLayer';
-import {backgroundCopy} from '../../../shared/background/copy';
-import {moodLabels} from '../../../shared/creation/moodCopy';
-import {localTalk,mergeTalk} from '../../../shared/talk/talkView';
-import {promptCopy} from '../config/promptCopy';
+import {backgroundBrief,backgroundInput} from '../../../shared/background/backgroundLayer.ts';
+import {backgroundCopy} from '../../../shared/background/copy.ts';
+import {moodLabels} from '../../../shared/creation/moodCopy.ts';
+import {localTalk,mergeTalk} from '../../../shared/talk/talkView.ts';
+import {promptCopy} from '../config/promptCopy.ts';
 
 export type PromptLabInput={
  arrangement:Arrangement|null;

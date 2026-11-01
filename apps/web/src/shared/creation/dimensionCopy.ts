@@ -2,7 +2,7 @@
 // later 万物成曲). Option order follows SOUND_CHOICES in the contract.
 import {SOUND_DIMENSIONS} from '@wanwu-v2/contracts/sound';
 import type {ChosenShape,SoundDimension,SoundShape} from '@wanwu-v2/contracts/sound';
-import type {PaperIconName} from '../ui/PaperIcon';
+import type {PaperIconName} from '../ui/PaperIcon.tsx';
 
 type DimensionCopy<K extends SoundDimension>={label:string;icon:PaperIconName;options:Record<SoundShape[K],string>};
 

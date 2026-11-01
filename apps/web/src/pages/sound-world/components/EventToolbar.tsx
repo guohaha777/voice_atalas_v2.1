@@ -1,8 +1,8 @@
 import type {PlacedEvent} from '@wanwu-v2/contracts/arrangement';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {worldCopy} from '../config/copy';
-import {spotPosition} from '../model/fieldGeometry';
-import type {SoundWorld} from '../model/useSoundWorld';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {worldCopy} from '../config/copy.ts';
+import {spotPosition} from '../model/fieldGeometry.ts';
+import type {SoundWorld} from '../model/useSoundWorld.ts';
 import styles from './EventToolbar.module.css';
 
 /**

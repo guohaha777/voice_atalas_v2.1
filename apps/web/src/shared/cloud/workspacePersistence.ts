@@ -2,10 +2,10 @@
 // only what changed (arrangement, compose settings, title), each as a new revision.
 import {parseWorkRecord,workEtag} from '@wanwu-v2/contracts/cloud';
 import type {WorkContent,WorkRecord} from '@wanwu-v2/contracts/cloud';
-import {AccountError} from '../account/accountClient';
-import type {CloudWorkspace} from './cloudWorkspace';
-import {workSession} from '../creation/workSession';
-import {newId} from '../creation/ids';
+import {AccountError} from '../account/accountClient.ts';
+import type {CloudWorkspace} from './cloudWorkspace.ts';
+import {workSession} from '../creation/workSession.ts';
+import {newId} from '../creation/ids.ts';
 
 export const checkedWork=(value:unknown)=>{
  const work=parseWorkRecord(value);

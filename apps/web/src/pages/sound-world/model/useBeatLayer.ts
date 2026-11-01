@@ -2,8 +2,8 @@ import {useRef} from 'react';
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import {BACKGROUND_RULES} from '@wanwu-v2/sound-rules/rules';
-import {pieceSeconds} from '../../../shared/creation/arrangementTiming';
-import {hasBeat,renderBeat,songBeat} from '../../../shared/inspiration/beat';
+import {pieceSeconds} from '../../../shared/creation/arrangementTiming.ts';
+import {hasBeat,renderBeat,songBeat} from '../../../shared/inspiration/beat.ts';
 
 /** Renders kept at once (a few lengths and songs); older ones are let go. */
 const KEEP=4;

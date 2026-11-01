@@ -1,13 +1,13 @@
 import {useMemo} from 'react';
 import {MOODS} from '@wanwu-v2/contracts/arrangement';
 import {SOUND_CHOICES,SOUND_DIMENSIONS} from '@wanwu-v2/contracts/sound';
-import {computePeaks} from '../../../shared/audio/peaks';
-import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
-import {exampleSounds} from '../../../shared/creation/exampleSounds';
-import {moodLabels} from '../../../shared/creation/moodCopy';
+import {computePeaks} from '../../../shared/audio/peaks.ts';
+import {dimensionCopy} from '../../../shared/creation/dimensionCopy.ts';
+import {exampleSounds} from '../../../shared/creation/exampleSounds.ts';
+import {moodLabels} from '../../../shared/creation/moodCopy.ts';
 import testSet from '../../../../../../docs/assets/test-set.json';
-import {labCopy} from '../config/copy';
-import type {Lab} from '../model/useLab';
+import {labCopy} from '../config/copy.ts';
+import type {Lab} from '../model/useLab.ts';
 import styles from '../LabPage.module.css';
 
 const BINS=240;

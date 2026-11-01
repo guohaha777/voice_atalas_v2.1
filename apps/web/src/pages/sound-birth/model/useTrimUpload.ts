@@ -1,10 +1,10 @@
 import {useState} from 'react';
 import type {SoundSource} from '@wanwu-v2/contracts/sound';
-import type {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {sliceBuffer} from '../../../shared/audio/sliceBuffer';
-import {originalGainOf} from '../../../shared/audio/soundAnalysis';
-import {initialTrim} from './trimEditing';
-import type {TrimRange} from './trimEditing';
+import type {SequencePlayer} from '../../../shared/audio/SequencePlayer.ts';
+import {sliceBuffer} from '../../../shared/audio/sliceBuffer.ts';
+import {originalGainOf} from '../../../shared/audio/soundAnalysis.ts';
+import {initialTrim} from './trimEditing.ts';
+import type {TrimRange} from './trimEditing.ts';
 
 /** `from`: the library source being trimmed (a long example), or null for an uploaded file. */
 type Trim={

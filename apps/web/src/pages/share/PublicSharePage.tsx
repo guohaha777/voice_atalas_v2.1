@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {parsePublishedWork} from '@wanwu-v2/contracts/cloud';
 import type {PublishedWorkView} from '@wanwu-v2/contracts/cloud';
-import styles from './CloudControls.module.css';
+import styles from '../../shared/cloud/CloudControls.module.css';
 
 /**
  * A shared work's public page: the finished audio a teacher published, playable without signing in. Playback links

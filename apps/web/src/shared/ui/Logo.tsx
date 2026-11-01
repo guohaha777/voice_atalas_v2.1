@@ -1,9 +1,9 @@
 import type {CSSProperties} from 'react';
-import {ArtPicture} from '../media/ArtPicture';
-import {soundMarkers} from '../markers/markers';
-import {spiritPoses} from '../markers/spiritPoses';
+import {ArtPicture} from '../media/ArtPicture.tsx';
+import {soundMarkers} from '../markers/markers.ts';
+import {spiritPoses} from '../markers/spiritPoses.ts';
 import styles from './Logo.module.css';
-import {media} from '../../styles/breakpoints';
+import {media} from '../../styles/breakpoints.ts';
 
 // 万物声谱 as one emblem (reference: the approved logo sketch). Each sound marker belongs to one character and weaves
 // through it: its body sits behind or in front of the strokes, its hands grip a stroke from the front, and the ones

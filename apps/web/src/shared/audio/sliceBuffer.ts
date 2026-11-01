@@ -1,4 +1,4 @@
-import {getAudioContext} from './audioContext';
+import {getAudioContext} from './audioContext.ts';
 
 /** A new buffer holding [startMs, endMs) of `buffer`. The input is only read, never changed. */
 export function sliceBuffer(buffer:AudioBuffer,startMs:number,endMs:number):AudioBuffer{

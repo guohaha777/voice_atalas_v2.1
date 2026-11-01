@@ -1,8 +1,8 @@
 import type {CSSProperties} from 'react';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {composeCopy} from '../config/copy';
-import {clockText} from '../model/scoreLayout';
-import type {Compose} from '../model/useCompose';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {composeCopy} from '../config/copy.ts';
+import {clockText} from '../model/scoreLayout.ts';
+import type {Compose} from '../model/useCompose.ts';
 import styles from './Transport.module.css';
 
 /**

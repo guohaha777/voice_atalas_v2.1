@@ -1,11 +1,11 @@
 import {useRef,useState} from 'react';
 import type {ChosenShape,SoundSource} from '@wanwu-v2/contracts/sound';
 import {planCard,shapeKey} from '@wanwu-v2/sound-rules/shaping';
-import {renderShaped} from '../../../shared/audio/renderShaped';
-import type {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {analysisOf,originalGainOf} from '../../../shared/audio/soundAnalysis';
-import {birthCopy} from '../config/copy';
-import type {Notify} from './localSource';
+import {renderShaped} from '../../../shared/audio/renderShaped.ts';
+import type {SequencePlayer} from '../../../shared/audio/SequencePlayer.ts';
+import {analysisOf,originalGainOf} from '../../../shared/audio/soundAnalysis.ts';
+import {birthCopy} from '../config/copy.ts';
+import type {Notify} from './localSource.ts';
 
 /** Which compare target the waveform shows; also the play keys for original / current. */
 export type CompareTarget='original'|'current';

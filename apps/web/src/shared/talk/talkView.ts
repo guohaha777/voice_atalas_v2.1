@@ -19,7 +19,7 @@ import {textbookTalk} from '../inspiration/talk.ts';
 import {textbookTalkBrief,workTalkBrief} from './briefs.ts';
 import {findDiscoveries} from './discoveries.ts';
 import {TALK_TIMEOUT_MS} from './polisher.ts';
-import type {TalkPolisher} from './polisher';
+import type {TalkPolisher} from './polisher.ts';
 
 /** What the footer and the teacher panel say, and who wrote it (the corpus, or an AI rewording that passed every check). */
 export type TalkView={

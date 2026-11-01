@@ -1,11 +1,11 @@
 import {useEffect,useRef,useState} from 'react';
 import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
-import {LocalRecorder,RecorderError} from '../../../shared/audio/LocalRecorder';
-import {decodeAudio} from '../../../shared/audio/loadAudio';
-import type {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {originalGainOf} from '../../../shared/audio/soundAnalysis';
-import {birthCopy} from '../config/copy';
-import type {Notify} from './localSource';
+import {LocalRecorder,RecorderError} from '../../../shared/audio/LocalRecorder.ts';
+import {decodeAudio} from '../../../shared/audio/loadAudio.ts';
+import type {SequencePlayer} from '../../../shared/audio/SequencePlayer.ts';
+import {originalGainOf} from '../../../shared/audio/soundAnalysis.ts';
+import {birthCopy} from '../config/copy.ts';
+import type {Notify} from './localSource.ts';
 
 export type RecordPhase='idle'|'starting'|'recording'|'review';
 export type Take={buffer:AudioBuffer;mimeType:string;original:Blob};

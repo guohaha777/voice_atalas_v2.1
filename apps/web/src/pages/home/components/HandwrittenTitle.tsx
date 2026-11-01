@@ -1,8 +1,8 @@
 import type {CSSProperties} from 'react';
-import type {IntroState} from '../model/introState';
-import {useTitleMotion} from '../model/useTitleMotion';
-import {titleAssets,titleCanvas,titleMotion,titleGlyphs,titleParticles} from '../config/title';
-import {TitleSprite} from './TitleSprite';
+import type {IntroState} from '../model/introState.ts';
+import {useTitleMotion} from '../model/useTitleMotion.ts';
+import {titleAssets,titleCanvas,titleMotion,titleGlyphs,titleParticles} from '../config/title.ts';
+import {TitleSprite} from './TitleSprite.tsx';
 import styles from './HandwrittenTitle.module.css';
 /** A box on the title canvas, in percent of it. */
 const position=(x:number,y:number,size:number,height=size)=>({

@@ -1,7 +1,7 @@
 import type {SoundSource,SoundSourceKind} from '@wanwu-v2/contracts/sound';
 import {newId} from '../../../shared/creation/ids.ts';
 import {sessionArchive} from '../../../shared/creation/sourceArchive.ts';
-import type {Notice} from './soundBirthState';
+import type {Notice} from './soundBirthState.ts';
 
 /** Shows a notice where it belongs (errors by default); the character speaks it. */
 export type Notify=(area:NonNullable<Notice>['area'],text:string,tone?:'info'|'error')=>void;

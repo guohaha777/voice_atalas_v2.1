@@ -1,8 +1,8 @@
 import type {SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import type {PatternChoice} from '@wanwu-v2/contracts/sound';
-import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
-import type {NoticeKey} from '../model/soundWorldState';
-import type {LibraryScope} from '../services/soundWorldRepository';
+import {dimensionCopy} from '../../../shared/creation/dimensionCopy.ts';
+import type {NoticeKey} from '../model/soundWorldState.ts';
+import type {LibraryScope} from '../../../shared/ports/soundWorldRepository.ts';
 
 export const worldCopy={
  title:'把声音摆一摆，听听会发生什么',

@@ -1,8 +1,8 @@
 import {useCallback,useEffect,useMemo,useState,useSyncExternalStore} from 'react';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
-import type {InspirationCatalog} from './catalog';
-import {teachingMusic} from './teachingMusic';
-import type {TeachingMusicService} from './teachingMusic';
+import type {InspirationCatalog} from './catalog.ts';
+import {teachingMusic} from './teachingMusic.ts';
+import type {TeachingMusicService} from './teachingMusic.ts';
 
 /**
  * 课本灵感 for a page (万物声场, 万物成曲): the textbook songs from the one catalogue port, the teaching music on this

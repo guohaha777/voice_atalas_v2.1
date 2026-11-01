@@ -1,5 +1,5 @@
-import {TALK_TIMEOUT_MS} from '../../../shared/talk/polisher';
-import {composeCopy} from '../config/copy';
+import {TALK_TIMEOUT_MS} from '../../../shared/talk/polisher.ts';
+import {composeCopy} from '../config/copy.ts';
 import styles from './TalkProgress.module.css';
 
 /**

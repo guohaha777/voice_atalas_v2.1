@@ -2,10 +2,10 @@ import {MOODS} from '@wanwu-v2/contracts/arrangement';
 import {SOUND_CHOICES,SOUND_DIMENSIONS,SOUND_KINDS} from '@wanwu-v2/contracts/sound';
 import type {SoundDimension,SoundKind} from '@wanwu-v2/contracts/sound';
 import type {MoodId} from '@wanwu-v2/contracts/arrangement';
-import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
-import {moodLabels} from '../../../shared/creation/moodCopy';
-import {promptCopy} from '../config/promptCopy';
-import type {PromptLab} from '../model/usePromptLab';
+import {dimensionCopy} from '../../../shared/creation/dimensionCopy.ts';
+import {moodLabels} from '../../../shared/creation/moodCopy.ts';
+import {promptCopy} from '../config/promptCopy.ts';
+import type {PromptLab} from '../model/usePromptLab.ts';
 import styles from '../PromptLabPage.module.css';
 
 /** What the chosen task depends on: the work's mood, the textbook song; per task a few more inputs. */

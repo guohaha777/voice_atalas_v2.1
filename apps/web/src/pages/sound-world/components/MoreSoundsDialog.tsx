@@ -1,12 +1,12 @@
 import {useEffect,useState} from 'react';
-import {SoundMarker} from '../../../shared/markers/SoundMarker';
-import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {worldCopy} from '../config/copy';
-import {nextMarkerIndex} from '../model/soundWorldState';
-import type {SoundWorld} from '../model/useSoundWorld';
-import {libraryScopes} from '../services/soundWorldRepository';
-import type {LibraryScope,ScopeResult} from '../services/soundWorldRepository';
+import {SoundMarker} from '../../../shared/markers/SoundMarker.tsx';
+import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet.tsx';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {worldCopy} from '../config/copy.ts';
+import {nextMarkerIndex} from '../model/soundWorldState.ts';
+import type {SoundWorld} from '../model/useSoundWorld.ts';
+import {libraryScopes} from '../../../shared/ports/soundWorldRepository.ts';
+import type {LibraryScope,ScopeResult} from '../../../shared/ports/soundWorldRepository.ts';
 import sheet from './sheet.module.css';
 import styles from './MoreSoundsDialog.module.css';
 

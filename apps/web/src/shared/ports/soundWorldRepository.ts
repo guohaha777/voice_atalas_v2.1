@@ -15,7 +15,7 @@
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import type {ComposeSettings} from '@wanwu-v2/contracts/work';
 import type {SoundUnitDraft} from '@wanwu-v2/contracts/sound';
-import type {SaveResult} from '../../../shared/creation/workSession';
+import type {SaveResult} from '../creation/workSession.ts';
 
 export type LibraryScope='example'|'mine'|'teachers'|'class'|'public';
 export const libraryScopes:readonly LibraryScope[]=['example','mine','teachers'];

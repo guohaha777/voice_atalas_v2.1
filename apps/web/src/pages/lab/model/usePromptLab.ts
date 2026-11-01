@@ -3,9 +3,9 @@ import type {Arrangement,MoodId} from '@wanwu-v2/contracts/arrangement';
 import type {SoundDimension,SoundKind} from '@wanwu-v2/contracts/sound';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {TaskId} from '@wanwu-v2/prompts/tasks';
-import {services} from '../../../app/services';
-import {presetMood} from '../../../shared/creation/moodCopy';
-import {exampleReply,taskView} from './promptTasks';
+import {services} from '../../../app/services.ts';
+import {presetMood} from '../../../shared/creation/moodCopy.ts';
+import {exampleReply,taskView} from './promptTasks.ts';
 
 /** 提示词台 state: the work of this visit (or the example), what the task depends on, and a pasted reply. */
 export function usePromptLab(){

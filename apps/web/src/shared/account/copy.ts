@@ -1,4 +1,4 @@
-import {AccountError} from './accountClient';
+import {AccountError} from './accountClient.ts';
 
 export function accountErrorText(error:unknown){
  if(!(error instanceof AccountError))return '连接未完成，请稍后重试。当前创作没有被清空。';

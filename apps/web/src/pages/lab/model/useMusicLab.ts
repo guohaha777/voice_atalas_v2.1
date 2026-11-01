@@ -6,11 +6,11 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {MEASURE_RATE,MEASURE_VERSION,judge,measure,pickRhythm,report} from '@wanwu-v2/music-features';
 import type {FieldCheck,JudgedRecording,Measurement,MusicAnswers} from '@wanwu-v2/music-features';
 import {BACKGROUND_RULES,MIX_RULES,MUSIC_TYPES_RULES} from '@wanwu-v2/sound-rules/rules';
-import {decodeAudio} from '../../../shared/audio/loadAudio';
-import {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {renderBeat,songBeat} from '../../../shared/inspiration/beat';
-import {firstStrongBeat} from '../../../shared/inspiration/originalBeat';
-import {monoOf} from '../../../shared/inspiration/teachingCard';
+import {decodeAudio} from '../../../shared/audio/loadAudio.ts';
+import {SequencePlayer} from '../../../shared/audio/SequencePlayer.ts';
+import {renderBeat,songBeat} from '../../../shared/inspiration/beat.ts';
+import {firstStrongBeat} from '../../../shared/inspiration/originalBeat.ts';
+import {monoOf} from '../../../shared/inspiration/teachingCard.ts';
 
 const ROUTE='/__lab/music';
 export type LabSet='system'|'test';

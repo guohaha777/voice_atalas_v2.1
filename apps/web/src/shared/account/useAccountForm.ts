@@ -1,8 +1,8 @@
 import {useState} from 'react';
-import {useAccount} from './AccountProvider';
-import {accountErrorText} from './copy';
-import {emptyAccountDraft,validateAccountForm} from './formValidation';
-import type {AccountDraft,AccountFormMode} from './formValidation';
+import {useAccount} from './AccountProvider.tsx';
+import {accountErrorText} from './copy.ts';
+import {emptyAccountDraft,validateAccountForm} from './formValidation.ts';
+import type {AccountDraft,AccountFormMode} from './formValidation.ts';
 
 export function useAccountForm(initial:AccountFormMode='login',resetToken:string|null=null){
  const {session,busy}=useAccount();

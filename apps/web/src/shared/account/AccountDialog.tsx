@@ -1,8 +1,8 @@
-import {Dialog} from '../ui/Dialog';
-import {useAccount} from './AccountProvider';
-import {AccountForm} from './AccountForm';
-import {useAccountForm} from './useAccountForm';
-import {accountErrorText} from './copy';
+import {Dialog} from '../ui/Dialog.tsx';
+import {useAccount} from './AccountProvider.tsx';
+import {AccountForm} from './AccountForm.tsx';
+import {useAccountForm} from './useAccountForm.ts';
+import {accountErrorText} from './copy.ts';
 import styles from './AccountDialog.module.css';
 
 export function AccountDialog({onClose}:{onClose:()=>void}){

@@ -1,11 +1,11 @@
 import {useState} from 'react';
 import {VISIBILITIES,WORK_TITLE_MAX} from '@wanwu-v2/contracts/work';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
-import {composeCopy} from '../config/copy';
-import type {Compose} from '../model/useCompose';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet.tsx';
+import {composeCopy} from '../config/copy.ts';
+import type {Compose} from '../model/useCompose.ts';
 import styles from './ComposeDialogs.module.css';
-import {useCloud} from '../../../shared/cloud/CloudProvider';
+import {useCloud} from '../../../shared/cloud/CloudProvider.tsx';
 
 const save=composeCopy.saveDialog;
 

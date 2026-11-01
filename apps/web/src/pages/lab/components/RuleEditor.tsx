@@ -1,8 +1,8 @@
 import {useMemo,useState} from 'react';
-import {labCopy} from '../config/copy';
-import {RULE_SETS,fieldsOf,getAt,ruleLimits} from '../model/ruleTree';
-import type {Field,RuleSetName} from '../model/ruleTree';
-import type {Lab} from '../model/useLab';
+import {labCopy} from '../config/copy.ts';
+import {RULE_SETS,fieldsOf,getAt,ruleLimits} from '../model/ruleTree.ts';
+import type {Field,RuleSetName} from '../model/ruleTree.ts';
+import type {Lab} from '../model/useLab.ts';
 import styles from '../LabPage.module.css';
 
 /** One control per tunable value of a rule file, its range from the rule checks; problems block the export. */

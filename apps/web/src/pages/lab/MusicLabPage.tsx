@@ -1,9 +1,9 @@
 import type {ReactNode} from 'react';
 import {ANSWER_FIELDS,judge} from '@wanwu-v2/music-features';
 import type {AnswerField,FieldCheck,Measurement,MusicAnswers,Summary} from '@wanwu-v2/music-features';
-import {KEY_NAMES,musicCopy as copy} from './config/musicCopy';
-import {useMusicLab} from './model/useMusicLab';
-import type {LabSet,MusicLab} from './model/useMusicLab';
+import {KEY_NAMES,musicCopy as copy} from './config/musicCopy.ts';
+import {useMusicLab} from './model/useMusicLab.ts';
+import type {LabSet,MusicLab} from './model/useMusicLab.ts';
 import styles from './MusicLabPage.module.css';
 
 /**

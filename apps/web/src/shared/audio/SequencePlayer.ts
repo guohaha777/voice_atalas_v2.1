@@ -1,4 +1,4 @@
-import {getAudioContext,resumeAudio} from './audioContext';
+import {getAudioContext,resumeAudio} from './audioContext.ts';
 
 /** `layer` groups voices under one live volume control (e.g. a background under the child's sounds). */
 export type SequenceVoice={at:number;buffer:AudioBuffer;layer?:string};

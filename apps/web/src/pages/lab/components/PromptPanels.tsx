@@ -1,5 +1,5 @@
-import {promptCopy} from '../config/promptCopy';
-import type {PromptLab} from '../model/usePromptLab';
+import {promptCopy} from '../config/promptCopy.ts';
+import type {PromptLab} from '../model/usePromptLab.ts';
 import styles from '../PromptLabPage.module.css';
 
 /** Three columns (brief → corpus → request), then a pasted reply and what the page would show from it. */

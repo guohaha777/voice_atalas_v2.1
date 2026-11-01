@@ -1,7 +1,7 @@
 // Local 万物声场 repository for visitors: the example field and units, and the work kept on this device (workSession,
 // saved to the browser by shared/storage/guestStore.ts). Class and public sound libraries are reported as not open.
 // Signed-in teachers use the cloud adapter instead (app/services.ts).
-import type {SoundWorldRepository} from '../../pages/sound-world/services/soundWorldRepository';
+import type {SoundWorldRepository} from '../ports/soundWorldRepository.ts';
 import {newId} from '../creation/ids.ts';
 import {workSession} from '../creation/workSession.ts';
 import {exampleArrangement,exampleUnit} from '../creation/exampleWork.ts';

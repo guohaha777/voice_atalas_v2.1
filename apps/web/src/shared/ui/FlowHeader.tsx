@@ -1,6 +1,6 @@
 import type {ReactNode} from 'react';
-import {Logo} from './Logo';
-import {AccountEntry} from '../account/AccountEntry';
+import {Logo} from './Logo.tsx';
+import {AccountEntry} from '../account/AccountEntry.tsx';
 import styles from './FlowHeader.module.css';
 
 type Step={id:string;label:string;path:string|null};

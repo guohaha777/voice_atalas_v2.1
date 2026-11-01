@@ -1,8 +1,8 @@
-import {homeMotion,introLayers} from '../config/scene';
-import {initialIntro,transitionIntro,shouldRememberIntro} from './introState';
-import type {IntroPolicy,IntroState,IntroEvent} from './introState';
-import {writeSessionFlag} from '../../../shared/platform/capabilities';
-import {media} from '../../../styles/breakpoints';
+import {homeMotion,introLayers} from '../config/scene.ts';
+import {initialIntro,transitionIntro,shouldRememberIntro} from './introState.ts';
+import type {IntroPolicy,IntroState,IntroEvent} from './introState.ts';
+import {writeSessionFlag} from '../../../shared/platform/capabilities.ts';
+import {media} from '../../../styles/breakpoints.ts';
 
 type StyleNames={fore:string;left:string;right:string};
 // Owns only the empty curtain host. React owns the resting scene and page controls.

@@ -1,16 +1,16 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import type {RefObject} from 'react';
-import {audioSupported} from '../../../shared/audio/audioContext';
-import {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import type {SequenceVoice} from '../../../shared/audio/SequencePlayer';
+import {audioSupported} from '../../../shared/audio/audioContext.ts';
+import {SequencePlayer} from '../../../shared/audio/SequencePlayer.ts';
+import type {SequenceVoice} from '../../../shared/audio/SequencePlayer.ts';
 import {MIX_RULES} from '@wanwu-v2/sound-rules/mix';
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
-import {pieceSeconds,planPlayback} from '../../../shared/creation/arrangementTiming';
-import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds';
-import {WorkSoundBank,soundFailure} from '../../../shared/creation/workSounds';
-import type {ComposeNoticeKey,ComposeState} from './composeState';
-import {soundingAt} from './scoreLayout';
-import type {ScoreLayout} from './scoreLayout';
+import {pieceSeconds,planPlayback} from '../../../shared/creation/arrangementTiming.ts';
+import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds.ts';
+import {WorkSoundBank,soundFailure} from '../../../shared/creation/workSounds.ts';
+import type {ComposeNoticeKey,ComposeState} from './composeState.ts';
+import {soundingAt} from './scoreLayout.ts';
+import type {ScoreLayout} from './scoreLayout.ts';
 
 const PIECE='piece';
 /** Pressing play this close to the end starts again from the top. */

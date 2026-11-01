@@ -1,11 +1,11 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import type {RefObject} from 'react';
-import {readPerformanceHints,readSessionFlag,subscribeReducedMotion} from '../../../shared/platform/capabilities';
-import {homeMotion} from '../config/scene';
-import {ForestOpening} from './ForestOpening';
-import {initialIntro} from './introState';
+import {readPerformanceHints,readSessionFlag,subscribeReducedMotion} from '../../../shared/platform/capabilities.ts';
+import {homeMotion} from '../config/scene.ts';
+import {ForestOpening} from './ForestOpening.ts';
+import {initialIntro} from './introState.ts';
 import styles from '../HomePage.module.css';
-import {media} from '../../../styles/breakpoints';
+import {media} from '../../../styles/breakpoints.ts';
 function policy(){
  return {...readPerformanceHints(),
   seen:readSessionFlag(homeMotion.storageKey),

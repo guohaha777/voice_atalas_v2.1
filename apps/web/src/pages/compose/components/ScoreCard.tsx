@@ -1,14 +1,14 @@
 import {useRef} from 'react';
 import type {CSSProperties,MouseEvent,ReactNode} from 'react';
-import {SoundMarker} from '../../../shared/markers/SoundMarker';
-import {markerFor,markerNumber} from '../../../shared/markers/markers';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {composeCopy} from '../config/copy';
-import {SCORE_INSET,scorePosition,secondsAt,secondsLabel} from '../model/scoreLayout';
-import type {Compose} from '../model/useCompose';
-import {Transport} from './Transport';
+import {SoundMarker} from '../../../shared/markers/SoundMarker.tsx';
+import {markerFor,markerNumber} from '../../../shared/markers/markers.ts';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {composeCopy} from '../config/copy.ts';
+import {SCORE_INSET,scorePosition,secondsAt,secondsLabel} from '../model/scoreLayout.ts';
+import type {Compose} from '../model/useCompose.ts';
+import {Transport} from './Transport.tsx';
 import styles from './ScoreCard.module.css';
-import {ui} from '../../../shared/ui/controls';
+import {ui} from '../../../shared/ui/controls.ts';
 
 /** A sound short enough that its seconds go beside the name instead of on the tail (fraction of the piece). */
 const SHORT_TAIL=.09;

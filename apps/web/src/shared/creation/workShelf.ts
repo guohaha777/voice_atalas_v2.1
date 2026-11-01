@@ -2,7 +2,7 @@
 // saves and restores them). Nothing is uploaded or saved to an account; signed-in teachers use the cloud shelf.
 import {cleanWorkTitle,parseSavedWork} from '@wanwu-v2/contracts/work';
 import type {SavedWork} from '@wanwu-v2/contracts/work';
-import type {ShelfSnapshot} from '../../pages/works/services/shelfRepository';
+import type {ShelfSnapshot} from '../ports/shelfRepository.ts';
 
 export class WorkShelf{
  private works:SavedWork[]=[];

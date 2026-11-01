@@ -1,6 +1,6 @@
 // Four neutral paper markers. They identify a sound source only; they carry no type, pitch, volume or mood meaning.
 import generated from './marker-assets.generated.json';
-import type {ArtVariants} from '../media/types';
+import type {ArtVariants} from '../media/types.ts';
 
 const order=['marker-sage','marker-ochre','marker-slate','marker-lilac'] as const;
 type Crop={left:number;top:number;width:number;height:number};

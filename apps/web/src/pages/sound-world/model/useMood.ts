@@ -1,9 +1,9 @@
 import {useRef,useState} from 'react';
 import type {Dispatch} from 'react';
 import type {MoodChoice,MoodId} from '@wanwu-v2/contracts/arrangement';
-import {cleanMoodText,parseInterpretation} from '../services/moodInterpreter';
-import type {MoodInterpreter} from '../services/moodInterpreter';
-import type {NoticeKey,SoundWorldAction} from './soundWorldState';
+import {cleanMoodText,parseInterpretation} from '../../../shared/ports/moodInterpreter.ts';
+import type {MoodInterpreter} from '../../../shared/ports/moodInterpreter.ts';
+import type {NoticeKey,SoundWorldAction} from './soundWorldState.ts';
 
 /** 这首曲子的心情: presets always; the child's own words only while a model can understand them. */
 export function useMood(

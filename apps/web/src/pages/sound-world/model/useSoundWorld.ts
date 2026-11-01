@@ -2,23 +2,23 @@ import {useCallback,useEffect,useReducer,useRef,useState} from 'react';
 import type {Arrangement,SourceClip,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import {DEFAULT_COMPOSE_SETTINGS} from '@wanwu-v2/contracts/work';
 import type {ComposeSettings,Inspiration} from '@wanwu-v2/contracts/work';
-import {inspirationTrack} from '../../../shared/background/backgroundLayer';
-import type {InspirationCatalog} from '../../../shared/inspiration/catalog';
-import type {TeachingMusicService} from '../../../shared/inspiration/teachingMusic';
-import {useInspirationCatalog} from '../../../shared/inspiration/useInspirationCatalog';
+import {inspirationTrack} from '../../../shared/background/backgroundLayer.ts';
+import type {InspirationCatalog} from '../../../shared/inspiration/catalog.ts';
+import type {TeachingMusicService} from '../../../shared/inspiration/teachingMusic.ts';
+import {useInspirationCatalog} from '../../../shared/inspiration/useInspirationCatalog.ts';
 import type {SoundUnitDraft} from '@wanwu-v2/contracts/sound';
-import {newId} from '../../../shared/creation/ids';
-import {services} from '../../../app/services';
-import type {LibraryScope,SoundWorldRepository} from '../services/soundWorldRepository';
-import type {MoodInterpreter} from '../services/moodInterpreter';
+import {newId} from '../../../shared/creation/ids.ts';
+import {services} from '../../../app/services.ts';
+import type {LibraryScope,SoundWorldRepository} from '../../../shared/ports/soundWorldRepository.ts';
+import type {MoodInterpreter} from '../../../shared/ports/moodInterpreter.ts';
 import {
  eventOf,initialSoundWorld,nudge,placedClip,rowEndSpot,soundWorldReducer,spanHolds,unitOf,
-} from './soundWorldState';
-import type {NoticeKey} from './soundWorldState';
-import {textbookSwitch} from '../../../shared/inspiration/textbookSwitch';
-import {useBeatLayer} from './useBeatLayer';
-import {useFieldSound} from './useFieldSound';
-import {useMood} from './useMood';
+} from './soundWorldState.ts';
+import type {NoticeKey} from './soundWorldState.ts';
+import {textbookSwitch} from '../../../shared/inspiration/textbookSwitch.ts';
+import {useBeatLayer} from './useBeatLayer.ts';
+import {useFieldSound} from './useFieldSound.ts';
+import {useMood} from './useMood.ts';
 
 export type FinishResult={status:'unavailable'}|{status:'opened'};
 /** A spot in the field in business coordinates (never pixels). Only `at` affects what is heard. */

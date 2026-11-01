@@ -1,4 +1,4 @@
-import {Dialog} from './Dialog';
+import {Dialog} from './Dialog.tsx';
 import './notice-dialog.css';
 export function NoticeDialog({title,children,onClose}:{title:string;children:React.ReactNode;onClose:()=>void}){
  return <Dialog title={title} className="notice-dialog" onClose={onClose}>

@@ -1,7 +1,7 @@
 import type {ReactNode} from 'react';
-import {ArtPicture} from '../media/ArtPicture';
-import {markerFor,markerNumber} from './markers';
-import {spiritPoses} from './spiritPoses';
+import {ArtPicture} from '../media/ArtPicture.tsx';
+import {markerFor,markerNumber} from './markers.ts';
+import {spiritPoses} from './spiritPoses.ts';
 import styles from './SoundMarker.module.css';
 
 const INK='#111510';

@@ -1,7 +1,7 @@
 import {useLayoutEffect} from 'react';
 import type {CSSProperties,ReactNode} from 'react';
-import {homeBirthMotion} from './config';
-import type {HomeBirthPhase} from './transitionState';
+import {homeBirthMotion} from './config.ts';
+import type {HomeBirthPhase} from './transitionState.ts';
 import styles from './HomeBirthTransition.module.css';
 
 /** Inside Suspense, so ready means the real page has committed rather than its loading fallback. */

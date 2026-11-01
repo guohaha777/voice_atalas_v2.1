@@ -1,4 +1,4 @@
-import {media} from '../../styles/breakpoints';
+import {media} from '../../styles/breakpoints.ts';
 export type ConnectionHint = {saveData?:boolean;effectiveType?:string};
 type HintedNavigator = Navigator & {connection?:ConnectionHint;deviceMemory?:number};
 export function readPerformanceHints(){

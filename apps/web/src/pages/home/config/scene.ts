@@ -1,4 +1,4 @@
-import {homeScene} from '../../../shared/scene/homeScene';
+import {homeScene} from '../../../shared/scene/homeScene.ts';
 export const homeAssets = homeScene;
 export const sceneLayers = homeAssets.layers.filter(layer=>layer.kind!=='foreground');
 export const introLayers = homeAssets.layers.filter(layer=>layer.kind==='foreground');

@@ -1,8 +1,8 @@
 // Local 作品书架 repository for visitors: the shelf kept on this device (shared/creation/workShelf, saved to the browser by
 // shared/storage/guestStore.ts) and the current work. Signed-in teachers use the cloud shelf (app/services.ts).
-import type {ShelfRepository} from '../../pages/works/services/shelfRepository';
-import {workSession} from '../creation/workSession';
-import {workShelf} from '../creation/workShelf';
+import type {ShelfRepository} from '../ports/shelfRepository.ts';
+import {workSession} from '../creation/workSession.ts';
+import {workShelf} from '../creation/workShelf.ts';
 
 const subscribeBoth=(listener:()=>void)=>{
  const offShelf=workShelf.subscribe(listener);

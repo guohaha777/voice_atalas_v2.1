@@ -1,8 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
-import {AccountForm} from './AccountForm';
-import {useAccountForm} from './useAccountForm';
-import {resetLinkToken} from './resetLink';
-import styles from './AccountDialog.module.css';
+import {AccountForm} from '../../shared/account/AccountForm.tsx';
+import {useAccountForm} from '../../shared/account/useAccountForm.ts';
+import {resetLinkToken} from '../../shared/account/resetLink.ts';
+import styles from '../../shared/account/AccountDialog.module.css';
 
 export function ResetPasswordPage({onHome}:{onHome:()=>void}){
  const consumed=useRef(false),[link,setLink]=useState<{ready:boolean;token:string|null;revision:number}>({ready:false,token:null,revision:0});

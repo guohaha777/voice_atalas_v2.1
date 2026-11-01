@@ -5,10 +5,10 @@ import type {SourceView,UploadIntent} from '@wanwu-v2/contracts/cloud';
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import type {SoundSource} from '@wanwu-v2/contracts/sound';
 import {missingProvenance} from '@wanwu-v2/contracts/sound';
-import {CookieAccountClient,AccountError} from '../account/accountClient';
-import {sessionArchive} from '../creation/sourceArchive';
-import {workSession} from '../creation/workSession';
-import {decodeAudio} from '../audio/loadAudio';
+import {CookieAccountClient,AccountError} from '../account/accountClient.ts';
+import {sessionArchive} from '../creation/sourceArchive.ts';
+import {workSession} from '../creation/workSession.ts';
+import {decodeAudio} from '../audio/loadAudio.ts';
 
 export class CloudMedia{
  epoch=0;

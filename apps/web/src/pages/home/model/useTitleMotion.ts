@@ -1,9 +1,9 @@
 import {useEffect,useState} from 'react';
-import {readPerformanceHints,subscribeReducedMotion} from '../../../shared/platform/capabilities';
-import {useDecodedImage} from '../../../shared/media/useDecodedImage';
-import {titleAssets,titleMotion} from '../config/title';
-import type {IntroState} from './introState';
-import {deriveTitlePhase,canAnimateTitleDecorations} from './titleMotionState';
+import {readPerformanceHints,subscribeReducedMotion} from '../../../shared/platform/capabilities.ts';
+import {useDecodedImage} from '../../../shared/media/useDecodedImage.ts';
+import {titleAssets,titleMotion} from '../config/title.ts';
+import type {IntroState} from './introState.ts';
+import {deriveTitlePhase,canAnimateTitleDecorations} from './titleMotionState.ts';
 /** The title stays still on reduced motion, data saving, a weak network or a low device. */
 function readStaticMode(){
  const h=readPerformanceHints();

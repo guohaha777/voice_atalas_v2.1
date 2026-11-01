@@ -1,8 +1,8 @@
 import {TASKS,TASK_IDS} from '@wanwu-v2/prompts/tasks';
-import {promptCopy} from './config/promptCopy';
-import {PromptInputs} from './components/PromptInputs';
-import {PromptPanels} from './components/PromptPanels';
-import {usePromptLab} from './model/usePromptLab';
+import {promptCopy} from './config/promptCopy.ts';
+import {PromptInputs} from './components/PromptInputs.tsx';
+import {PromptPanels} from './components/PromptPanels.tsx';
+import {usePromptLab} from './model/usePromptLab.ts';
 import styles from './PromptLabPage.module.css';
 
 /**

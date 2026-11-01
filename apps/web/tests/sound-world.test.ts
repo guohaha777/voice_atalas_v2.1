@@ -8,7 +8,7 @@ import {canRemoveRow,resettleRows,defaultClip,fitClip,freeRow,heardSeconds,initi
 import type {SoundWorldState} from '../src/pages/sound-world/model/soundWorldState.ts';
 import {dragEdge,dragWindow,keyEdge,tapAt} from '../src/pages/sound-world/model/clipEditing.ts';
 import {FIELD_INSET,locateSpot,spotPosition} from '../src/pages/sound-world/model/fieldGeometry.ts';
-import {cleanMoodText,offlineMoodInterpreter,parseInterpretation} from '../src/pages/sound-world/services/moodInterpreter.ts';
+import {cleanMoodText,offlineMoodInterpreter,parseInterpretation} from '../src/shared/ports/moodInterpreter.ts';
 import {exampleArrangement,exampleUnit} from '../src/shared/creation/exampleWork.ts';
 import {SHAPING_RULES} from '@wanwu-v2/sound-rules/rules';
 import {WorkSession} from '../src/shared/creation/workSession.ts';

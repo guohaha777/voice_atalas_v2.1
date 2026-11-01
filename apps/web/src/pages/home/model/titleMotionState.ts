@@ -1,4 +1,4 @@
-import type {IntroState} from './introState';
+import type {IntroState} from './introState.ts';
 export type TitlePhase='waiting'|'entering'|'settled'|'fallback';
 export function deriveTitlePhase({ready,failed=false,staticMode,completed,opening}:{
  ready:boolean;

@@ -1,11 +1,11 @@
 import {useEffect,useRef,useState} from 'react';
-import {SoundMarker} from '../../../shared/markers/SoundMarker';
-import {markerNumber} from '../../../shared/markers/markers';
-import {birthCopy} from '../config/copy';
-import type {useSoundBirth} from '../model/useSoundBirth';
-import {Equalizer} from './Equalizer';
-import {PaperCard} from './PaperCard';
-import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
+import {SoundMarker} from '../../../shared/markers/SoundMarker.tsx';
+import {markerNumber} from '../../../shared/markers/markers.ts';
+import {birthCopy} from '../config/copy.ts';
+import type {useSoundBirth} from '../model/useSoundBirth.ts';
+import {Equalizer} from './Equalizer.tsx';
+import {PaperCard} from './PaperCard.tsx';
+import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon.tsx';
 import controls from './controls.module.css';
 import styles from './CurrentSoundBar.module.css';
 

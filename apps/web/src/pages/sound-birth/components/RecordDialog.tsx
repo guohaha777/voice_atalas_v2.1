@@ -1,12 +1,12 @@
 import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
-import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {birthCopy} from '../config/copy';
-import type {useSoundBirth} from '../model/useSoundBirth';
-import {Waveform} from './Waveform';
+import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet.tsx';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {birthCopy} from '../config/copy.ts';
+import type {useSoundBirth} from '../model/useSoundBirth.ts';
+import {Waveform} from './Waveform.tsx';
 import controls from './controls.module.css';
 import styles from './RecordDialog.module.css';
-import {ui} from '../../../shared/ui/controls';
+import {ui} from '../../../shared/ui/controls.ts';
 
 type Birth=ReturnType<typeof useSoundBirth>;
 const copy=birthCopy.recordDialog;

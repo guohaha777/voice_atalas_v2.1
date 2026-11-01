@@ -131,7 +131,7 @@
 | `apps/web/src/shared/talk/briefs.ts` | 把事实变成匿名摘要 |
 | `apps/web/src/shared/background/generator.ts` | AI 背景端口和降级链：AI 音频 → AI 写音符 → 本地 → 只听孩子的声音 |
 | `apps/web/src/pages/sound-birth/services/soundHints.ts` | 联想端口（现在读语料） |
-| `apps/web/src/pages/sound-world/services/moodInterpreter.ts` | 心情“自己写”端口（现在如实“未开放”） |
+| `apps/web/src/shared/ports/moodInterpreter.ts` | 心情“自己写”端口（现在如实“未开放”） |
 | `apps/web/src/shared/creation/soundLibrary.ts` | 声音库端口：声音诞生和万物声场取示例声音都走它（今天是随网页提供的示例录音） |
 | `apps/web/src/shared/inspiration/catalog.ts`、`useInspirationCatalog.ts`、`tabs.ts` | 课本曲库端口；两页共用的加载、帮我找找、弹窗先开哪一页 |
 | `apps/web/src/shared/inspiration/teachingMusic.ts` | 教学音乐端口（上传分析未开放） |

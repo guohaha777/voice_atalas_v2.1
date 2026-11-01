@@ -2,25 +2,25 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import type {ReactNode} from 'react';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
-import {audioSupported} from '../audio/audioContext';
-import {SequencePlayer} from '../audio/SequencePlayer';
-import {Glyph} from '../ui/PaperIcon';
-import {WorkSheet} from '../ui/WorkSheet';
-import {inspirationCopy as copy} from './copy';
-import {renderRhythmPreview} from './rhythmPreview';
-import {originalWithBeat} from './originalBeat';
+import {audioSupported} from '../audio/audioContext.ts';
+import {SequencePlayer} from '../audio/SequencePlayer.ts';
+import {Glyph} from '../ui/PaperIcon.tsx';
+import {WorkSheet} from '../ui/WorkSheet.tsx';
+import {inspirationCopy as copy} from './copy.ts';
+import {renderRhythmPreview} from './rhythmPreview.ts';
+import {originalWithBeat} from './originalBeat.ts';
 import {MIX_RULES} from '@wanwu-v2/sound-rules/rules';
-import {INSPIRATION_TABS,openingTab} from './tabs';
-import type {InspirationTab,InspirationVariant} from './tabs';
-import {useBuiltInTeaching} from './builtInTeaching';
-import {ExplainCardView} from './ExplainCardView';
-import {CARD_BUDGET_MS,cardSources,madeByAi,trackSources} from './teachingCard';
-import type {TeachingCard} from './teachingCard';
-import {teachingMusic} from './teachingMusic';
-import type {PickResult,TeachingItem} from './teachingMusic';
+import {INSPIRATION_TABS,openingTab} from './tabs.ts';
+import type {InspirationTab,InspirationVariant} from './tabs.ts';
+import {useBuiltInTeaching} from './builtInTeaching.ts';
+import {ExplainCardView} from './ExplainCardView.tsx';
+import {CARD_BUDGET_MS,cardSources,madeByAi,trackSources} from './teachingCard.ts';
+import type {TeachingCard} from './teachingCard.ts';
+import {teachingMusic} from './teachingMusic.ts';
+import type {PickResult,TeachingItem} from './teachingMusic.ts';
 import styles from './InspirationDialog.module.css';
 
-export type {InspirationTab,InspirationVariant} from './tabs';
+export type {InspirationTab,InspirationVariant} from './tabs.ts';
 
 /**
  * One thing sounds at a time in the dialog: a song's preview (rendered in the browser: its background, or only its beat

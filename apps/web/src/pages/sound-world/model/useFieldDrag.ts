@@ -1,6 +1,6 @@
 import {useRef,useState} from 'react';
 import type {MouseEvent,PointerEvent} from 'react';
-import type {FieldSpot} from './useSoundWorld';
+import type {FieldSpot} from './useSoundWorld.ts';
 
 export type DragItem={kind:'unit';unitId:string}|{kind:'event';eventId:string};
 export type DragState={item:DragItem;x:number;y:number;spot:FieldSpot|null}|null;

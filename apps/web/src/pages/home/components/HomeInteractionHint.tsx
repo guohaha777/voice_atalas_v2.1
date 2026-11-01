@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-import {readPerformanceHints} from '../../../shared/platform/capabilities';
+import {readPerformanceHints} from '../../../shared/platform/capabilities.ts';
 import styles from '../HomePage.module.css';
 
 const defaultHint='点一点小动物和水滴，听声音、看它动一动';

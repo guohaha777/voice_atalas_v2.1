@@ -1,7 +1,7 @@
 import {useId,useState} from 'react';
-import {Dialog} from '../ui/Dialog';
-import {useModelConfigForm} from './useModelConfigForm';
-import type {ModelConfig,ModelKind} from './modelConfig';
+import {Dialog} from '../ui/Dialog.tsx';
+import {useModelConfigForm} from './useModelConfigForm.ts';
+import type {ModelConfig,ModelKind} from './modelConfig.ts';
 import styles from './ModelConfigDialog.module.css';
 
 const providers=[

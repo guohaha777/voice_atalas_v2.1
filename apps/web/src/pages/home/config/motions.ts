@@ -1,4 +1,4 @@
-import type {CharacterId} from '../../../shared/media/types';
+import type {CharacterId} from '../../../shared/media/types.ts';
 const frames:Record<CharacterId,Keyframe[]>={
  bird:[{transform:'translateY(0) rotate(0)'},{transform:'translateY(-7px) rotate(-5deg)',offset:.3},{transform:'translateY(-3px) rotate(3deg)',offset:.65},{transform:'translateY(0) rotate(0)'}],
  frog:[{transform:'scale(1)'},{transform:'scale(1.045,.94)',offset:.22},{transform:'translateY(-10px) scale(.98,1.025)',offset:.5},{transform:'scale(1)'}],

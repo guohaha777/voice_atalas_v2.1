@@ -1,16 +1,16 @@
 import {useMemo,useRef} from 'react';
 import type {KeyboardEvent,PointerEvent} from 'react';
-import {computePeaks} from '../../../shared/audio/peaks';
-import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
-import {birthCopy} from '../config/copy';
-import {dragTrimEdge,keyTrim,slideTrim,tapTrim,trimClock,trimSeconds} from '../model/trimEditing';
-import type {TrimEdge,TrimRange} from '../model/trimEditing';
-import type {useSoundBirth} from '../model/useSoundBirth';
-import {Equalizer} from './Equalizer';
-import {Glyph} from '../../../shared/ui/PaperIcon';
+import {computePeaks} from '../../../shared/audio/peaks.ts';
+import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet.tsx';
+import {birthCopy} from '../config/copy.ts';
+import {dragTrimEdge,keyTrim,slideTrim,tapTrim,trimClock,trimSeconds} from '../model/trimEditing.ts';
+import type {TrimEdge,TrimRange} from '../model/trimEditing.ts';
+import type {useSoundBirth} from '../model/useSoundBirth.ts';
+import {Equalizer} from './Equalizer.tsx';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
 import controls from './controls.module.css';
 import styles from './TrimDialog.module.css';
-import {ui} from '../../../shared/ui/controls';
+import {ui} from '../../../shared/ui/controls.ts';
 
 type Birth=ReturnType<typeof useSoundBirth>;
 const copy=birthCopy.trimDialog;

@@ -1,7 +1,7 @@
 import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
 import type {SoundDimension,SoundSourceKind} from '@wanwu-v2/contracts/sound';
-import type {RecorderFailure} from '../../../shared/audio/LocalRecorder';
-import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
+import type {RecorderFailure} from '../../../shared/audio/LocalRecorder.ts';
+import {dimensionCopy} from '../../../shared/creation/dimensionCopy.ts';
 
 export const birthCopy={
  title:'给声音，做出你听见的样子',

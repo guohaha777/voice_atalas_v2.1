@@ -2,11 +2,11 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import type {KeyboardEvent,PointerEvent} from 'react';
 import type {SourceClip} from '@wanwu-v2/contracts/arrangement';
 import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
-import {computePeaks} from '../../../shared/audio/peaks';
-import {dragEdge,dragWindow,keyEdge,tapAt} from './clipEditing';
-import type {ClipEdge} from './clipEditing';
-import {eventOf,heardSeconds,unitOf} from './soundWorldState';
-import type {SoundWorld} from './useSoundWorld';
+import {computePeaks} from '../../../shared/audio/peaks.ts';
+import {dragEdge,dragWindow,keyEdge,tapAt} from './clipEditing.ts';
+import type {ClipEdge} from './clipEditing.ts';
+import {eventOf,heardSeconds,unitOf} from './soundWorldState.ts';
+import type {SoundWorld} from './useSoundWorld.ts';
 
 const PEAK_BINS=160;
 

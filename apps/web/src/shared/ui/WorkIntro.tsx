@@ -1,5 +1,5 @@
-import type {ArtVariants} from '../media/types';
-import {ArtPicture} from '../media/ArtPicture';
+import type {ArtVariants} from '../media/types.ts';
+import {ArtPicture} from '../media/ArtPicture.tsx';
 import styles from './WorkIntro.module.css';
 
 /**

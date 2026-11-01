@@ -1,6 +1,6 @@
 import type {SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import type {Visibility} from '@wanwu-v2/contracts/work';
-import type {ComposeNoticeKey} from '../model/composeState';
+import type {ComposeNoticeKey} from '../model/composeState.ts';
 import type {Discovery} from '@wanwu-v2/contracts/talk';
 
 export const composeCopy={

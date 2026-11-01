@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
-import {WorkSheet} from '../ui/WorkSheet';
-import {useCloud} from './CloudProvider';
-import {cloudError} from './cloudTypes';
+import {WorkSheet} from '../ui/WorkSheet.tsx';
+import {useCloud} from './CloudProvider.tsx';
+import {cloudError} from './cloudTypes.ts';
 import styles from './CloudControls.module.css';
 
 /**

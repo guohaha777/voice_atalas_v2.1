@@ -1,10 +1,10 @@
 import {useEffect,useState} from 'react';
-import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
-import {composeCopy} from '../config/copy';
-import type {Compose} from '../model/useCompose';
+import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon.tsx';
+import {composeCopy} from '../config/copy.ts';
+import type {Compose} from '../model/useCompose.ts';
 import styles from './FooterBar.module.css';
-import {TalkProgress} from './TalkProgress';
-import {ui} from '../../../shared/ui/controls';
+import {TalkProgress} from './TalkProgress.tsx';
+import {ui} from '../../../shared/ui/controls.ts';
 
 /**
  * 音乐小发现 on the left — the bulb opens 这首音乐有什么特征: each feature of this piece with the music idea behind it

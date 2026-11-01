@@ -1,5 +1,5 @@
 import {useId} from 'react';
-import type {useAccountForm} from './useAccountForm';
+import type {useAccountForm} from './useAccountForm.ts';
 import styles from './AccountDialog.module.css';
 
 export function AccountForm({form}:{form:ReturnType<typeof useAccountForm>}){

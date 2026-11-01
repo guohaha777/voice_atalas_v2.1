@@ -1,11 +1,11 @@
 import {useEffect,useRef,useState} from 'react';
 import {MOOD_TEXT_MAX,MOODS} from '@wanwu-v2/contracts/arrangement';
 import type {MoodId} from '@wanwu-v2/contracts/arrangement';
-import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
-import {MoodFace} from '../../../shared/ui/MoodFace';
-import {moodLabels} from '../../../shared/creation/moodCopy';
-import {worldCopy} from '../config/copy';
-import type {SoundWorld} from '../model/useSoundWorld';
+import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet.tsx';
+import {MoodFace} from '../../../shared/ui/MoodFace.tsx';
+import {moodLabels} from '../../../shared/creation/moodCopy.ts';
+import {worldCopy} from '../config/copy.ts';
+import type {SoundWorld} from '../model/useSoundWorld.ts';
 import sheet from './sheet.module.css';
 import styles from './MoodPicker.module.css';
 

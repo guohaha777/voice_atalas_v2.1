@@ -1,12 +1,12 @@
 import type {CSSProperties} from 'react';
 import type {SavedWork} from '@wanwu-v2/contracts/work';
-import {pieceSeconds,timedEvents} from '../../../shared/creation/arrangementTiming';
-import {moodLabels,presetMood} from '../../../shared/creation/moodCopy';
-import {SoundMarker} from '../../../shared/markers/SoundMarker';
-import {markerFor} from '../../../shared/markers/markers';
-import {KidIcon} from '../../../shared/ui/KidIcon';
-import {MoodFace} from '../../../shared/ui/MoodFace';
-import {shelfCopy} from '../config/copy';
+import {pieceSeconds,timedEvents} from '../../../shared/creation/arrangementTiming.ts';
+import {moodLabels,presetMood} from '../../../shared/creation/moodCopy.ts';
+import {SoundMarker} from '../../../shared/markers/SoundMarker.tsx';
+import {markerFor} from '../../../shared/markers/markers.ts';
+import {KidIcon} from '../../../shared/ui/KidIcon.tsx';
+import {MoodFace} from '../../../shared/ui/MoodFace.tsx';
+import {shelfCopy} from '../config/copy.ts';
 import styles from '../WorksPage.module.css';
 
 const time=(iso:string)=>new Date(iso).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});

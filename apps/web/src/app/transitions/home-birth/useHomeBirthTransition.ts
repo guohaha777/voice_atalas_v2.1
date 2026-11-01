@@ -1,8 +1,8 @@
 import {useCallback,useEffect,useLayoutEffect,useReducer,useRef,useState} from 'react';
-import {readPerformanceHints,subscribeReducedMotion} from '../../../shared/platform/capabilities';
-import {homeBirthMotion} from './config';
-import {transitionHomeBirth} from './transitionState';
-import {media} from '../../../styles/breakpoints';
+import {readPerformanceHints,subscribeReducedMotion} from '../../../shared/platform/capabilities.ts';
+import {homeBirthMotion} from './config.ts';
+import {transitionHomeBirth} from './transitionState.ts';
+import {media} from '../../../styles/breakpoints.ts';
 
 export function useHomeBirthTransition(page:string,onNavigate:()=>void){
  const [phase,dispatch]=useReducer(transitionHomeBirth,'idle');

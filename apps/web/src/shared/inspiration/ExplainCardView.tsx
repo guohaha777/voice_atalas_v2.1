@@ -3,10 +3,10 @@ import type {ReactNode} from 'react';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import {explainCard} from '@wanwu-v2/prompts/explain';
 import type {ExplainReply,FactSource} from '@wanwu-v2/prompts/explain';
-import {moodLabels} from '../creation/moodCopy';
-import {Glyph} from '../ui/PaperIcon';
-import type {GlyphName} from '../ui/PaperIcon';
-import {inspirationCopy as copy} from './copy';
+import {moodLabels} from '../creation/moodCopy.ts';
+import {Glyph} from '../ui/PaperIcon.tsx';
+import type {GlyphName} from '../ui/PaperIcon.tsx';
+import {inspirationCopy as copy} from './copy.ts';
 import styles from './ExplainCardView.module.css';
 
 /** 给孩子: 听一听 / 动一动 / 玩一玩, each with its solid icon (coloured directly, no backing). */

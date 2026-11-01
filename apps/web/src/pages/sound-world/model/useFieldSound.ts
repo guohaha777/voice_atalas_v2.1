@@ -3,14 +3,14 @@ import type {Dispatch,RefObject} from 'react';
 import type {Arrangement,SourceClip} from '@wanwu-v2/contracts/arrangement';
 import {MIX_RULES} from '@wanwu-v2/sound-rules/mix';
 import type {ChosenShape,SoundAnalysis,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
-import {audioSupported} from '../../../shared/audio/audioContext';
-import {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {originalGainOf} from '../../../shared/audio/soundAnalysis';
-import {cutSeconds,pieceSeconds} from '../../../shared/creation/arrangementTiming';
-import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds';
-import {WorkSoundBank,soundFailure} from '../../../shared/creation/workSounds';
-import {eventOf,planPlayback,unitOf} from './soundWorldState';
-import type {NoticeKey,SoundWorldAction,SoundWorldState} from './soundWorldState';
+import {audioSupported} from '../../../shared/audio/audioContext.ts';
+import {SequencePlayer} from '../../../shared/audio/SequencePlayer.ts';
+import {originalGainOf} from '../../../shared/audio/soundAnalysis.ts';
+import {cutSeconds,pieceSeconds} from '../../../shared/creation/arrangementTiming.ts';
+import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds.ts';
+import {WorkSoundBank,soundFailure} from '../../../shared/creation/workSounds.ts';
+import {eventOf,planPlayback,unitOf} from './soundWorldState.ts';
+import type {NoticeKey,SoundWorldAction,SoundWorldState} from './soundWorldState.ts';
 
 type Notify=(key:NoticeKey,tone?:'info'|'error')=>void;
 /** What plays under the child's sounds (the chosen song's beat, ./useBeatLayer.ts): whether it plays, how loud, and its

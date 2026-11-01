@@ -20,11 +20,11 @@
 //      sounds (where they cluster, rests, length, mood) and generates a matching background layer. It never alters the
 //      child's sounds or placement and never copies the teaching music's melody into the piece.
 import {MEASURE_RATE} from '@wanwu-v2/music-features';
-import {decodeAudio} from '../audio/loadAudio';
-import {newId} from '../creation/ids';
-import type {KeyValue} from '../storage/guestStore';
-import {NotMusicError,cardLines,makeTeachingCard} from './teachingCard';
-import type {AskFeatures,CardStage,TeachingCard} from './teachingCard';
+import {decodeAudio} from '../audio/loadAudio.ts';
+import {newId} from '../creation/ids.ts';
+import type {KeyValue} from '../storage/guestStore.ts';
+import {NotMusicError,cardLines,makeTeachingCard} from './teachingCard.ts';
+import type {AskFeatures,CardStage,TeachingCard} from './teachingCard.ts';
 
 /** Only the file size is limited (10 MB); any length is accepted (decided 2026-10-30). */
 export const TEACHING_MUSIC_MAX_BYTES=10*1024*1024;

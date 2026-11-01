@@ -1,10 +1,10 @@
 import {useRef,useState} from 'react';
-import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
-import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
-import {birthCopy} from '../config/copy';
+import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet.tsx';
+import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon.tsx';
+import {birthCopy} from '../config/copy.ts';
 import controls from './controls.module.css';
 import styles from './PaperCard.module.css';
-import {ui} from '../../../shared/ui/controls';
+import {ui} from '../../../shared/ui/controls.ts';
 
 /** 拍照读声卡: the photo stays on this device as a reference while choosing. No recognition runs yet. */
 export function PaperCard({photo,onChange}:{photo:string|null;onChange:(file:File|null)=>void}){

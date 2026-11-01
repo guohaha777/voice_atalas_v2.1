@@ -5,7 +5,7 @@ import type {AiBackgroundStep,BackgroundResult,BackgroundUnavailable} from '@wan
 import type {BackgroundGenerator} from '../background/generator.ts';
 import type {TeachingMusicService} from '../inspiration/teachingMusic.ts';
 import type {TalkPolisher} from '../talk/polisher.ts';
-import type {MoodInterpreter} from '../../pages/sound-world/services/moodInterpreter.ts';
+import type {MoodInterpreter} from '../ports/moodInterpreter.ts';
 import type {GuestAiClient,GuestReply} from './guestAiClient.ts';
 
 /** First look after this long, then every interval: AI notes are quick, AI audio takes a while. */

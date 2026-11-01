@@ -1,6 +1,6 @@
 import {useId,useMemo} from 'react';
-import {computePeaks} from '../../../shared/audio/peaks';
-import {Glyph} from '../../../shared/ui/PaperIcon';
+import {computePeaks} from '../../../shared/audio/peaks.ts';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
 import styles from './Waveform.module.css';
 
 const BINS=64;

@@ -1,7 +1,7 @@
 import {useEffect,useSyncExternalStore} from 'react';
 import type {SavedWork} from '@wanwu-v2/contracts/work';
-import {services} from '../../../app/services';
-import type {ShelfRepository} from '../services/shelfRepository';
+import {services} from '../../../app/services.ts';
+import type {ShelfRepository} from '../../../shared/ports/shelfRepository.ts';
 
 /**
  * The shelf as a live list (this visit's works, newest first) plus opening one. Opening would replace a current piece

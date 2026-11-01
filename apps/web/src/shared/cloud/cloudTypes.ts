@@ -1,8 +1,8 @@
 import {RULE_VERSIONS} from '@wanwu-v2/sound-rules/rules';
 import type {WorkRecord,WorkSummary,RenderView,ShareView} from '@wanwu-v2/contracts/cloud';
 import type {SavedWork} from '@wanwu-v2/contracts/work';
-import {AccountError} from '../account/accountClient';
-import {accountErrorText} from '../account/copy';
+import {AccountError} from '../account/accountClient.ts';
+import {accountErrorText} from '../account/copy.ts';
 
 export type CloudState={accountId:string|null;workId:string|null;title:string;phase:'local'|'uploading'|'saving'|'saved'|'conflict'|'error';
  message:string;busy:boolean;epoch:number;conflictId:string|null;drafts:WorkSummary[];render:RenderView|null;share:ShareView|null;recoverable:boolean;dialog:'drafts'|'library'|'share'|null};

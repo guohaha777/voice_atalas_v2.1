@@ -1,7 +1,7 @@
 import {useState} from 'react';
-import {Glyph} from './PaperIcon';
-import {WorkSheet,sheetStyles} from './WorkSheet';
-import type {Classroom} from './classroom';
+import {Glyph} from './PaperIcon.tsx';
+import {WorkSheet,sheetStyles} from './WorkSheet.tsx';
+import type {Classroom} from './classroom.ts';
 
 const copy={library:'声音库',shelf:'作品书架',classroomOn:'大屏',classroomOff:'退出大屏',classroomLabel:'课堂大屏：全屏、大字、大按钮',
  libraryTitle:'声音库在万物声场里',

@@ -17,7 +17,7 @@
 // Errors come back as {status, reason, message?, requestId}; the adapter turns them into the results below.
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import type {ComposeSettings,SavedWork,Visibility} from '@wanwu-v2/contracts/work';
-import type {SaveResult} from '../../../shared/creation/workSession';
+import type {SaveResult} from '../creation/workSession.ts';
 
 /**
  * `shelved`: this work's version on the shelf, if any; `shelfCount`: how many works the shelf holds (for a default

@@ -1,10 +1,10 @@
 import {useEffect,useState} from 'react';
-import {WorkSheet} from '../ui/WorkSheet';
-import {useAccount} from '../account/AccountProvider';
-import {useCloud} from './CloudProvider';
-import {cloudError} from './cloudTypes';
-import {ShareDialog} from './ShareDialog';
-import {LibraryManager} from './LibraryManager';
+import {WorkSheet} from '../ui/WorkSheet.tsx';
+import {useAccount} from '../account/AccountProvider.tsx';
+import {useCloud} from './CloudProvider.tsx';
+import {cloudError} from './cloudTypes.ts';
+import {ShareDialog} from './ShareDialog.tsx';
+import {LibraryManager} from './LibraryManager.tsx';
 import styles from './CloudControls.module.css';
 
 /**

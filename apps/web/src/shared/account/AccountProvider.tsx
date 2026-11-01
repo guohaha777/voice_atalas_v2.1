@@ -1,7 +1,7 @@
 import {createContext,useContext,useEffect,useState,useSyncExternalStore} from 'react';
 import type {ReactNode} from 'react';
-import type {AccountClient} from './accountClient';
-import {AccountSession} from './accountSession';
+import type {AccountClient} from './accountClient.ts';
+import {AccountSession} from './accountSession.ts';
 
 const Context=createContext<AccountSession|null>(null);
 export function AccountProvider({client,children}:{client:AccountClient;children:ReactNode}){

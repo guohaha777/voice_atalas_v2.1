@@ -1,6 +1,6 @@
-import {HomeInteractionHint} from './HomeInteractionHint';
-import {HandwrittenTitle} from './HandwrittenTitle';
-import type {IntroState} from '../model/introState';
+import {HomeInteractionHint} from './HomeInteractionHint.tsx';
+import {HandwrittenTitle} from './HandwrittenTitle.tsx';
+import type {IntroState} from '../model/introState.ts';
 import styles from '../HomePage.module.css';
 export function HomeHero({onStart,feedback,opening,cycle}:{
  onStart:()=>void;

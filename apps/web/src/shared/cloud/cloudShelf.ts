@@ -1,13 +1,13 @@
 import type {SavedWork} from '@wanwu-v2/contracts/work';
 import type {WorkSummary} from '@wanwu-v2/contracts/cloud';
 import {workEtag,parsePage,parseWorkSummary} from '@wanwu-v2/contracts/cloud';
-import {AccountError} from '../account/accountClient';
-import type {ApiResult} from '../account/accountClient';
-import type {ShelfRepository} from '../../pages/works/services/shelfRepository';
-import {workSession} from '../creation/workSession';
-import type {CloudWorkspace} from './cloudWorkspace';
-import {checkedWork} from './workspacePersistence';
-import {toSavedWork,cloudError} from './cloudTypes';
+import {AccountError} from '../account/accountClient.ts';
+import type {ApiResult} from '../account/accountClient.ts';
+import type {ShelfRepository} from '../ports/shelfRepository.ts';
+import {workSession} from '../creation/workSession.ts';
+import type {CloudWorkspace} from './cloudWorkspace.ts';
+import {checkedWork} from './workspacePersistence.ts';
+import {toSavedWork,cloudError} from './cloudTypes.ts';
 
 /** The shelf of a signed-in account: its saved works on the server; signed out, the local shelf. */
 export class CloudShelf implements ShelfRepository{

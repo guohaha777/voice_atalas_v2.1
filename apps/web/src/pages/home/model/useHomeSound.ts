@@ -1,10 +1,10 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import type {RefObject} from 'react';
-import type {SceneLayer} from '../../../shared/media/types';
-import {SingleSoundPlayer} from '../../../shared/audio/SingleSoundPlayer';
-import {readPerformanceHints,subscribeReducedMotion} from '../../../shared/platform/capabilities';
-import {homeAssets} from '../config/scene';
-import {animateSticker} from '../config/motions';
+import type {SceneLayer} from '../../../shared/media/types.ts';
+import {SingleSoundPlayer} from '../../../shared/audio/SingleSoundPlayer.ts';
+import {readPerformanceHints,subscribeReducedMotion} from '../../../shared/platform/capabilities.ts';
+import {homeAssets} from '../config/scene.ts';
+import {animateSticker} from '../config/motions.ts';
 export function useHomeSound(audioRef:RefObject<HTMLAudioElement|null>,suspended=false){
  const player=useRef<SingleSoundPlayer|null>(null);
  const animation=useRef<Animation|null>(null);

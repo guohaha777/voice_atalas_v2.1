@@ -1,15 +1,15 @@
 import {useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import type {CSSProperties} from 'react';
 import {SOUND_DIMENSIONS} from '@wanwu-v2/contracts/sound';
-import {SoundSpirit} from '../../../shared/markers/SoundSpirit';
-import type {SpiritHandle} from '../../../shared/markers/SoundSpirit';
-import {computePeaks} from '../../../shared/audio/peaks';
-import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
-import {birthCopy} from '../config/copy';
-import {describeShape,remainingDimensions} from '../model/soundBirthState';
-import type {useSoundBirth} from '../model/useSoundBirth';
-import {MakerLabel} from './MakerLabel';
-import {SoundInfo} from './SoundInfo';
+import {SoundSpirit} from '../../../shared/markers/SoundSpirit.tsx';
+import type {SpiritHandle} from '../../../shared/markers/SoundSpirit.tsx';
+import {computePeaks} from '../../../shared/audio/peaks.ts';
+import {dimensionCopy} from '../../../shared/creation/dimensionCopy.ts';
+import {birthCopy} from '../config/copy.ts';
+import {describeShape,remainingDimensions} from '../model/soundBirthState.ts';
+import type {useSoundBirth} from '../model/useSoundBirth.ts';
+import {MakerLabel} from './MakerLabel.tsx';
+import {SoundInfo} from './SoundInfo.tsx';
 import styles from './SpiritStage.module.css';
 
 type Birth=ReturnType<typeof useSoundBirth>;

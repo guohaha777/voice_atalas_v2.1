@@ -1,8 +1,8 @@
 // Faint home-forest frame behind the work pages (声音诞生 onward): the home scene's environment layers (same hashed
 // files, usually already cached), placed exactly as the home page places them — each rect scaled to the full window in
 // both directions (design 1440 × 960) — so the bushes run along the left and right edges without gaps.
-import {ArtPicture} from '../media/ArtPicture';
-import {homeScene} from './homeScene';
+import {ArtPicture} from '../media/ArtPicture.tsx';
+import {homeScene} from './homeScene.ts';
 import styles from './WorkBackdrop.module.css';
 
 const {width:designWidth,height:designHeight}=homeScene.design;

@@ -1,14 +1,14 @@
 import {useState} from 'react';
 import {SOUND_NAME_MAX} from '@wanwu-v2/contracts/sound';
 import type {SoundSource} from '@wanwu-v2/contracts/sound';
-import {birthCopy} from '../config/copy';
-import type {useSoundBirth} from '../model/useSoundBirth';
-import {Equalizer} from './Equalizer';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {Waveform} from './Waveform';
+import {birthCopy} from '../config/copy.ts';
+import type {useSoundBirth} from '../model/useSoundBirth.ts';
+import {Equalizer} from './Equalizer.tsx';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {Waveform} from './Waveform.tsx';
 import controls from './controls.module.css';
 import styles from './SoundCard.module.css';
-import {ui} from '../../../shared/ui/controls';
+import {ui} from '../../../shared/ui/controls.ts';
 
 type Birth=ReturnType<typeof useSoundBirth>;
 const day=(iso:string|null)=>iso?`${Number(iso.slice(5,7))}月${Number(iso.slice(8,10))}日`:null;

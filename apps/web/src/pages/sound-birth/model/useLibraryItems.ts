@@ -1,14 +1,14 @@
 import {useEffect,useRef,useState} from 'react';
-import {audioSupported} from '../../../shared/audio/audioContext';
-import {AudioLoadError,loadAudio} from '../../../shared/audio/loadAudio';
-import type {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {originalGainOf} from '../../../shared/audio/soundAnalysis';
-import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds';
+import {audioSupported} from '../../../shared/audio/audioContext.ts';
+import {AudioLoadError,loadAudio} from '../../../shared/audio/loadAudio.ts';
+import type {SequencePlayer} from '../../../shared/audio/SequencePlayer.ts';
+import {originalGainOf} from '../../../shared/audio/soundAnalysis.ts';
+import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds.ts';
 import type {SoundSource} from '@wanwu-v2/contracts/sound';
-import {birthCopy} from '../config/copy';
-import type {LibraryItem} from '../services/soundLibrary';
-import type {Notify} from './localSource';
-import {authorizedSource} from '../../../shared/audio/authorizedSource';
+import {birthCopy} from '../config/copy.ts';
+import type {LibraryItem} from '../services/soundLibrary.ts';
+import type {Notify} from './localSource.ts';
+import {authorizedSource} from '../../../shared/audio/authorizedSource.ts';
 
 /** 从声音库挑选: load an item once (one request at a time), preview it, or take it as the source. */
 export function useLibraryItems(

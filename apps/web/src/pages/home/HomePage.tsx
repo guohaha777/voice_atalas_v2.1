@@ -1,12 +1,12 @@
 import {useEffect,useRef} from 'react';
-import type {HomeDestination} from '../../app/navigation';
-import {Glyph} from '../../shared/ui/PaperIcon';
-import {HomeScene} from './components/HomeScene';
-import {HomeHeader} from './components/HomeHeader';
-import {HomeHero} from './components/HomeHero';
-import {useForestOpening} from './model/useForestOpening';
-import {useHomeSound} from './model/useHomeSound';
-import {readPerformanceHints} from '../../shared/platform/capabilities';
+import type {HomeDestination} from '../../app/navigation.ts';
+import {Glyph} from '../../shared/ui/PaperIcon.tsx';
+import {HomeScene} from './components/HomeScene.tsx';
+import {HomeHeader} from './components/HomeHeader.tsx';
+import {HomeHero} from './components/HomeHero.tsx';
+import {useForestOpening} from './model/useForestOpening.ts';
+import {useHomeSound} from './model/useHomeSound.ts';
+import {readPerformanceHints} from '../../shared/platform/capabilities.ts';
 import styles from './HomePage.module.css';
 export function HomePage({onNavigate,suspended=false,departing=false}:{
  onNavigate:(page:HomeDestination)=>void;

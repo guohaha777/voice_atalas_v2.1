@@ -1,13 +1,13 @@
 import {useEffect,useId,useImperativeHandle,useRef} from 'react';
 import {createPortal} from 'react-dom';
 import type {ReactNode,Ref} from 'react';
-import {ArtPicture} from '../media/ArtPicture';
-import type {ArtVariants} from '../media/types';
+import {ArtPicture} from '../media/ArtPicture.tsx';
+import type {ArtVariants} from '../media/types.ts';
 import generated from './marker-hero-assets.generated.json';
-import {markerFor} from './markers';
-import {spiritArm,spiritPoses} from './spiritPoses';
+import {markerFor} from './markers.ts';
+import {spiritArm,spiritPoses} from './spiritPoses.ts';
 import styles from './SoundSpirit.module.css';
-import {media} from '../../styles/breakpoints';
+import {media} from '../../styles/breakpoints.ts';
 
 type Crop={left:number;top:number;width:number;height:number};
 const hero=generated.assets as Record<string,{label:string;crop:Crop;variants:ArtVariants}>;

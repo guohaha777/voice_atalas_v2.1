@@ -8,17 +8,17 @@ import type {SavedWork,ComposeSettings} from '@wanwu-v2/contracts/work';
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import type {SoundSource} from '@wanwu-v2/contracts/sound';
 import {CONFIRMATION_VERSION} from '@wanwu-v2/contracts/cloud';
-import {CookieAccountClient,AccountError} from '../account/accountClient';
-import type {ApiResult} from '../account/accountClient';
-import {workSession} from '../creation/workSession';
-import {sessionArchive} from '../creation/sourceArchive';
-import {CloudMedia} from './cloudMedia';
-import {initialCloudState,cloudError} from './cloudTypes';
-import type {CloudState} from './cloudTypes';
+import {CookieAccountClient,AccountError} from '../account/accountClient.ts';
+import type {ApiResult} from '../account/accountClient.ts';
+import {workSession} from '../creation/workSession.ts';
+import {sessionArchive} from '../creation/sourceArchive.ts';
+import {CloudMedia} from './cloudMedia.ts';
+import {initialCloudState,cloudError} from './cloudTypes.ts';
+import type {CloudState} from './cloudTypes.ts';
 import {
  attachCurrent,flushCurrent,checkedWork,requestContent,localContent,sameContent,
-} from './workspacePersistence';
-import {setAuthorizedSourceLoader} from '../audio/authorizedSource';
+} from './workspacePersistence.ts';
+import {setAuthorizedSourceLoader} from '../audio/authorizedSource.ts';
 
 /** The previous account's work, kept in this page's memory until that account signs in again. */
 type Parked={

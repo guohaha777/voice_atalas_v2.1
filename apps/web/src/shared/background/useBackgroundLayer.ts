@@ -4,9 +4,9 @@ import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {ComposeSettings} from '@wanwu-v2/contracts/work';
 import {assignParts,backgroundPlan} from '@wanwu-v2/sound-rules/background';
 import {MIX_RULES} from '@wanwu-v2/sound-rules/mix';
-import {renderBackground} from '../audio/renderBackground';
-import {backgroundInput,inspirationTrack} from './backgroundLayer';
-import type {Instrument} from './instruments';
+import {renderBackground} from '../audio/renderBackground.ts';
+import {backgroundInput,inspirationTrack} from './backgroundLayer.ts';
+import type {Instrument} from './instruments.ts';
 
 /** Renders kept at once (a few lengths and arrangements); older ones are let go. */
 const KEEP=6;

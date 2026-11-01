@@ -3,11 +3,11 @@
 import {useRef} from 'react';
 import type {Dispatch,RefObject} from 'react';
 import type {SoundAnalysis,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
-import {newId} from '../../../shared/creation/ids';
-import {birthCopy} from '../config/copy';
-import type {Notify} from './localSource';
-import {finishCheck,toSoundUnitDraft} from './soundBirthState';
-import type {SoundBirthAction,SoundBirthState} from './soundBirthState';
+import {newId} from '../../../shared/creation/ids.ts';
+import {birthCopy} from '../config/copy.ts';
+import type {Notify} from './localSource.ts';
+import {finishCheck,toSoundUnitDraft} from './soundBirthState.ts';
+import type {SoundBirthAction,SoundBirthState} from './soundBirthState.ts';
 
 export type FinishThen='world'|'another';
 /** `kept`: the sound is in the work (`count` sounds now). `full`: the work holds as many sounds as it may. `empty`: 做好了

@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-import {media} from '../../styles/breakpoints';
+import {media} from '../../styles/breakpoints.ts';
 type Variants={mobile:string;desktop:string;fallback:string};
 type Resource={url:string;ready:boolean;failed:boolean};
 // Decode before showing a bitmap. Resize/fallback loads never replace a previously ready image with a blank one.

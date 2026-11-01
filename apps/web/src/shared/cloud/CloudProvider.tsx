@@ -1,7 +1,7 @@
 import {createContext,useContext,useLayoutEffect,useSyncExternalStore} from 'react';
 import type {ReactNode} from 'react';
-import {useAccount} from '../account/AccountProvider';
-import type {CloudWorkspace} from './cloudWorkspace';
+import {useAccount} from '../account/AccountProvider.tsx';
+import type {CloudWorkspace} from './cloudWorkspace.ts';
 
 const Context=createContext<CloudWorkspace|null>(null);
 export function CloudProvider({workspace,children}:{workspace:CloudWorkspace;children:ReactNode}){

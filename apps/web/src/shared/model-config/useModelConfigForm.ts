@@ -1,6 +1,6 @@
 import {useState} from 'react';
-import {emptyModelConfig,normalizeModelConfig,validateModelConfig} from './modelConfig';
-import type {ModelConfig,ModelKind,ProviderConfig} from './modelConfig';
+import {emptyModelConfig,normalizeModelConfig,validateModelConfig} from './modelConfig.ts';
+import type {ModelConfig,ModelKind,ProviderConfig} from './modelConfig.ts';
 
 export function useModelConfigForm(initial:ModelConfig,onApply:(config:ModelConfig)=>void){
  const [draft,setDraft]=useState<ModelConfig>(()=>({language:{...initial.language},music:{...initial.music}}));

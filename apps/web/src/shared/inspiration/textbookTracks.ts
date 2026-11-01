@@ -9,7 +9,7 @@
 // earChecked stays false. Change a card here, run npm test.
 import {TEXTBOOK_CONTRACT_VERSION} from '@wanwu-v2/contracts/textbook';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
-import type {InspirationCatalog} from './catalog';
+import type {InspirationCatalog} from './catalog.ts';
 
 const measured={numbers:'code',words:'ai',confidence:.7,earChecked:false} as const;
 

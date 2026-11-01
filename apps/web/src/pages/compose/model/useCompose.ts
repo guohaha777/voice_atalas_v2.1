@@ -1,27 +1,27 @@
 import {useCallback,useEffect,useMemo,useReducer,useRef,useState} from 'react';
 import type {Arrangement,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
-import {spanHolds} from '../../../shared/creation/arrangementTiming';
-import type {InspirationCatalog} from '../../../shared/inspiration/catalog';
-import type {TeachingMusicService} from '../../../shared/inspiration/teachingMusic';
-import {useInspirationCatalog} from '../../../shared/inspiration/useInspirationCatalog';
-import type {Instrument} from '../../../shared/background/instruments';
-import type {BackgroundLibrary} from '../../../shared/background/library';
-import {useBackgroundLayer} from '../../../shared/background/useBackgroundLayer';
-import type {BackgroundGenerator} from '../../../shared/background/generator';
+import {spanHolds} from '../../../shared/creation/arrangementTiming.ts';
+import type {InspirationCatalog} from '../../../shared/inspiration/catalog.ts';
+import type {TeachingMusicService} from '../../../shared/inspiration/teachingMusic.ts';
+import {useInspirationCatalog} from '../../../shared/inspiration/useInspirationCatalog.ts';
+import type {Instrument} from '../../../shared/background/instruments.ts';
+import type {BackgroundLibrary} from '../../../shared/background/library.ts';
+import {useBackgroundLayer} from '../../../shared/background/useBackgroundLayer.ts';
+import type {BackgroundGenerator} from '../../../shared/background/generator.ts';
 import {RULE_VERSIONS} from '@wanwu-v2/sound-rules/rules';
-import {useAiBackground} from './useAiBackground';
-import {textbookSwitch} from '../../../shared/inspiration/textbookSwitch';
-import {services} from '../../../app/services';
-import type {TalkPolisher} from '../../../shared/talk/polisher';
-import type {ComposeRepository} from '../services/composeRepository';
-import {composeReducer,initialCompose,isShelved,shelfEntry} from './composeState';
-import type {ComposeNoticeKey} from './composeState';
-import {scoreLayout} from './scoreLayout';
-import {usePiecePlayback} from './usePiecePlayback';
-import {useTalk} from './useTalk';
-import * as choice from './backgroundChoice';
-import type {Move} from './backgroundChoice';
+import {useAiBackground} from './useAiBackground.ts';
+import {textbookSwitch} from '../../../shared/inspiration/textbookSwitch.ts';
+import {services} from '../../../app/services.ts';
+import type {TalkPolisher} from '../../../shared/talk/polisher.ts';
+import type {ComposeRepository} from '../../../shared/ports/composeRepository.ts';
+import {composeReducer,initialCompose,isShelved,shelfEntry} from './composeState.ts';
+import type {ComposeNoticeKey} from './composeState.ts';
+import {scoreLayout} from './scoreLayout.ts';
+import {usePiecePlayback} from './usePiecePlayback.ts';
+import {useTalk} from './useTalk.ts';
+import * as choice from './backgroundChoice.ts';
+import type {Move} from './backgroundChoice.ts';
 
 /**
  * 万物成曲: listen to the work as a piece, set its length, inspiration and background, then put it on the shelf.

@@ -1,16 +1,16 @@
 import {useState} from 'react';
 import type {CSSProperties,MouseEvent,PointerEvent,RefObject} from 'react';
 import {MAX_ROWS,SPAN_CHOICES,eventsInOrder} from '@wanwu-v2/contracts/arrangement';
-import {SoundMarker} from '../../../shared/markers/SoundMarker';
-import {markerFor,markerNumber} from '../../../shared/markers/markers';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {worldCopy} from '../config/copy';
-import {secondsText} from '../model/clipEditing';
-import {FIELD_INSET,spotPosition,timePosition} from '../model/fieldGeometry';
-import {MARKER_HALF,canRemoveRow,eventOf,heardInPiece,minSpan,unitOf} from '../model/soundWorldState';
-import type {DragState,useFieldDrag} from '../model/useFieldDrag';
-import type {FieldSpot,SoundWorld} from '../model/useSoundWorld';
-import {EventToolbar} from './EventToolbar';
+import {SoundMarker} from '../../../shared/markers/SoundMarker.tsx';
+import {markerFor,markerNumber} from '../../../shared/markers/markers.ts';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {worldCopy} from '../config/copy.ts';
+import {secondsText} from '../model/clipEditing.ts';
+import {FIELD_INSET,spotPosition,timePosition} from '../model/fieldGeometry.ts';
+import {MARKER_HALF,canRemoveRow,eventOf,heardInPiece,minSpan,unitOf} from '../model/soundWorldState.ts';
+import type {DragState,useFieldDrag} from '../model/useFieldDrag.ts';
+import type {FieldSpot,SoundWorld} from '../model/useSoundWorld.ts';
+import {EventToolbar} from './EventToolbar.tsx';
 import styles from './SoundField.module.css';
 
 type Props={

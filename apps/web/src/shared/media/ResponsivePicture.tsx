@@ -1,6 +1,6 @@
 import {useState} from 'react';
-import type {SceneLayer} from './types';
-import {media} from '../../styles/breakpoints';
+import type {SceneLayer} from './types.ts';
+import {media} from '../../styles/breakpoints.ts';
 export function ResponsivePicture({asset,onFailure}:{asset:SceneLayer;onFailure?:()=>void}){
  const [fallback,setFallback]=useState(false);
  return <picture>

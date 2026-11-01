@@ -1,15 +1,15 @@
-import {SoundMarker} from '../../../shared/markers/SoundMarker';
-import {markerNumber} from '../../../shared/markers/markers';
-import {inspirationCopy} from '../../../shared/inspiration/copy';
-import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
-import {worldCopy} from '../config/copy';
-import {placedCount} from '../model/soundWorldState';
-import type {SoundWorld} from '../model/useSoundWorld';
-import type {useFieldDrag} from '../model/useFieldDrag';
-import type {LibraryScope} from '../services/soundWorldRepository';
-import {libraryScopes} from '../services/soundWorldRepository';
+import {SoundMarker} from '../../../shared/markers/SoundMarker.tsx';
+import {markerNumber} from '../../../shared/markers/markers.ts';
+import {inspirationCopy} from '../../../shared/inspiration/copy.ts';
+import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon.tsx';
+import {worldCopy} from '../config/copy.ts';
+import {placedCount} from '../model/soundWorldState.ts';
+import type {SoundWorld} from '../model/useSoundWorld.ts';
+import type {useFieldDrag} from '../model/useFieldDrag.ts';
+import type {LibraryScope} from '../../../shared/ports/soundWorldRepository.ts';
+import {libraryScopes} from '../../../shared/ports/soundWorldRepository.ts';
 import styles from './SoundPalette.module.css';
-import {ui} from '../../../shared/ui/controls';
+import {ui} from '../../../shared/ui/controls.ts';
 
 /** 选一个声音: the work's sounds as cards. Tap a card to pick it (or drag it into the field); 试听 is a separate button. */
 export function SoundPalette({world,bind,onMore,onInspiration}:{

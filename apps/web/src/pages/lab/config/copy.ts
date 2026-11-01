@@ -1,6 +1,6 @@
 // 调音台 wording. A tool for the music role in development and preview builds only; children and teachers never see it.
-import type {RuleSetName} from '../model/ruleTree';
-import type {Listen} from '../model/useLab';
+import type {RuleSetName} from '../model/ruleTree.ts';
+import type {Listen} from '../model/useLab.ts';
 
 export const labCopy={
  title:'调音台',

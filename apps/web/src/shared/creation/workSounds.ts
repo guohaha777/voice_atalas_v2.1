@@ -3,13 +3,13 @@
 // shape (+ excerpt). Originals are only read; every render is a new buffer.
 import type {SourceClip} from '@wanwu-v2/contracts/arrangement';
 import type {ChosenShape,SoundAnalysis} from '@wanwu-v2/contracts/sound';
-import {AudioLoadError,loadAudio} from '../audio/loadAudio';
+import {AudioLoadError,loadAudio} from '../audio/loadAudio.ts';
 import {planCard,planClip,shapeKey} from '@wanwu-v2/sound-rules/shaping';
-import {renderShaped} from '../audio/renderShaped';
-import {analysisOf} from '../audio/soundAnalysis';
-import {exampleSourceUrl} from './exampleSounds';
-import {sessionArchive} from './sourceArchive';
-import {authorizedSource} from '../audio/authorizedSource';
+import {renderShaped} from '../audio/renderShaped.ts';
+import {analysisOf} from '../audio/soundAnalysis.ts';
+import {exampleSourceUrl} from './exampleSounds.ts';
+import {sessionArchive} from './sourceArchive.ts';
+import {authorizedSource} from '../audio/authorizedSource.ts';
 
 /** The recording only existed in an earlier visit (e.g. after a refresh) — it cannot be found any more. */
 export class MissingAudioError extends Error{}

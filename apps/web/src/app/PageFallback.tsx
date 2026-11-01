@@ -1,5 +1,5 @@
-import {flowSteps} from './navigation';
-import {FlowHeader} from '../shared/ui/FlowHeader';
+import {flowSteps} from './navigation.ts';
+import {FlowHeader} from '../shared/ui/FlowHeader.tsx';
 
 /** Shown while a lazily loaded page's code arrives; keeps the header so slow networks never see a blank screen. */
 export function PageFallback({current}:{current:(typeof flowSteps)[number]['id']|null}){

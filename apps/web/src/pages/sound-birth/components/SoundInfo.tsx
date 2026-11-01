@@ -1,8 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
 import {SOURCE_TEXT_MAX,missingProvenance} from '@wanwu-v2/contracts/sound';
-import {Glyph} from '../../../shared/ui/PaperIcon';
-import {birthCopy} from '../config/copy';
-import type {ProvenanceField,useSoundBirth} from '../model/useSoundBirth';
+import {Glyph} from '../../../shared/ui/PaperIcon.tsx';
+import {birthCopy} from '../config/copy.ts';
+import type {ProvenanceField,useSoundBirth} from '../model/useSoundBirth.ts';
 import styles from './SoundInfo.module.css';
 
 type Birth=ReturnType<typeof useSoundBirth>;

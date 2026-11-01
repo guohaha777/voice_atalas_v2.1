@@ -1,6 +1,6 @@
 import type {LibraryEntry} from '@wanwu-v2/contracts/cloud';
-import type {CookieAccountClient,ApiResult} from '../account/accountClient';
-import {AccountError} from '../account/accountClient';
+import type {CookieAccountClient,ApiResult} from '../account/accountClient.ts';
+import {AccountError} from '../account/accountClient.ts';
 import {parsePage,parseLibraryEntry} from '@wanwu-v2/contracts/cloud';
 
 export async function libraryEntries(api:CookieAccountClient,path:'sources'|'sound-units',scope:'mine'|'teachers'){

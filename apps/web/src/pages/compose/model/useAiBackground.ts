@@ -4,18 +4,18 @@ import type {BackgroundSource,BackgroundUnavailable} from '@wanwu-v2/contracts/b
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {ComposeSettings} from '@wanwu-v2/contracts/work';
 import type {BackgroundNote} from '@wanwu-v2/sound-rules/background';
-import {loadAudio} from '../../../shared/audio/loadAudio';
-import {renderBackground} from '../../../shared/audio/renderBackground';
-import {backgroundBrief} from '../../../shared/background/backgroundLayer';
-import {runBackgroundChain} from '../../../shared/background/generator';
-import type {BackgroundGenerator,ChainOutcome} from '../../../shared/background/generator';
-import type {BackgroundLayer} from '../../../shared/background/useBackgroundLayer';
-import {keptCache} from '../../../shared/storage/keptCache';
-import {AI_USED_AT_START,aiStatus,usedSource} from './backgroundChoice';
-import type {AiBackgroundState} from './backgroundChoice';
+import {loadAudio} from '../../../shared/audio/loadAudio.ts';
+import {renderBackground} from '../../../shared/audio/renderBackground.ts';
+import {backgroundBrief} from '../../../shared/background/backgroundLayer.ts';
+import {runBackgroundChain} from '../../../shared/background/generator.ts';
+import type {BackgroundGenerator,ChainOutcome} from '../../../shared/background/generator.ts';
+import type {BackgroundLayer} from '../../../shared/background/useBackgroundLayer.ts';
+import {keptCache} from '../../../shared/storage/keptCache.ts';
+import {AI_USED_AT_START,aiStatus,usedSource} from './backgroundChoice.ts';
+import type {AiBackgroundState} from './backgroundChoice.ts';
 
 /** Where the AI background stands (规则 14 in ./backgroundChoice.ts). */
-export type {AiBackgroundState} from './backgroundChoice';
+export type {AiBackgroundState} from './backgroundChoice.ts';
 type Ready=Extract<ChainOutcome,{status:'ready'}>['result'];
 
 const AUDIO_TIMEOUT_MS=20_000;

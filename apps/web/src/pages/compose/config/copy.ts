@@ -52,9 +52,28 @@ export const composeCopy = {
   spanNote: '和声场的长度是同一个；最多多唱 5 秒，再长就剪掉。',
   // Inspiration
   inspirationTitle: '课本灵感',
+  /** Beside the title until a song is chosen; then the tag below takes its place. */
   inspirationOptional: '（可跳过）',
-  textbookWorking: (progress: number) =>
-    `正在提取歌曲旋律${progress > 0 ? ` ${Math.round(progress * 100)}%` : ''}，先保留节拍。`,
+  /** While the melody is extracted: the words around the percentage, which is set like the lengths' seconds. */
+  textbookWorking: '正在提取歌曲旋律',
+  textbookWorkingRest: '，先保留节拍。',
+  percent: (progress: number) => `${Math.round(progress * 100)}%`,
+  /** The tag beside 课本灵感 once a song is chosen: AI (with its bubble) when a model made the song's feature card. */
+  textbookAiTag: 'AI',
+  textbookAiLabel: '这首歌的特征卡是 AI 做的，点一下看说明',
+  textbookAiScheme: {
+    audio: '这首歌的特征是 AI 音频模型听过后整理的，程序照着编背景。',
+    language: '这首歌的特征是 AI 文本模型按测量整理的，程序照着编背景。',
+  },
+  /** Otherwise a status word: the extraction at work, or the program that made the card alone. */
+  textbookWorkingTag: '提取中',
+  textbookProgramTag: '程序',
+  /** 换一换: the program arranges another version from the same song and the same sounds. */
+  textbookRemake: '换一换',
+  textbookRemakeLabel: '按这首歌和你的声音，再编一版背景',
+  /** While 换一换 arranges and renders the new version (no percentage: the renderer reports none). */
+  textbookRemaking: '编曲中…',
+  textbookRemakingLead: '正在按课本规则重新编一版背景…',
   textbookExtracted: '已自动提取旋律，和你的声音一起创作。',
   textbookUnavailable: '这首歌暂不能生成可靠背景，先听你的声音。',
   textbookFallback: '旋律暂未可靠提取，当前只参考节拍和音乐特征。',

@@ -330,6 +330,17 @@
   color: #a0a796;
   box-shadow: none;
 }
+/* 课本灵感's status word in place of the AI chip: the grey 程序 look, not a button. */
+.statusTag {
+  display: inline-flex;
+  align-items: center;
+}
+/* A percentage set like 想听多久's seconds. */
+.percent {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--wk-ink);
+}
 /* The bubble under the AI chip: which scheme plays (hover, keyboard focus, or a moment after composing ends). */
 .tipWrap {
   position: relative;

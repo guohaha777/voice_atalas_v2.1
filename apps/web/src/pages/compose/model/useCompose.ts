@@ -10,6 +10,7 @@ import type { BackgroundLibrary } from '../../../shared/background/library.ts';
 import { useBackgroundLayer } from '../../../shared/background/useBackgroundLayer.ts';
 import type { BackgroundGenerator } from '../../../shared/background/generator.ts';
 import { RULE_VERSIONS } from '@wanwu-v2/sound-rules/rules';
+import { TEXTBOOK_TAKES } from '@wanwu-v2/sound-rules/textbook-compose';
 import { instrumentUnavailable } from './instrumentAvailability.ts';
 import { guideLines } from '../config/guideLines.ts';
 import { useAiBackground } from './useAiBackground.ts';
@@ -103,6 +104,10 @@ export function useCompose(
     () => choice.heardSettings(state.settings, songOn),
     [songOn, state.settings],
   );
+  /** 课本灵感's 换一换: which version of the song's background (0 = the first); a new song starts again at the first. */
+  const [textbookTake, setTextbookTake] = useState(0);
+  const songKey = JSON.stringify(state.settings.inspiration);
+  useEffect(() => setTextbookTake(0), [songKey]);
   // Teaching music is borrowed like a song once its card is made.
   const music = useBackgroundLayer(
     heard,
@@ -110,7 +115,38 @@ export function useCompose(
     tracks,
     true,
     state.shelved?.rendering.textbook,
+    textbookTake,
   );
+  /**
+   * 换一换 at work: from the tap until the new version is rendered (the render is kept, so playing it costs nothing more).
+   * The renderer reports no progress, so the card says 编曲中 without a percentage.
+   */
+  const [remaking, setRemaking] = useState(false);
+  const remakeAsked = useRef(0);
+  useEffect(() => {
+    const asked = remakeAsked.current;
+    if (!asked || !state.arrangement) return;
+    let current = true;
+    void music
+      .buffer(state.arrangement)
+      .catch(() => null)
+      .finally(() => {
+        if (current && remakeAsked.current === asked) setRemaking(false);
+      });
+    return () => {
+      current = false;
+    };
+  }, [textbookTake]);
+  /**
+   * Which AI made the feature card the song's background borrows (its rhythm, mood and line): the audio or language model
+   * for teaching music made here, the audio model for the catalogue's songs; null when the program made it alone.
+   */
+  const textbookAi = useMemo((): 'audio' | 'language' | null => {
+    const track = music.track;
+    if (!track || track.extraction.words !== 'ai') return null;
+    const card = teachingItems.find((item) => item.id === track.id)?.card;
+    return card ? (card.madeBy === 'program' ? null : card.madeBy) : 'audio';
+  }, [music.track, teachingItems]);
   /** What the background is made of right now (mood colour, borrowed rhythm), for the card. */
   const backgroundPlan = useMemo(
     () => (state.arrangement ? music.plan(state.arrangement) : null),
@@ -158,6 +194,7 @@ export function useCompose(
     // 规则 22: the volume slider (under 想听多久) sets the whole layer — song, AI or plain — up to 成曲's own maximum.
     gain: choice.backgroundGain(state.settings.background),
     key: `${music.key}|${ai.renderKey}`,
+    song: songKey,
     // 规则 4: the AI background while it is used, else the local one.
     buffer: (arrangement: Arrangement) =>
       choice.playedBackground(ai.using) === 'ai'
@@ -403,6 +440,15 @@ export function useCompose(
     melodyAvailable:
       !!state.arrangement && !!music.resolve(state.arrangement).snapshot?.references.length,
     textbookIssue: state.arrangement ? music.resolve(state.arrangement).error : null,
+    textbookAi,
+    /** 换一换: the program arranges another version from the same song and sounds (four, then the first again). */
+    remakeTextbook: () => {
+      remakeAsked.current++;
+      setRemaking(true);
+      setTextbookTake((take) => (take + 1) % TEXTBOOK_TAKES);
+    },
+    /** True from a 换一换 tap until its version is rendered. */
+    textbookRemaking: remaking,
     setSongSwitch,
     applyChosenSong,
     togglePlay: playback.togglePlay,

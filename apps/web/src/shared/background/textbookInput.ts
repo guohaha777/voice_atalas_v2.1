@@ -10,6 +10,8 @@ import { arrangementIdentity } from './compositionIdentity.ts';
 export function textbookInput(
   arrangement: Arrangement,
   textbook: TextbookTrack,
+  /** 换一换: which version (0 = the first, and the only one a saved piece is checked against). */
+  take = 0,
 ): TextbookComposeInput {
   // Simultaneous sounds have no temporal order from their visual rows.
   const canonical = {
@@ -25,6 +27,7 @@ export function textbookInput(
     mood: presetMood(arrangement.mood),
     contentToken: arrangementIdentity(canonical),
     textbook,
+    ...(take ? { take } : {}),
     sounds: timedEvents(canonical).map(({ start, end, event, unit }): TextbookSound => {
       if (!numbers.has(unit.id)) numbers.set(unit.id, numbers.size + 1);
       const analysis = unit.analysis && !unit.analysis.silent ? unit.analysis : undefined;

@@ -25,6 +25,8 @@ export function useBackgroundLayer(
   tracks: readonly TextbookTrack[],
   arranged = false,
   saved?: TextbookSnapshot,
+  /** 成曲's 换一换 for a borrowed song (0 = the first version). */
+  take = 0,
 ) {
   const { background, inspiration } = settings;
   const renders = useRef(new Map<string, Promise<AudioBuffer>>());
@@ -42,15 +44,15 @@ export function useBackgroundLayer(
   const track = inspirationTrack(inspiration, tracks);
   const gain = background.enabled ? background.volume * MIX_RULES.backgroundMaxGain : 0;
   /** Changes when who plays it or what it borrows changes (the arrangement is read at play time). */
-  const key = `${chosen.map((item) => item.id).join('+') || 'original'}|${JSON.stringify(track) ?? '-'}|${saved?.identity ?? '-'}`;
+  const key = `${chosen.map((item) => item.id).join('+') || 'original'}|${JSON.stringify(track) ?? '-'}|${saved?.identity ?? '-'}|${take}`;
   const resolved = useMemo(
     () => new WeakMap<Arrangement, ReturnType<typeof resolveComposeBackground>>(),
-    [key, inspiration, tracks, saved],
+    [key, inspiration, tracks, saved, take],
   );
   const resolve = (arrangement: Arrangement) => {
     let result = resolved.get(arrangement);
     if (!result) {
-      result = resolveComposeBackground(arrangement, inspiration, tracks, saved);
+      result = resolveComposeBackground(arrangement, inspiration, tracks, saved, take);
       resolved.set(arrangement, result);
     }
     return result;

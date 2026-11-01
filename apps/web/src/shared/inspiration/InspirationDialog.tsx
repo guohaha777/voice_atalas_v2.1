@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { TextbookTrack } from '@wanwu-v2/contracts/textbook';
 import type { Inspiration } from '@wanwu-v2/contracts/work';
-import { trackWithMelody } from './melody/library.ts';
 import { audioSupported } from '../audio/audioContext.ts';
 import { SequencePlayer } from '../audio/SequencePlayer.ts';
 import { Glyph } from '../ui/PaperIcon.tsx';
@@ -24,11 +23,11 @@ import styles from './InspirationDialog.module.css';
 export type { InspirationTab, InspirationVariant } from './tabs.ts';
 
 /**
- * One thing sounds at a time in the dialog: a song's preview (rendered in the browser: its background, or only its beat
- * in 万物声场), or a recording with its beat (听原曲, ./originalBeat.ts: a 案例's, or a song uploaded on this device).
+ * One thing sounds at a time in the dialog: a song's beat (rendered in the browser, on both pages), or a recording with
+ * its beat (听原曲, ./originalBeat.ts: a 案例's, or a song uploaded on this device).
  * Tapping what plays stops it; switching tabs or closing the dialog stops everything.
  */
-function useListening(variant: InspirationVariant) {
+function useListening() {
   const [playing, setPlaying] = useState<string | null>(null);
   const player = useMemo(() => new SequencePlayer((key) => setPlaying(key)), []);
   const previews = useRef(new Map<string, Promise<AudioBuffer>>());
@@ -47,9 +46,7 @@ function useListening(variant: InspirationVariant) {
     if (!audioSupported()) return;
     let render = previews.current.get(item.id);
     if (!render) {
-      render = (
-        variant === 'full' ? trackWithMelody(item).catch(() => item) : Promise.resolve(item)
-      ).then((track) => renderRhythmPreview(track, variant));
+      render = renderRhythmPreview(item, 'beat');
       previews.current.set(item.id, render);
     }
     setPlaying(key);
@@ -89,8 +86,7 @@ function useListening(variant: InspirationVariant) {
 type Listening = ReturnType<typeof useListening>;
 
 /**
- * One row of 教学音乐 (and the upload waiting in 上传歌曲): the play button plays the song's beat or background preview
- * (again to stop); tapping the rest of the row opens or closes its explanation — only one is open at a time — where
+ * One row of 教学音乐 (and the upload waiting in 上传歌曲): the play button plays the song's beat (again to stop); tapping the rest of the row opens or closes its explanation — only one is open at a time — where
  * 听原曲 plays the recording with its beat. 用这个 chooses it.
  */
 function SongRowView({
@@ -172,8 +168,8 @@ type Opened = { open: string | null; toggle: (id: string) => void };
 
 /**
  * 课本灵感: 教学音乐 lists the system songs and then the songs added from this device; 上传歌曲 uploads one, shows its card
- * and waits for 加入教学音乐. One dialog for both pages: in 万物声场 (`beat`) a song lends only its beat, so the play
- * button plays the beat; in 万物成曲 (`full`) its background. Uploads stay on this device and get a feature card within
+ * and waits for 加入教学音乐. One dialog for both pages; on both the play button plays only the song's beat
+ * (`variant` picks the description: 万物声场 `beat`, 万物成曲 `full`). Uploads stay on this device and get a feature card within
  * about 15 s (./teachingCard.ts); with it, the page borrows the music like a song.
  */
 export function InspirationDialog({
@@ -208,7 +204,7 @@ export function InspirationDialog({
     open,
     toggle: (id) => setOpen((current) => (current === id ? null : id)),
   };
-  const listening = useListening(variant);
+  const listening = useListening();
   const builtIns = useBuiltInTeaching();
   const mine = teachingItems.filter((item) => item.confirmed && item.card);
   /**

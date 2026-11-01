@@ -14,6 +14,8 @@ export function resolveComposeBackground(
   inspiration: Inspiration,
   tracks: readonly TextbookTrack[],
   saved?: TextbookSnapshot,
+  /** 换一换: another version than the first; a saved piece keeps its own until one is asked for. */
+  take = 0,
 ) {
   const local = () => backgroundPlan(backgroundInput(arrangement, inspiration, tracks));
   const id =
@@ -24,7 +26,7 @@ export function resolveComposeBackground(
         : null;
   if (!id) return { plan: local(), snapshot: null, error: null };
   const track = inspirationTrack(inspiration, tracks);
-  if (saved && isTextbookSnapshot(saved) && saved.track.id === id) {
+  if (!take && saved && isTextbookSnapshot(saved) && saved.track.id === id) {
     const input = textbookInput(arrangement, saved.track);
     if (
       saved.inputToken === input.contentToken &&
@@ -34,7 +36,7 @@ export function resolveComposeBackground(
       return { plan: saved.music as BackgroundPlan, snapshot: saved, error: null };
   }
   if (!track) return { plan: { ...local(), notes: [] }, snapshot: null, error: 'missing-track' };
-  const input = textbookInput(arrangement, track),
+  const input = textbookInput(arrangement, track, take),
     made = composeTextbook(input);
   if (made.status !== 'ready')
     return { plan: { ...local(), notes: [] }, snapshot: null, error: made.reason };

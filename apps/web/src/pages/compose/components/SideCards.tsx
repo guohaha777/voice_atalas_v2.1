@@ -69,6 +69,83 @@ export function SpanCard({ compose }: { compose: Compose }) {
   );
 }
 
+/** A percentage in the lengths' number type (想听多久's seconds). */
+const Percent = ({ progress }: { progress: number }) => (
+  <b className={styles.percent}>{composeCopy.percent(progress)}</b>
+);
+
+/**
+ * Beside 课本灵感 once a song is chosen, as on 背景音乐: AI with its bubble when a model made the song's feature card
+ * (on hover, keyboard focus or a tap, and for a moment once the melody is extracted), else a status word; and 换一换
+ * while the song's background plays.
+ */
+function TextbookTag({ compose }: { compose: Compose }) {
+  const working = compose.melodyState?.status === 'working';
+  const [tipShown, setTipShown] = useState(false);
+  const wasWorking = useRef(working);
+  useEffect(() => {
+    const ended = wasWorking.current && !working;
+    wasWorking.current = working;
+    if (!ended || !compose.textbookAi) return;
+    setTipShown(true);
+    const timer = setTimeout(() => setTipShown(false), 4000);
+    return () => clearTimeout(timer);
+  }, [working, compose.textbookAi]);
+  return (
+    <>
+      {compose.textbookAi ? (
+        <span className={styles.tipWrap}>
+          <button
+            type="button"
+            className={styles.sourceTag}
+            aria-label={composeCopy.textbookAiLabel}
+            aria-describedby="textbook-scheme"
+            onClick={() => setTipShown((shown) => !shown)}
+          >
+            {composeCopy.textbookAiTag}
+          </button>
+          <span
+            id="textbook-scheme"
+            role="tooltip"
+            className={styles.aiTip}
+            data-show={tipShown || undefined}
+          >
+            {composeCopy.textbookAiScheme[compose.textbookAi]}
+          </span>
+        </span>
+      ) : (
+        <span className={`${styles.sourceTag} ${styles.statusTag}`} data-failed>
+          {working ? (
+            <>
+              {composeCopy.textbookWorkingTag}
+              {compose.melodyState!.progress > 0 && (
+                <>
+                  {' '}
+                  <Percent progress={compose.melodyState!.progress} />
+                </>
+              )}
+            </>
+          ) : (
+            composeCopy.textbookProgramTag
+          )}
+        </span>
+      )}
+      {compose.songPlays && !compose.textbookIssue && (
+        <button
+          type="button"
+          className={styles.sourceTag}
+          aria-label={composeCopy.textbookRemakeLabel}
+          aria-busy={compose.textbookRemaking || undefined}
+          disabled={compose.textbookRemaking}
+          onClick={compose.remakeTextbook}
+        >
+          {compose.textbookRemaking ? composeCopy.textbookRemaking : composeCopy.textbookRemake}
+        </button>
+      )}
+    </>
+  );
+}
+
 /**
  * 课本灵感 (optional, also offered in 万物声场): lends rhythm and feel to the background only. The switch is the one
  * 万物声场 has (there: the song's beat); the chosen song plays while it is on, and AI or song is one or the other.
@@ -117,18 +194,35 @@ export function InspirationCard({
       <h3 id="inspiration-title" className={styles.cardTitle}>
         <Badge icon="book" tone="pink" />
         {composeCopy.inspirationTitle}
-        <small>{composeCopy.inspirationOptional}</small>
+        {songName ? (
+          <TextbookTag compose={compose} />
+        ) : (
+          <small>{composeCopy.inspirationOptional}</small>
+        )}
       </h3>
       <p className={styles.cardLead}>
         {lead}
         {compose.songPlays &&
-          (compose.melodyState?.status === 'working'
-            ? composeCopy.textbookWorking(compose.melodyState.progress)
-            : compose.textbookIssue
-              ? composeCopy.textbookUnavailable
-              : compose.melodyAvailable
-                ? composeCopy.textbookExtracted
-                : composeCopy.textbookFallback)}
+          (compose.textbookRemaking ? (
+            composeCopy.textbookRemakingLead
+          ) : compose.melodyState?.status === 'working' ? (
+            <>
+              {composeCopy.textbookWorking}
+              {compose.melodyState.progress > 0 && (
+                <>
+                  {' '}
+                  <Percent progress={compose.melodyState.progress} />
+                </>
+              )}
+              {composeCopy.textbookWorkingRest}
+            </>
+          ) : compose.textbookIssue ? (
+            composeCopy.textbookUnavailable
+          ) : compose.melodyAvailable ? (
+            composeCopy.textbookExtracted
+          ) : (
+            composeCopy.textbookFallback
+          ))}
       </p>
       <div className={styles.songRow}>
         {/* Shows the chosen song (or that none is chosen yet); a tap opens 课本灵感 to choose or change it. */}

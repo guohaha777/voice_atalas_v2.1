@@ -19,6 +19,8 @@ const END_SLACK = 0.05;
 type Music = {
   gain: number;
   key: string;
+  /** The chosen song (课本灵感); choosing another one starts the piece again from the top. */
+  song: string;
   buffer: (arrangement: Arrangement) => Promise<AudioBuffer>;
 };
 
@@ -53,6 +55,11 @@ export function usePiecePlayback(
   const bank = useMemo(() => new WorkSoundBank(EXAMPLE_TIMEOUT_MS), []);
   const token = useRef(0);
   const positionRef = useRef(position);
+  /**
+   * Another song was chosen: the next play starts from the top, even when a later background change asks to carry on
+   * (until then the player still reports where the old song had got to).
+   */
+  const fromTop = useRef(false);
   positionRef.current = position;
   const latestGain = useRef(music.gain);
   latestGain.current = music.gain;
@@ -124,7 +131,13 @@ export function usePiecePlayback(
         buffer: sounds[index]!,
       }));
       if (under) voices.push({ at: 0, buffer: under, layer: 'background' });
-      const at = from === 'continue' ? (player.elapsed() ?? positionRef.current) : from;
+      const at =
+        from !== 'continue'
+          ? from
+          : fromTop.current
+            ? 0
+            : (player.elapsed() ?? positionRef.current);
+      fromTop.current = false;
       halt();
       await player.play(PIECE, voices, MIX_RULES.childGain, {
         from: at,
@@ -218,14 +231,24 @@ export function usePiecePlayback(
   useEffect(() => {
     player.setLayerGain('background', music.gain);
   }, [music.gain, player]);
-  // A different background (or rhythm) needs a new render: carry on from the same moment.
+  // A different background (or rhythm) needs a new render: carry on from the same moment — except after another song
+  // is chosen, which is heard from the top (and, while paused, waits there).
   const firstKey = useRef(true);
+  const lastSong = useRef(music.song);
   useEffect(() => {
+    const songChanged = lastSong.current !== music.song;
+    lastSong.current = music.song;
     if (firstKey.current) {
       firstKey.current = false;
       return;
     }
-    if (player.activeKey() === PIECE) void start('continue');
+    const running = player.activeKey() === PIECE;
+    if (songChanged) {
+      setEnded(false);
+      fromTop.current = running;
+      if (running) void start(0);
+      else setPosition(0);
+    } else if (running || fromTop.current) void start('continue');
     // Only when the background itself changes.
   }, [music.key]);
 

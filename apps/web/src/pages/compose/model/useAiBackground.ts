@@ -1,9 +1,12 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
-import type {AiBackgroundStep,BackgroundBrief,BackgroundSource,BackgroundUnavailable,ComposePlan} from '@wanwu-v2/contracts/background';
+import type {
+ AiBackgroundStep,BackgroundBrief,BackgroundSource,BackgroundUnavailable,ComposePlan,KeptBackground,
+} from '@wanwu-v2/contracts/background';
 import type {ComposeSettings} from '@wanwu-v2/contracts/work';
 import {composeNotes,programBackground} from '@wanwu-v2/sound-rules/ai-compose';
 import type {BackgroundNote} from '@wanwu-v2/sound-rules/background';
+import {keptBackground,keptPlan} from '@wanwu-v2/sound-rules/kept-background';
 import {loadAudio} from '../../../shared/audio/loadAudio.ts';
 import {backgroundBrief} from '../../../shared/background/backgroundLayer.ts';
 import {backgroundCacheKey} from '../../../shared/background/compositionIdentity.ts';
@@ -134,11 +137,16 @@ export function useAiBackground(
  },[open,brief,briefKey,asking,generator,result,programHere]);
 
  const renders=useMemo(()=>backgroundRenderCache<object>(),[]);
- /** The actual AI / program note plan, also used to decide whether an instrument can join. */
- const notePlan=(piece:Arrangement)=>{
+ /** The composed notes playing now (AI or 程序自编), as a saved piece keeps them; null for AI audio or none. */
+ const composed=():KeptBackground|null=>{
   const playing=using?result??programHere:null;
   if(!playing||!brief||'audioUrl' in playing)return null;
-  return {...layer.plan(piece),...composeNotes(brief,playing.plan),mode:playing.plan.mode,notes:playing.notes};
+  return keptBackground(composeNotes(brief,playing.plan),playing.plan.mode,playing.notes);
+ };
+ /** The actual AI / program note plan, also used to decide whether an instrument can join. */
+ const notePlan=(piece:Arrangement)=>{
+  const music=composed();
+  return music?keptPlan(layer.plan(piece),music):null;
  };
  /** The background in the AI's place for this piece (AI or 程序自编), or null to play the local one. */
  const buffer=(piece:Arrangement):Promise<AudioBuffer>|null=>{
@@ -158,6 +166,7 @@ export function useAiBackground(
   state,
   key:briefKey,
   notePlan,
+  composed,
   fixedAudio:using&&result?.source==='audio-ai',
   renderKey:`${briefKey}|${source}|${revision}`,
   using:using&&(!!result||!!programHere),

@@ -203,12 +203,14 @@ export function useCompose(
  const saveWork=async(title:string)=>{
   const current=latest.current;
   if(!canSave())return false;
-  // What is kept is what is heard: a song with the 课本 switch off is not part of it.
+  // What is kept is what is heard: a song with the 课本 switch off is not part of it, and composed notes (AI 作曲 /
+  // 程序自编) go with the piece so the shelf plays the same music.
+  const composed=heard.background.enabled&&choice.playedBackground(ai.using)==='ai'?ai.composed():null;
   const work=shelfEntry(
    {...current,settings:heard},
    title,
    new Date(),
-   {background:ai.source,prompt:ai.prompt,rules:{...RULE_VERSIONS}});
+   {background:ai.source,prompt:ai.prompt,rules:{...RULE_VERSIONS},...(composed?{composed}:{})});
   if(!work)return false;
   const result=await repository.saveWork(work);
   if(result.status==='failed'){

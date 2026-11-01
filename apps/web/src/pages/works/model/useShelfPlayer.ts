@@ -1,6 +1,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {SavedWork} from '@wanwu-v2/contracts/work';
 import {backgroundPlan} from '@wanwu-v2/sound-rules/background';
+import {keptPlan} from '@wanwu-v2/sound-rules/kept-background';
 import {MIX_RULES} from '@wanwu-v2/sound-rules/mix';
 import {audioSupported} from '../../../shared/audio/audioContext.ts';
 import {renderArrangedBackground} from '@wanwu-v2/audio-engine/orchestration';
@@ -17,7 +18,8 @@ export type ShelfPlayFailure=NonNullable<ReturnType<typeof soundFailure>>|'no-au
 
 /**
  * 听一听 on the shelf: plays a saved work as it was kept — the child's sounds as placed, and the background with the
- * saved settings (on / off, instruments, volume, textbook song) from the same local rules as 万物成曲. One work at a
+ * saved settings (on / off, instruments, volume, textbook song): the composed notes it kept, else the same local rules
+ * as 万物成曲. One work at a
  * time; tapping the playing one stops it. The clock drives the highlights on the card's small score.
  */
 export function useShelfPlayer(
@@ -84,7 +86,11 @@ export function useShelfPlayer(
     const chosen=background.instruments.flatMap(id=>instruments.filter(item=>item.id===id));
     // A background that cannot be made is left out: the child's sounds still play.
     const input=backgroundInput(arrangement,settings.inspiration,tracks);
-    const under=await renderArrangedBackground(backgroundPlan(input),chosen,input.sounding).catch(()=>null);
+    // The composed notes the piece kept (AI 作曲 / 程序自编) play as they did in 万物成曲; older pieces rebuild it.
+    const {composed}=work.rendering;
+    const local=backgroundPlan(input);
+    const under=await renderArrangedBackground(composed?keptPlan(local,composed):local,chosen,input.sounding)
+     .catch(()=>null);
     if(under)voices.push({at:0,buffer:under,layer:'background'});
    }
    if(mine!==token.current)return;

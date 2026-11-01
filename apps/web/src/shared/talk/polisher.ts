@@ -10,16 +10,24 @@
 // `model` and `promptVersion` sit beside the reply's own fields, as in BackgroundResult.
 // Only anonymous briefs are sent: facts with numbered sounds (「声音1」), never the names a child typed, recordings,
 // people or places.
-import type {TextbookTalkBrief,WorkTalkBrief} from '@wanwu-v2/contracts/talk';
+import type { TextbookTalkBrief, WorkTalkBrief } from '@wanwu-v2/contracts/talk';
 
-export type TalkPolisher={
- /** Whether an AI rewording can be asked for now; false while no model is connected. */
- readonly open:boolean;
- workTalk(brief:WorkTalkBrief,signal:AbortSignal):Promise<unknown>;
- textbookTalk(brief:TextbookTalkBrief,signal:AbortSignal):Promise<unknown>;
+export type TalkPolisher = {
+  /** Whether an AI rewording can be asked for now; false while no model is connected. */
+  readonly open: boolean;
+  workTalk(brief: WorkTalkBrief, signal: AbortSignal): Promise<unknown>;
+  textbookTalk(brief: TextbookTalkBrief, signal: AbortSignal): Promise<unknown>;
 };
 
-export const offlineTalkPolisher:TalkPolisher={open:false,async workTalk(){return null;},async textbookTalk(){return null;}};
+export const offlineTalkPolisher: TalkPolisher = {
+  open: false,
+  async workTalk() {
+    return null;
+  },
+  async textbookTalk() {
+    return null;
+  },
+};
 
 /** The corpus sentences are already showing; an AI rewording that takes longer than this is not waited for (qwen3.8-flash takes 4–6 s for a full piece). */
-export const TALK_TIMEOUT_MS=10_000;
+export const TALK_TIMEOUT_MS = 10_000;

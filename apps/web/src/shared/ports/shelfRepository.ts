@@ -11,24 +11,24 @@
 //   PATCH  /api/v1/works/{workId}     ← {title} → SavedWork                                              ← rename
 //   DELETE /api/v1/works/{workId}     → 204 (the server keeps nothing the child took off)                ← remove
 // Errors come back as {status, reason, message?, requestId}; the adapter turns them into the results below.
-import type {SavedWork} from '@wanwu-v2/contracts/work';
+import type { SavedWork } from '@wanwu-v2/contracts/work';
 
 /** The shelf, newest first. */
-export type ShelfSnapshot=readonly SavedWork[];
+export type ShelfSnapshot = readonly SavedWork[];
 
-export type ShelfRepository={
- list():ShelfSnapshot;
- subscribe(listener:()=>void):()=>void;
- /** Fetch the shelf again; `list` and the listeners then show it. */
- refresh():Promise<void>;
- /** Id of the piece being made now (null when none). */
- currentId():string|null;
- /** The current piece is the child's own, has sounds, and its current form is not on the shelf. */
- hasUnsavedCurrent():boolean;
- /** Make a shelved work the current piece (万物成曲 then opens it). */
- open(work:SavedWork):Promise<void>;
- /** Take a work off the shelf; false when it was not there or could not be removed. */
- remove(id:string):Promise<boolean>;
- /** Give a work a new name; null when the name is empty or it could not be renamed. */
- rename(id:string,title:string):Promise<SavedWork|null>;
+export type ShelfRepository = {
+  list(): ShelfSnapshot;
+  subscribe(listener: () => void): () => void;
+  /** Fetch the shelf again; `list` and the listeners then show it. */
+  refresh(): Promise<void>;
+  /** Id of the piece being made now (null when none). */
+  currentId(): string | null;
+  /** The current piece is the child's own, has sounds, and its current form is not on the shelf. */
+  hasUnsavedCurrent(): boolean;
+  /** Make a shelved work the current piece (万物成曲 then opens it). */
+  open(work: SavedWork): Promise<void>;
+  /** Take a work off the shelf; false when it was not there or could not be removed. */
+  remove(id: string): Promise<boolean>;
+  /** Give a work a new name; null when the name is empty or it could not be renamed. */
+  rename(id: string, title: string): Promise<SavedWork | null>;
 };

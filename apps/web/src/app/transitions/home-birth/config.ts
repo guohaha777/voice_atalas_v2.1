@@ -1,1 +1,1 @@
-export const homeBirthMotion={durationMs:400,prepareLimitMs:1500};
+export const homeBirthMotion = { durationMs: 400, prepareLimitMs: 1500 };

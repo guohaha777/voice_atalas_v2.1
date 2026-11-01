@@ -3,18 +3,7 @@
   "lettering": {
     "columns": 5,
     "rows": 2,
-    "labels": [
-      "今",
-      "天",
-      "，",
-      "你",
-      "听",
-      "见",
-      "了",
-      "什",
-      "么",
-      "？"
-    ],
+    "labels": ["今", "天", "，", "你", "听", "见", "了", "什", "么", "？"],
     "variants": {
       "mobile": "/media/home/title/lettering.343f834cb9.webp",
       "desktop": "/media/home/title/lettering.30c402657d.webp",
@@ -24,11 +13,7 @@
   "bubbles": {
     "columns": 3,
     "rows": 1,
-    "labels": [
-      "round-bubble",
-      "oval-bubble",
-      "loop-bubble"
-    ],
+    "labels": ["round-bubble", "oval-bubble", "loop-bubble"],
     "variants": {
       "mobile": "/media/home/title/bubbles.fcab32461f.svg",
       "desktop": "/media/home/title/bubbles.fcab32461f.svg",
@@ -38,11 +23,7 @@
   "doodles": {
     "columns": 3,
     "rows": 1,
-    "labels": [
-      "eighth-note",
-      "paired-notes",
-      "quarter-note"
-    ],
+    "labels": ["eighth-note", "paired-notes", "quarter-note"],
     "variants": {
       "mobile": "/media/home/title/doodles.223ae61647.webp",
       "desktop": "/media/home/title/doodles.a71d2242e6.webp",

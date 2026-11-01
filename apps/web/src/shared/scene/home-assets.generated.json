@@ -10,12 +10,7 @@
       "id": "env-upper-left",
       "label": "左上浅枝叶",
       "kind": "environment",
-      "rect": [
-        0,
-        0,
-        174,
-        142
-      ],
+      "rect": [0, 0, 174, 142],
       "z": 1,
       "variants": {
         "mobile": {
@@ -42,12 +37,7 @@
       "id": "env-canopy-right",
       "label": "右上树冠与栖枝",
       "kind": "environment",
-      "rect": [
-        1027,
-        0,
-        413,
-        543
-      ],
+      "rect": [1027, 0, 413, 543],
       "z": 1,
       "variants": {
         "mobile": {
@@ -74,12 +64,7 @@
       "id": "env-perch-left",
       "label": "松鼠栖枝与中景",
       "kind": "environment",
-      "rect": [
-        0,
-        178,
-        385,
-        410
-      ],
+      "rect": [0, 178, 385, 410],
       "z": 2,
       "variants": {
         "mobile": {
@@ -106,12 +91,7 @@
       "id": "env-pond-left",
       "label": "左下森林水边",
       "kind": "environment",
-      "rect": [
-        0,
-        476,
-        578,
-        484
-      ],
+      "rect": [0, 476, 578, 484],
       "z": 1,
       "variants": {
         "mobile": {
@@ -138,12 +118,7 @@
       "id": "env-bank-right",
       "label": "右下植物水岸",
       "kind": "environment",
-      "rect": [
-        1083,
-        615,
-        357,
-        345
-      ],
+      "rect": [1083, 615, 357, 345],
       "z": 1,
       "variants": {
         "mobile": {
@@ -170,12 +145,7 @@
       "id": "bird",
       "label": "小鸟",
       "kind": "character",
-      "rect": [
-        1091,
-        193,
-        168,
-        127
-      ],
+      "rect": [1091, 193, 168, 127],
       "z": 4,
       "origin": "52% 91%",
       "motion": "bird",
@@ -205,12 +175,7 @@
       "id": "frog",
       "label": "青蛙",
       "kind": "character",
-      "rect": [
-        141,
-        648,
-        156,
-        134
-      ],
+      "rect": [141, 648, 156, 134],
       "z": 4,
       "origin": "50% 92%",
       "motion": "frog",
@@ -240,12 +205,7 @@
       "id": "squirrel",
       "label": "松鼠",
       "kind": "character",
-      "rect": [
-        53,
-        300,
-        174,
-        144
-      ],
+      "rect": [53, 300, 174, 144],
       "z": 4,
       "origin": "53% 95%",
       "motion": "squirrel",
@@ -275,12 +235,7 @@
       "id": "cicada",
       "label": "蝉",
       "kind": "character",
-      "rect": [
-        1320,
-        54,
-        73,
-        89
-      ],
+      "rect": [1320, 54, 73, 89],
       "z": 4,
       "origin": "50% 90%",
       "motion": "cicada",
@@ -310,12 +265,7 @@
       "id": "drop",
       "label": "雨滴",
       "kind": "character",
-      "rect": [
-        1188,
-        581,
-        92,
-        123
-      ],
+      "rect": [1188, 581, 92, 123],
       "z": 4,
       "origin": "50% 85%",
       "motion": "drop",
@@ -345,12 +295,7 @@
       "id": "snail",
       "label": "蜗牛",
       "kind": "character",
-      "rect": [
-        450,
-        787,
-        86,
-        66
-      ],
+      "rect": [450, 787, 86, 66],
       "z": 4,
       "origin": "50% 92%",
       "motion": "snail",
@@ -380,12 +325,7 @@
       "id": "fore-left",
       "label": "开场近景左树丛",
       "kind": "foreground",
-      "rect": [
-        0,
-        0,
-        800,
-        1080
-      ],
+      "rect": [0, 0, 800, 1080],
       "z": 6,
       "variants": {
         "mobile": {
@@ -412,12 +352,7 @@
       "id": "fore-right",
       "label": "开场近景右树丛",
       "kind": "foreground",
-      "rect": [
-        640,
-        -120,
-        800,
-        1080
-      ],
+      "rect": [640, -120, 800, 1080],
       "z": 6,
       "variants": {
         "mobile": {

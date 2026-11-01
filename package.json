@@ -4,8 +4,17 @@
   "private": true,
   "type": "module",
   "description": "万物声谱正式 H5 前端，按页面逐步验收",
-  "engines": { "node": ">=24.21.0" },
-  "workspaces": ["apps/web", "packages/contracts", "packages/sound-rules", "packages/prompts", "packages/audio-engine", "packages/music-features"],
+  "engines": {
+    "node": ">=24.21.0"
+  },
+  "workspaces": [
+    "apps/web",
+    "packages/contracts",
+    "packages/sound-rules",
+    "packages/prompts",
+    "packages/audio-engine",
+    "packages/music-features"
+  ],
   "scripts": {
     "dev": "npm run dev --workspace=@wanwu-v2/web",
     "typecheck": "npm run typecheck --workspace=@wanwu-v2/web",
@@ -16,7 +25,15 @@
     "assets:build": "node scripts/build-assets.mjs && node scripts/build-title-assets.mjs && node scripts/build-art-assets.mjs docs/assets/marker-recipe.json docs/assets/marker-hero-recipe.json && node scripts/build-library-audio.mjs",
     "assets:library": "node scripts/build-library-audio.mjs",
     "build": "npm run typecheck && npm run check:assets && npm run check:styles && npm run build --workspace=@wanwu-v2/web",
-    "preview": "npm run preview --workspace=@wanwu-v2/web"
+    "preview": "npm run preview --workspace=@wanwu-v2/web",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,cjs,css,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,cjs,css,json}\""
   },
-  "devDependencies": {"typescript":"6.0.3","@types/node":"24.19.2","sharp":"0.35.5","playwright":"1.64.1"}
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "playwright": "1.64.1",
+    "prettier": "3.9.10",
+    "sharp": "0.35.5",
+    "typescript": "6.0.3"
+  }
 }

@@ -7,19 +7,19 @@
 //       parseSourceEntry; `url` is the server's playable copy). The scopes are the Visibility values; sign-in for all
 //       but public. The bundled examples stay with the page as the offline fallback and are not served by this endpoint.
 // Uploading a source is shared/creation/sourceArchive.ts.
-import {exampleSounds} from './exampleSounds.ts';
-import type {ExampleSound} from './exampleSounds.ts';
-import type {SoundSource} from '@wanwu-v2/contracts/sound';
+import { exampleSounds } from './exampleSounds.ts';
+import type { ExampleSound } from './exampleSounds.ts';
+import type { SoundSource } from '@wanwu-v2/contracts/sound';
 
-export type SoundLibraryList={
- origin:'bundled'|'server';
- examples:readonly ExampleSound[];
- entries?:readonly {scope:'mine'|'teachers';source:SoundSource;url:string}[];
+export type SoundLibraryList = {
+  origin: 'bundled' | 'server';
+  examples: readonly ExampleSound[];
+  entries?: readonly { scope: 'mine' | 'teachers'; source: SoundSource; url: string }[];
 };
-export type SoundLibraryService={list():Promise<SoundLibraryList>};
+export type SoundLibraryService = { list(): Promise<SoundLibraryList> };
 
-export const bundledSoundLibrary:SoundLibraryService={
- async list(){
-  return {origin:'bundled',examples:exampleSounds};
- },
+export const bundledSoundLibrary: SoundLibraryService = {
+  async list() {
+    return { origin: 'bundled', examples: exampleSounds };
+  },
 };

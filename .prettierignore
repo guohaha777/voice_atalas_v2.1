@@ -1,0 +1,9 @@
+# Generated, vendored or binary-adjacent; formatting covers source code only.
+node_modules/
+package-lock.json
+apps/web/dist/
+apps/web/public/
+assets-source/
+music-eval/
+docs/
+artifacts/

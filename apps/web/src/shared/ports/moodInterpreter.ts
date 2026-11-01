@@ -5,31 +5,33 @@
 // Intended server endpoint (protocol v0.4; not implemented; the key stays on the server; open to visitors, limited per
 // IP and device):
 //   POST /api/v1/moods/interpret  ← {text}  → {nearest: MoodId|null}
-import {MOOD_TEXT_MAX,MOODS} from '@wanwu-v2/contracts/arrangement';
-import type {MoodId} from '@wanwu-v2/contracts/arrangement';
+import { MOOD_TEXT_MAX, MOODS } from '@wanwu-v2/contracts/arrangement';
+import type { MoodId } from '@wanwu-v2/contracts/arrangement';
 
-export type MoodInterpretation={nearest:MoodId|null};
-export type MoodInterpreter={
- /** Whether custom words can be accepted right now. */
- available:boolean;
- interpret(text:string,signal?:AbortSignal):Promise<MoodInterpretation|null>;
+export type MoodInterpretation = { nearest: MoodId | null };
+export type MoodInterpreter = {
+  /** Whether custom words can be accepted right now. */
+  available: boolean;
+  interpret(text: string, signal?: AbortSignal): Promise<MoodInterpretation | null>;
 };
 
-export const offlineMoodInterpreter:MoodInterpreter={
- available:false,
- async interpret(){
-  return null;
- },
+export const offlineMoodInterpreter: MoodInterpreter = {
+  available: false,
+  async interpret() {
+    return null;
+  },
 };
 
 /** Trim and cap the child's words; empty means nothing to send. */
-export function cleanMoodText(text:string){
- const clean=[...text.replace(/\s+/g,' ').trim()].slice(0,MOOD_TEXT_MAX).join('');
- return clean||null;
+export function cleanMoodText(text: string) {
+  const clean = [...text.replace(/\s+/g, ' ').trim()].slice(0, MOOD_TEXT_MAX).join('');
+  return clean || null;
 }
 /** Guards whatever a future model returns before the page trusts it. */
-export function parseInterpretation(value:unknown):MoodInterpretation|null{
- if(!value||typeof value!=='object')return null;
- const nearest=(value as Record<string,unknown>).nearest;
- return nearest===null||MOODS.includes(nearest as MoodId)?{nearest:nearest as MoodId|null}:null;
+export function parseInterpretation(value: unknown): MoodInterpretation | null {
+  if (!value || typeof value !== 'object') return null;
+  const nearest = (value as Record<string, unknown>).nearest;
+  return nearest === null || MOODS.includes(nearest as MoodId)
+    ? { nearest: nearest as MoodId | null }
+    : null;
 }

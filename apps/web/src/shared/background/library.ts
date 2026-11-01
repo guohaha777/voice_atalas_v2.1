@@ -8,9 +8,13 @@
 //   GET  /api/v1/instruments                           → Instrument[] (licensed, reviewed; more open over time)
 // AI backgrounds have one entry, POST /api/v1/backgrounds + GET /api/v1/backgrounds/{jobId} (shared/background/generator.ts):
 // the chosen instruments ride in the BackgroundBrief; on failure or timeout the page keeps the local background.
-import type {Instrument} from './instruments.ts';
+import type { Instrument } from './instruments.ts';
 
 /** `example` = made in the browser for this demo, not a licensed library. `coming`: names shown as not open yet. */
-export type InstrumentList={origin:'example'|'library';instruments:readonly Instrument[];coming:readonly string[]};
+export type InstrumentList = {
+  origin: 'example' | 'library';
+  instruments: readonly Instrument[];
+  coming: readonly string[];
+};
 
-export type BackgroundLibrary={list():Promise<InstrumentList>};
+export type BackgroundLibrary = { list(): Promise<InstrumentList> };

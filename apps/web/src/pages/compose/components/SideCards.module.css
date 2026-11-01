@@ -1,134 +1,608 @@
 /* Side cards: 想听多久 · 课本灵感 · 背景音乐. */
-.card{border-radius:28px;background:#fff;box-shadow:var(--wk-panel-shadow)}
+.card {
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: var(--wk-panel-shadow);
+}
 /* How far the 课本 switch sits in from the card edge (the song row's right padding); the 背景音乐 switch uses it too, so
    the two switches line up on the right. */
-.card{--switch-inset:8px}
-.srOnly{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.volume input{-webkit-appearance:none;appearance:none;display:block;width:100%;height:30px;margin:0;background:none;cursor:pointer;touch-action:none}
-.volume input::-webkit-slider-runnable-track{height:10px;border-radius:999px;background:linear-gradient(90deg,var(--wk-green-deep) var(--fill),#e3e7dc var(--fill))}
-.volume input::-moz-range-track{height:10px;border-radius:999px;background:linear-gradient(90deg,var(--wk-green-deep) var(--fill),#e3e7dc var(--fill))}
-.volume input::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-8px;border:4px solid #fff;border-radius:50%;background:var(--wk-green-text);box-shadow:0 3px 8px #26301a40}
-.volume input::-moz-range-thumb{width:18px;height:18px;border:4px solid #fff;border-radius:50%;background:var(--wk-green-text);box-shadow:0 3px 8px #26301a40}
-.volume input:disabled{opacity:.45;cursor:default}
-.volume input:focus-visible{outline:2px solid #668476;outline-offset:2px;border-radius:999px}
-.card{display:flex;flex-direction:column;padding:14px 16px 14px}
+.card {
+  --switch-inset: 8px;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.volume input {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 30px;
+  margin: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: none;
+}
+.volume input::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--wk-green-deep) var(--fill), #e3e7dc var(--fill));
+}
+.volume input::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--wk-green-deep) var(--fill), #e3e7dc var(--fill));
+}
+.volume input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -8px;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: var(--wk-green-text);
+  box-shadow: 0 3px 8px #26301a40;
+}
+.volume input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: var(--wk-green-text);
+  box-shadow: 0 3px 8px #26301a40;
+}
+.volume input:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.volume input:focus-visible {
+  outline: 2px solid #668476;
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 14px;
+}
 /* The column always ends level with the score: cards share the spare height and keep their last control at the bottom. */
-.card{flex:1 1 auto}
-.card>:last-child{margin-top:auto}
+.card {
+  flex: 1 1 auto;
+}
+.card > :last-child {
+  margin-top: auto;
+}
 /* 课本灵感 keeps its own height (text and two button rows read as one block); the other two cards take the spare. */
-.card.fit{flex-grow:0}
-.cardTop{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.cardTop>.switch{margin-right:var(--switch-inset)}
-.cardTitle{min-width:0;flex-wrap:wrap;display:flex;align-items:center;gap:9px;margin:0;font-size:var(--font-control-lg);font-weight:800}
-.cardTitle small{font-size:var(--font-small);font-weight:600;color:var(--wk-muted)}
+.card.fit {
+  flex-grow: 0;
+}
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cardTop > .switch {
+  margin-right: var(--switch-inset);
+}
+.cardTitle {
+  min-width: 0;
+  flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: var(--font-control-lg);
+  font-weight: 800;
+}
+.cardTitle small {
+  font-size: var(--font-small);
+  font-weight: 600;
+  color: var(--wk-muted);
+}
 /* Card icons are solid paper cut-outs in palette colours (sky · pink · lime) — no backing circle. */
-.badge{display:inline-flex;flex-shrink:0}
-.badge svg{width:32px;height:32px;filter:drop-shadow(0 2px 2px #26301a22);transition:transform .35s var(--wk-ease)}
-.card:hover .badge svg{transform:rotate(-8deg) scale(1.08)}
-.cardLead{margin:4px 0 10px;font-size:var(--font-small);font-weight:500;line-height:1.5;color:var(--wk-muted)}
-.spanOptions{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;min-height:60px;margin-top:10px;padding:6px;border-radius:22px;background:var(--wk-field);box-shadow:var(--wk-inset)}
-.spanOption{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;padding:4px;border:0;border-radius:17px;background:#fff;color:var(--wk-ink);box-shadow:var(--wk-key);transition:box-shadow .15s,background .25s,transform .15s var(--wk-ease)}
-.spanOption b{font-size:var(--font-subtitle);font-weight:800;font-variant-numeric:tabular-nums}
-.spanOption small{font-size:var(--font-label);font-weight:600;color:var(--wk-muted)}
-.spanOption:hover{transform:translateY(-2px);box-shadow:var(--wk-key-lg)}
-.spanOption[aria-checked=true]{background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift);transform:translateY(-1px)}
-.spanOption[aria-checked=true] small{color:#3f4f16}
-.spanOption:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wk-line-strong)}
+.badge {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.badge svg {
+  width: 32px;
+  height: 32px;
+  filter: drop-shadow(0 2px 2px #26301a22);
+  transition: transform 0.35s var(--wk-ease);
+}
+.card:hover .badge svg {
+  transform: rotate(-8deg) scale(1.08);
+}
+.cardLead {
+  margin: 4px 0 10px;
+  font-size: var(--font-small);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--wk-muted);
+}
+.spanOptions {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  min-height: 60px;
+  margin-top: 10px;
+  padding: 6px;
+  border-radius: 22px;
+  background: var(--wk-field);
+  box-shadow: var(--wk-inset);
+}
+.spanOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 52px;
+  padding: 4px;
+  border: 0;
+  border-radius: 17px;
+  background: #fff;
+  color: var(--wk-ink);
+  box-shadow: var(--wk-key);
+  transition:
+    box-shadow 0.15s,
+    background 0.25s,
+    transform 0.15s var(--wk-ease);
+}
+.spanOption b {
+  font-size: var(--font-subtitle);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.spanOption small {
+  font-size: var(--font-label);
+  font-weight: 600;
+  color: var(--wk-muted);
+}
+.spanOption:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--wk-key-lg);
+}
+.spanOption[aria-checked='true'] {
+  background: var(--wk-selected-fill);
+  color: var(--wk-on-fill);
+  box-shadow: var(--wk-selected-lift);
+  transform: translateY(-1px);
+}
+.spanOption[aria-checked='true'] small {
+  color: #3f4f16;
+}
+.spanOption:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--wk-line-strong);
+}
 /* Too short for the longest sound: greyed and flat, still tappable so the squirrel can say why. */
-.spanOption[aria-disabled=true]{background:var(--wk-soft);color:#b4baa9;box-shadow:none;cursor:not-allowed;transform:none}
-.spanOption[aria-disabled=true] small{color:#b4baa9}
+.spanOption[aria-disabled='true'] {
+  background: var(--wk-soft);
+  color: #b4baa9;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+.spanOption[aria-disabled='true'] small {
+  color: #b4baa9;
+}
 /* On / off switch: a solid pill with a white knob and the word inside. */
-.switch{position:relative;display:flex;align-items:center;flex-shrink:0;width:66px;height:36px;padding:0;border:0;border-radius:999px;background:#dfe3d8;transition:background .2s}
-.switch::before{content:"";position:absolute;inset:-4px}
-.switch i{position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 2px 6px #26301a33;transition:transform .2s var(--wk-ease)}
-.switch span{position:absolute;right:11px;font-size:var(--font-label);font-weight:800;color:#7d8571}
-.switch[aria-checked=true]{background:var(--wk-selected-fill);box-shadow:var(--wk-selected-lift)}
-.switch[aria-checked=true] i{transform:translateX(30px)}
-.switch[aria-checked=true] span{right:auto;left:12px;color:var(--wk-on-fill)}
-.trackRow{display:flex;flex-wrap:wrap;gap:6px}
-.trackRow button{display:inline-flex;align-items:center;gap:4px;min-height:38px;padding:0 12px;border:0;border-radius:999px;background:#fff;color:var(--wk-ink-soft);font-size:var(--font-small);font-weight:700;box-shadow:0 3px 0 var(--wk-line-strong),0 4px 8px #26301a0a;transition:box-shadow .15s,background .25s,transform .15s var(--wk-ease)}
-.trackRow button:hover{transform:translateY(-1px)}
-.trackRow button[aria-pressed=true]{background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift)}
-.trackRow button svg{width:14px;height:14px;color:var(--wk-on-fill)}
-.trackRow button[aria-pressed=true] small{color:#3f4f16}
-.trackRow .coming{display:inline-flex;align-items:center;gap:4px;min-height:38px;padding:0 12px;border:0;border-radius:999px;background:var(--wk-soft);color:#a0a796;font-size:var(--font-small);font-weight:700;box-shadow:none}
-.trackRow .coming:hover{transform:none}
-.trackRow .coming svg{width:13px;height:13px;color:inherit}
+.switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 66px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #dfe3d8;
+  transition: background 0.2s;
+}
+.switch::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+.switch i {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px #26301a33;
+  transition: transform 0.2s var(--wk-ease);
+}
+.switch span {
+  position: absolute;
+  right: 11px;
+  font-size: var(--font-label);
+  font-weight: 800;
+  color: #7d8571;
+}
+.switch[aria-checked='true'] {
+  background: var(--wk-selected-fill);
+  box-shadow: var(--wk-selected-lift);
+}
+.switch[aria-checked='true'] i {
+  transform: translateX(30px);
+}
+.switch[aria-checked='true'] span {
+  right: auto;
+  left: 12px;
+  color: var(--wk-on-fill);
+}
+.trackRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.trackRow button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--wk-ink-soft);
+  font-size: var(--font-small);
+  font-weight: 700;
+  box-shadow:
+    0 3px 0 var(--wk-line-strong),
+    0 4px 8px #26301a0a;
+  transition:
+    box-shadow 0.15s,
+    background 0.25s,
+    transform 0.15s var(--wk-ease);
+}
+.trackRow button:hover {
+  transform: translateY(-1px);
+}
+.trackRow button[aria-pressed='true'] {
+  background: var(--wk-selected-fill);
+  color: var(--wk-on-fill);
+  box-shadow: var(--wk-selected-lift);
+}
+.trackRow button svg {
+  width: 14px;
+  height: 14px;
+  color: var(--wk-on-fill);
+}
+.trackRow button[aria-pressed='true'] small {
+  color: #3f4f16;
+}
+.trackRow .coming {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--wk-soft);
+  color: #a0a796;
+  font-size: var(--font-small);
+  font-weight: 700;
+  box-shadow: none;
+}
+.trackRow .coming:hover {
+  transform: none;
+}
+.trackRow .coming svg {
+  width: 13px;
+  height: 13px;
+  color: inherit;
+}
 /* The background source tag (本地生成 today): quiet while it only says what plays; breathing while AI is asked; a lime
    outline once an AI background is ready to switch to, filled while the AI one plays. */
 /* The AI chip: shown only once an AI background is ready. */
-.sourceTag{min-height:26px;padding:0 9px;border:0;border-radius:9px;background:#fff;font-size:var(--font-caption);font-weight:700;color:var(--wk-on-fill);box-shadow:inset 0 0 0 2px var(--wk-lime)}
-.sourceTag[aria-pressed=true]{background:var(--wk-selected-fill);box-shadow:var(--wk-selected-lift)}
+.sourceTag {
+  min-height: 26px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 9px;
+  background: #fff;
+  font-size: var(--font-caption);
+  font-weight: 700;
+  color: var(--wk-on-fill);
+  box-shadow: inset 0 0 0 2px var(--wk-lime);
+}
+.sourceTag[aria-pressed='true'] {
+  background: var(--wk-selected-fill);
+  box-shadow: var(--wk-selected-lift);
+}
 /* No AI made this piece's background (the program's plays): the chip turns grey, still tappable to try again. */
-.sourceTag[data-failed]{background:var(--wk-soft);color:#a0a796;box-shadow:none}
+.sourceTag[data-failed] {
+  background: var(--wk-soft);
+  color: #a0a796;
+  box-shadow: none;
+}
 /* The bubble under the AI chip: which scheme plays (hover, keyboard focus, or a moment after composing ends). */
-.tipWrap{position:relative;display:inline-flex}
+.tipWrap {
+  position: relative;
+  display: inline-flex;
+}
 /* Frosted like the 音乐小发现 panel (FooterBar .teach): translucent white over a blur, solid where blur is missing. */
-.aiTip{position:absolute;top:calc(100% + 8px);left:0;z-index:5;width:max-content;max-width:240px;padding:8px 11px;border-radius:12px;background:#ffffffeb;-webkit-backdrop-filter:blur(30px) saturate(1.6);backdrop-filter:blur(30px) saturate(1.6);color:var(--wk-ink-soft);font-size:var(--font-label);font-weight:600;line-height:1.45;box-shadow:0 24px 60px #26301a24,inset 0 0 0 1px #ffffffcc,inset 0 1px 0 #fff;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .18s,transform .18s,visibility .18s;pointer-events:none}
-.tipWrap:hover .aiTip,.tipWrap:focus-within .aiTip,.aiTip[data-show]{opacity:1;visibility:visible;transform:none}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
- .aiTip{background:#fffffff2}
+.aiTip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 5;
+  width: max-content;
+  max-width: 240px;
+  padding: 8px 11px;
+  border-radius: 12px;
+  background: #ffffffeb;
+  -webkit-backdrop-filter: blur(30px) saturate(1.6);
+  backdrop-filter: blur(30px) saturate(1.6);
+  color: var(--wk-ink-soft);
+  font-size: var(--font-label);
+  font-weight: 600;
+  line-height: 1.45;
+  box-shadow:
+    0 24px 60px #26301a24,
+    inset 0 0 0 1px #ffffffcc,
+    inset 0 1px 0 #fff;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.18s,
+    transform 0.18s,
+    visibility 0.18s;
+  pointer-events: none;
+}
+.tipWrap:hover .aiTip,
+.tipWrap:focus-within .aiTip,
+.aiTip[data-show] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .aiTip {
+    background: #fffffff2;
+  }
 }
 /* On the narrow desktop column the tooltip must end at its chip, inside the viewport. */
-@media(--compose-narrow-desktop){
- .aiTip{left:auto;right:0}
+@media (--compose-narrow-desktop) {
+  .aiTip {
+    left: auto;
+    right: 0;
+  }
 }
 /* Phones: centred under the chip and never wider than the screen allows, so it stays inside the page. */
-@media(--phone){
- .aiTip{left:50%;max-width:min(240px,calc(100vw - 48px));transform:translate(-50%,-4px)}
- .tipWrap:hover .aiTip,.tipWrap:focus-within .aiTip,.aiTip[data-show]{transform:translate(-50%,0)}
+@media (--phone) {
+  .aiTip {
+    left: 50%;
+    max-width: min(240px, calc(100vw - 48px));
+    transform: translate(-50%, -4px);
+  }
+  .tipWrap:hover .aiTip,
+  .tipWrap:focus-within .aiTip,
+  .aiTip[data-show] {
+    transform: translate(-50%, 0);
+  }
 }
 /* While the AI composes: which model is at work, and a bar that fills over the time the page waits for it. */
-.aiProgress{display:flex;flex-direction:column;gap:5px;margin-top:10px;font-size:var(--font-label);font-weight:600;color:var(--wk-muted)}
-.aiProgress i{position:relative;display:block;height:6px;border-radius:999px;background:#e3e7dc;overflow:hidden}
-.aiProgress i::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--wk-green-deep);transform-origin:left;transform:scaleX(0);animation:ai-wait var(--ai-wait,20s) linear forwards}
-@keyframes ai-wait{to{transform:scaleX(.96)}}
-.aiProgress+.trackRow{margin-top:10px}
-.trackRow small{display:inline-flex;align-items:center;gap:2px;margin-left:2px;font-size:var(--font-caption);font-weight:700;color:var(--wk-muted)}
-.volume{display:flex;align-items:center;gap:10px;margin-top:8px}
-.volume>svg{width:24px;height:24px;color:var(--wk-green-text)}
-.volume input::-webkit-slider-runnable-track{height:8px}
-.volume input::-webkit-slider-thumb{width:22px;height:22px;margin-top:-7px}
-.card[data-off] .trackRow{opacity:.5}
+.aiProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+  font-size: var(--font-label);
+  font-weight: 600;
+  color: var(--wk-muted);
+}
+.aiProgress i {
+  position: relative;
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: #e3e7dc;
+  overflow: hidden;
+}
+.aiProgress i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--wk-green-deep);
+  transform-origin: left;
+  transform: scaleX(0);
+  animation: ai-wait var(--ai-wait, 20s) linear forwards;
+}
+@keyframes ai-wait {
+  to {
+    transform: scaleX(0.96);
+  }
+}
+.aiProgress + .trackRow {
+  margin-top: 10px;
+}
+.trackRow small {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 2px;
+  font-size: var(--font-caption);
+  font-weight: 700;
+  color: var(--wk-muted);
+}
+.volume {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.volume > svg {
+  width: 24px;
+  height: 24px;
+  color: var(--wk-green-text);
+}
+.volume input::-webkit-slider-runnable-track {
+  height: 8px;
+}
+.volume input::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+  margin-top: -7px;
+}
+.card[data-off] .trackRow {
+  opacity: 0.5;
+}
 /* The volume under 想听多久: a little room above it (the length options take the spare height). */
-.card>.volume{margin-top:10px}
-.cardTop+.trackRow{margin-top:12px}
-@media(--reduced-motion){
- .spanOption,.trackRow button,.badge svg{transition:none}
+.card > .volume {
+  margin-top: 10px;
 }
-@media(--short){
- .card{padding:10px 14px}
- .cardTitle{font-size:var(--font-control)}
- .badge svg{width:26px;height:26px}
- .spanOptions{margin-top:8px}
- .spanOption{min-height:52px}
- .spanOption b{font-size:var(--font-control)}
- .cardLead{margin:4px 0 8px;font-size:var(--font-label)}
- .trackRow button{min-height:34px}
- .card>.volume{margin-top:6px}
+.cardTop + .trackRow {
+  margin-top: 12px;
 }
-@media(--shorter){
- .card{padding:8px 14px}
+@media (--reduced-motion) {
+  .spanOption,
+  .trackRow button,
+  .badge svg {
+    transition: none;
+  }
 }
-@media(--phone){
- .card{border-radius:22px}
+@media (--short) {
+  .card {
+    padding: 10px 14px;
+  }
+  .cardTitle {
+    font-size: var(--font-control);
+  }
+  .badge svg {
+    width: 26px;
+    height: 26px;
+  }
+  .spanOptions {
+    margin-top: 8px;
+  }
+  .spanOption {
+    min-height: 52px;
+  }
+  .spanOption b {
+    font-size: var(--font-control);
+  }
+  .cardLead {
+    margin: 4px 0 8px;
+    font-size: var(--font-label);
+  }
+  .trackRow button {
+    min-height: 34px;
+  }
+  .card > .volume {
+    margin-top: 6px;
+  }
+}
+@media (--shorter) {
+  .card {
+    padding: 8px 14px;
+  }
+}
+@media (--phone) {
+  .card {
+    border-radius: 22px;
+  }
 }
 /* Song or AI background, one or the other: the side not playing is greyed but stays tappable (tapping switches to it).
    The AI chip is never greyed: its colour says it can be tapped. */
-.card[data-dimmed]>:not(h3){opacity:.45;filter:grayscale(1);transition:opacity .2s,filter .2s}
-.card[data-dimmed]>:not(h3):hover{opacity:.8}
+.card[data-dimmed] > :not(h3) {
+  opacity: 0.45;
+  filter: grayscale(1);
+  transition:
+    opacity 0.2s,
+    filter 0.2s;
+}
+.card[data-dimmed] > :not(h3):hover {
+  opacity: 0.8;
+}
 /* 课本灵感: choose / change the song, and the 课本 switch (the same one as 万物声场's). */
-.songRow{display:flex;align-items:center;gap:10px;padding:5px var(--switch-inset) 5px 5px;border-radius:20px;background:var(--wk-field);box-shadow:var(--wk-inset)}
-.songPick{flex:1;min-width:0;min-height:44px;padding:0 10px;border:0;border-radius:15px;background:#fff;color:var(--wk-ink-soft);font-size:var(--font-body);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:var(--wk-key);transition:box-shadow .15s,transform .15s var(--wk-ease)}
-.songPick:hover{transform:translateY(-2px);box-shadow:var(--wk-key-lg)}
-.songPick:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wk-line-strong)}
-@media(--short){.songPick{min-height:40px;font-size:var(--font-small)}}
-@media(--reduced-motion){.songPick{transition:none}}
+.songRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px var(--switch-inset) 5px 5px;
+  border-radius: 20px;
+  background: var(--wk-field);
+  box-shadow: var(--wk-inset);
+}
+.songPick {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 15px;
+  background: #fff;
+  color: var(--wk-ink-soft);
+  font-size: var(--font-body);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: var(--wk-key);
+  transition:
+    box-shadow 0.15s,
+    transform 0.15s var(--wk-ease);
+}
+.songPick:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--wk-key-lg);
+}
+.songPick:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--wk-line-strong);
+}
+@media (--short) {
+  .songPick {
+    min-height: 40px;
+    font-size: var(--font-small);
+  }
+}
+@media (--reduced-motion) {
+  .songPick {
+    transition: none;
+  }
+}
 /* While a song's background plays, the background card is greyed too (switch, instruments); the title stays. */
-.card[data-song]>:not(.cardTop),.card[data-song] .cardTop>:not(h3){opacity:.45;filter:grayscale(1);transition:opacity .2s,filter .2s}
-.card[data-song]>:not(.cardTop):hover,.card[data-song] .cardTop>:not(h3):hover{opacity:.8}
+.card[data-song] > :not(.cardTop),
+.card[data-song] .cardTop > :not(h3) {
+  opacity: 0.45;
+  filter: grayscale(1);
+  transition:
+    opacity 0.2s,
+    filter 0.2s;
+}
+.card[data-song] > :not(.cardTop):hover,
+.card[data-song] .cardTop > :not(h3):hover {
+  opacity: 0.8;
+}
 
 /* Keep unavailable controls focusable so the squirrel can explain on hover, focus or touch. */
-.trackRow button[data-unavailable]{background:var(--wk-soft);color:#a0a796;box-shadow:none;cursor:not-allowed}
-.trackRow button[data-unavailable]:hover{transform:none}
-.trackRow button[data-unavailable] svg{color:inherit}
+.trackRow button[data-unavailable] {
+  background: var(--wk-soft);
+  color: #a0a796;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.trackRow button[data-unavailable]:hover {
+  transform: none;
+}
+.trackRow button[data-unavailable] svg {
+  color: inherit;
+}

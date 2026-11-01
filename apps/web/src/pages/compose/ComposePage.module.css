@@ -9,34 +9,93 @@
    cards with pressed trays and raised pads, solid paper icons, lime for every action and choice, yellow only for
    "sounding now"; the markers' faces light up while they sound. The score's rows are the field's rows (layout only, no
    高/中/低). Desktop fills one screen; phones stack and scroll. */
-.shell{min-height:100vh;min-height:100dvh;color:var(--wk-ink);
- background:var(--wk-page-bg)}
-.page{position:relative;z-index:1;display:flex;flex-direction:column;max-width:1320px;height:calc(100dvh - 64px);margin:0 auto;padding:0 32px 20px}
-.side{animation:global(wk-rise) .5s var(--wk-ease) both}
-.side{animation-delay:.05s}
-.intro{--art:66px;--art-fit:50px;--art-phone:46px;--intro-margin-fit:10px 0 8px}
-.workspace{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 352px;gap:20px;align-items:stretch}
-.side{display:flex;flex-direction:column;gap:14px;min-width:0;min-height:0}
-@media(--reduced-motion){
- .side{animation:none}
+.shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  color: var(--wk-ink);
+  background: var(--wk-page-bg);
 }
-@media(--short){
- .side{gap:10px}
+.page {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 1320px;
+  height: calc(100dvh - 64px);
+  margin: 0 auto;
+  padding: 0 32px 20px;
 }
-@media(--shorter){
- /* 1280 × 720: the side cards set the column height, so trim their rhythm a little to keep one screen. */
- .side{gap:8px}
+.side {
+  animation: global(wk-rise) 0.5s var(--wk-ease) both;
 }
-@media(--narrow-compose){
- .workspace{grid-template-columns:minmax(0,1fr) 316px}
+.side {
+  animation-delay: 0.05s;
 }
-@media(--one-column){
- .page{height:auto;min-height:0;padding:0 20px 32px}
- .workspace{grid-template-columns:minmax(0,1fr);gap:16px}
- .side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
- .side>:last-child{grid-column:1/-1}
+.intro {
+  --art: 66px;
+  --art-fit: 50px;
+  --art-phone: 46px;
+  --intro-margin-fit: 10px 0 8px;
 }
-@media(--phone){
- .page{padding:0 14px 24px}
- .side{grid-template-columns:minmax(0,1fr)}
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 352px;
+  gap: 20px;
+  align-items: stretch;
+}
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  min-height: 0;
+}
+@media (--reduced-motion) {
+  .side {
+    animation: none;
+  }
+}
+@media (--short) {
+  .side {
+    gap: 10px;
+  }
+}
+@media (--shorter) {
+  /* 1280 × 720: the side cards set the column height, so trim their rhythm a little to keep one screen. */
+  .side {
+    gap: 8px;
+  }
+}
+@media (--narrow-compose) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr) 316px;
+  }
+}
+@media (--one-column) {
+  .page {
+    height: auto;
+    min-height: 0;
+    padding: 0 20px 32px;
+  }
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .side {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .side > :last-child {
+    grid-column: 1/-1;
+  }
+}
+@media (--phone) {
+  .page {
+    padding: 0 14px 24px;
+  }
+  .side {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

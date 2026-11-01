@@ -7,11 +7,17 @@
 //
 // A server list may replace it later:
 //   GET  /api/v1/textbook-tracks?edition=…&grade=…      → TextbookTrack[] (validated with isTextbookTrack)
-import type {Metre,TextbookTrack} from '@wanwu-v2/contracts/textbook';
+import type { Metre, TextbookTrack } from '@wanwu-v2/contracts/textbook';
 
 /** Beats per minute and beats per bar (the rhythm a textbook song lends). */
-export type Rhythm={tempo:number;metre:Metre};
-export const trackRhythm=(track:Pick<TextbookTrack,'tempoBpm'|'meter'>):Rhythm=>({tempo:track.tempoBpm,metre:track.meter});
+export type Rhythm = { tempo: number; metre: Metre };
+export const trackRhythm = (track: Pick<TextbookTrack, 'tempoBpm' | 'meter'>): Rhythm => ({
+  tempo: track.tempoBpm,
+  metre: track.meter,
+});
 
-export type InspirationList={origin:'example'|'catalogue';entries:readonly TextbookTrack[]};
-export type InspirationCatalog={list():Promise<InspirationList>};
+export type InspirationList = {
+  origin: 'example' | 'catalogue';
+  entries: readonly TextbookTrack[];
+};
+export type InspirationCatalog = { list(): Promise<InspirationList> };

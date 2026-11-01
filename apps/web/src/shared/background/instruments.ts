@@ -2,4 +2,4 @@
 // plays the background's notes; with none chosen the notes play in the original soft voice. Each instrument says which
 // parts it is for, so several chosen split the work (rules: assignParts in @wanwu-v2/sound-rules/background). The
 // list comes from the BackgroundLibrary port (library.ts); today's three browser-synthesised ones are in localInstruments.ts.
-export type {InstrumentRecipe,Instrument} from '@wanwu-v2/audio-engine/instruments';
+export type { InstrumentRecipe, Instrument } from '@wanwu-v2/audio-engine/instruments';

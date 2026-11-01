@@ -12,21 +12,23 @@
 //        scopes are the Visibility values, filtered by the server; sign-in for all but public). This page offers
 //        example / mine / class / public today; school and region come with accounts.
 // A visitor's work stays on this device and none of these are called.
-import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
-import type {ComposeSettings} from '@wanwu-v2/contracts/work';
-import type {SoundUnitDraft} from '@wanwu-v2/contracts/sound';
-import type {SaveResult} from '../creation/workSession.ts';
+import type { Arrangement } from '@wanwu-v2/contracts/arrangement';
+import type { ComposeSettings } from '@wanwu-v2/contracts/work';
+import type { SoundUnitDraft } from '@wanwu-v2/contracts/sound';
+import type { SaveResult } from '../creation/workSession.ts';
 
-export type LibraryScope='example'|'mine'|'teachers'|'class'|'public';
-export const libraryScopes:readonly LibraryScope[]=['example','mine','teachers'];
+export type LibraryScope = 'example' | 'mine' | 'teachers' | 'class' | 'public';
+export const libraryScopes: readonly LibraryScope[] = ['example', 'mine', 'teachers'];
 /** `needs-account`: class spaces need teacher sign-in; `needs-review`: public sounds need review and licensing. */
-export type ScopeResult={status:'ready';units:SoundUnitDraft[]}|{status:'unavailable';reason:'needs-account'|'needs-review'};
+export type ScopeResult =
+  | { status: 'ready'; units: SoundUnitDraft[] }
+  | { status: 'unavailable'; reason: 'needs-account' | 'needs-review' };
 
-export type SoundWorldRepository={
- load():Promise<Arrangement>;
- save(arrangement:Arrangement):Promise<SaveResult>;
- scope(scope:LibraryScope):Promise<ScopeResult>;
- /** Settings of the current work shared with 万物成曲: 课本灵感 and the background layer (on / off, instruments). */
- loadSettings():Promise<ComposeSettings>;
- saveSettings(settings:ComposeSettings):Promise<SaveResult>;
+export type SoundWorldRepository = {
+  load(): Promise<Arrangement>;
+  save(arrangement: Arrangement): Promise<SaveResult>;
+  scope(scope: LibraryScope): Promise<ScopeResult>;
+  /** Settings of the current work shared with 万物成曲: 课本灵感 and the background layer (on / off, instruments). */
+  loadSettings(): Promise<ComposeSettings>;
+  saveSettings(settings: ComposeSettings): Promise<SaveResult>;
 };

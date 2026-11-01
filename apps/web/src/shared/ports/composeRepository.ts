@@ -15,33 +15,33 @@
 //   POST /api/v1/works/{workId}/share             ← {visibility} → {status:'pending-review',visibility}; the link comes
 //                                                   with the work's `share` once the review approves it
 // Errors come back as {status, reason, message?, requestId}; the adapter turns them into the results below.
-import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
-import type {ComposeSettings,SavedWork,Visibility} from '@wanwu-v2/contracts/work';
-import type {SaveResult} from '../creation/workSession.ts';
+import type { Arrangement } from '@wanwu-v2/contracts/arrangement';
+import type { ComposeSettings, SavedWork, Visibility } from '@wanwu-v2/contracts/work';
+import type { SaveResult } from '../creation/workSession.ts';
 
 /**
  * `shelved`: this work's version on the shelf, if any; `shelfCount`: how many works the shelf holds (for a default
  * title).
  */
-export type CurrentWork={
- arrangement:Arrangement;
- settings:ComposeSettings;
- shelved:SavedWork|null;
- shelfCount:number;
+export type CurrentWork = {
+  arrangement: Arrangement;
+  settings: ComposeSettings;
+  shelved: SavedWork | null;
+  shelfCount: number;
 };
 /** Sharing needs an account, a class space and review; none exist yet. Once they do, every share waits for review. */
-export type ShareResult=
- |{status:'unavailable';reason:'needs-account'}
- |{status:'confirmation-required'}
- |{status:'pending-review';visibility:Visibility};
+export type ShareResult =
+  | { status: 'unavailable'; reason: 'needs-account' }
+  | { status: 'confirmation-required' }
+  | { status: 'pending-review'; visibility: Visibility };
 
-export type ComposeRepository={
- load():Promise<CurrentWork>;
- saveArrangement(arrangement:Arrangement):Promise<SaveResult>;
- saveSettings(settings:ComposeSettings):Promise<SaveResult>;
- /** Puts the work on the shelf. `session` = this visit only (not an account). */
- saveWork(work:SavedWork):Promise<SaveResult>;
- share(workId:string):Promise<ShareResult>;
- /** 再来一首: the next work starts empty; shelved works stay on the shelf. */
- startNew():Promise<void>;
+export type ComposeRepository = {
+  load(): Promise<CurrentWork>;
+  saveArrangement(arrangement: Arrangement): Promise<SaveResult>;
+  saveSettings(settings: ComposeSettings): Promise<SaveResult>;
+  /** Puts the work on the shelf. `session` = this visit only (not an account). */
+  saveWork(work: SavedWork): Promise<SaveResult>;
+  share(workId: string): Promise<ShareResult>;
+  /** 再来一首: the next work starts empty; shelved works stay on the shelf. */
+  startNew(): Promise<void>;
 };

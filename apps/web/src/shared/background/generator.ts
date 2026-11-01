@@ -1,6 +1,6 @@
-// AI background port (万物成曲). The page always starts with the local background (rules, no network); this port asks
-// the server for an AI background and, if one comes back in time, the child may switch to it — never automatically.
-// No AI is connected yet: the offline generator says so plainly (`not-open`) and sends nothing.
+// AI background port (万物成曲). The page asks the server for an AI background, step by step: the AI music model, then
+// the AI voice model, then the AI text model (both compose a plan the server turns into notes). When none gives one, the
+// page composes alone (@wanwu-v2/sound-rules/ai-compose, 程序自编). The offline generator says so plainly (`not-open`).
 //
 // Intended server endpoints (protocol v0.4; not implemented; keys stay on the server, which owns quotas and moderation;
 // open to visitors, limited per IP and device — over the limit is reason 'quota'). The one AI background entry, with or
@@ -25,8 +25,8 @@ export const offlineBackgroundGenerator:BackgroundGenerator={
  async generate(){return {status:'unavailable',reason:'not-open'} satisfies BackgroundResult;},
 };
 
-/** How long the page waits for each step before trying the next (the local background plays meanwhile). */
-export const AI_STEP_TIMEOUT_MS:Record<AiBackgroundStep,number>={'audio-ai':60_000,'notes-ai':8_000};
+/** How long the page waits for each step before trying the next (the progress bar runs over this time). */
+export const AI_STEP_TIMEOUT_MS:Record<AiBackgroundStep,number>={'audio-ai':60_000,'voice-ai':20_000,'notes-ai':20_000};
 
 export type ChainOutcome=
  |{status:'ready';result:Extract<BackgroundResult,{status:'ready'}>}
@@ -34,16 +34,19 @@ export type ChainOutcome=
  |{status:'unavailable';reason:BackgroundUnavailable};
 
 /**
- * Tries the open AI steps in order (AI audio, then AI notes), each with a short timeout; the first valid background
- * wins. Anything else — closed, offline, over quota, too slow, malformed — moves on, and in the end the page keeps the
- * local background. Pure apart from the generator, so it is tested with fakes.
+ * Tries the open AI steps in order (music model, voice model, text model), each with its timeout; the first valid
+ * background wins. Anything else — closed, offline, over quota, too slow, malformed — moves on; in the end the page
+ * composes alone. `onStep` hears each step as it starts (for the progress bar). Pure apart from the generator, so it is
+ * tested with fakes.
  */
 export async function runBackgroundChain(generator:BackgroundGenerator,brief:BackgroundBrief,signal:AbortSignal,
- timeouts:Record<AiBackgroundStep,number>=AI_STEP_TIMEOUT_MS):Promise<ChainOutcome>{
+ timeouts:Record<AiBackgroundStep,number>=AI_STEP_TIMEOUT_MS,
+ onStep?:(step:AiBackgroundStep,timeoutMs:number)=>void):Promise<ChainOutcome>{
  let reason:BackgroundUnavailable='not-open';
  for(const step of generator.open){
   if(signal.aborted)return {status:'unavailable',reason:'failed'};
   if(typeof navigator!=='undefined'&&navigator.onLine===false)return {status:'unavailable',reason:'offline'};
+  onStep?.(step,timeouts[step]);
   const attempt=new AbortController();
   const stop=()=>attempt.abort();
   signal.addEventListener('abort',stop);

@@ -12,7 +12,7 @@ import {BACKGROUND_RULES} from '@wanwu-v2/sound-rules/rules';
 import {hasBeat,songBeat} from '../src/shared/inspiration/beat.ts';
 import {CARD_BUDGET_MS,NotMusicError,cardFrom,excerptWav,featuresBrief,makeTeachingCard,monoOf,pulseOf} from '../src/shared/inspiration/teachingCard.ts';
 import {builtInEntries} from '../src/shared/inspiration/builtInTeaching.ts';
-import {backgroundBrief,inspirationTrack} from '../src/shared/background/backgroundLayer.ts';
+import {backgroundBrief,backgroundInput,inspirationTrack} from '../src/shared/background/backgroundLayer.ts';
 import {INSPIRATION_TABS} from '../src/shared/inspiration/tabs.ts';
 
 const m:Measurement={version:'music-features-v2',seconds:120,musical:true,features:{rhythm:'steady',texture:'accompanied',drums:false},path:'accompanied',traits:{steady:.84,tonal:.58,solo:.29,drums:.24},steady:true,strongBeat:true,tempoBpm:136,meter:3,meterConfidence:.72,downbeatSeconds:.14,onsetsPerBeat:1.4,onsetDensity:'medium',
@@ -104,10 +104,10 @@ test('with its card, teaching music is borrowed like a song; without it, nothing
  const work={id:'w1',version:'arrangement-v2',origin:'child',spanSeconds:30,rows:3,mood:null,
   units:[{id:'u1',name:'鸟鸣',markerIndex:0,sourceId:'s1',input:'example-preset',shape:{},analysis:null}],
   events:[{id:'e1',unitId:'u1',at:.1,row:0,clip:{startMs:0,endMs:2000}}],createdAt:'2026-10-30T00:00:00.000Z',updatedAt:'2026-10-30T00:00:00.000Z'} as unknown as Arrangement;
- const withCard=backgroundBrief(work,inspiration,[card],[]),without=backgroundBrief(work,inspiration,[],[]);
- assert.equal(withCard?.textbook?.meter,3);
- assert.equal(withCard?.teachingMusic,null,'its features go like a song\'s');
- assert.deepEqual(without?.teachingMusic,{musicId:music.id});
+ // The plain background borrows it like a song; the AI background never takes a song (成曲规则 3).
+ assert.equal(backgroundInput(work,inspiration,[card]).textbook?.meter,3);
+ assert.equal(backgroundInput(work,inspiration,[]).textbook,null);
+ assert.ok(!JSON.stringify(backgroundBrief(work,[])).includes('法国号'));
  assert.equal(INSPIRATION_TABS.length,2);
 });
 
@@ -144,8 +144,7 @@ test('how the card may use its beat: free rhythm has none, a single line an even
  const work={id:'w1',version:'arrangement-v2',origin:'child',spanSeconds:30,rows:3,mood:null,
   units:[{id:'u1',name:'鸟鸣',markerIndex:0,sourceId:'s1',input:'example-preset',shape:{},analysis:null}],
   events:[{id:'e1',unitId:'u1',at:.1,row:0,clip:{startMs:0,endMs:2000}}],createdAt:'2026-10-30T00:00:00.000Z',updatedAt:'2026-10-30T00:00:00.000Z'} as unknown as Arrangement;
- const brief=backgroundBrief(work,inspiration,[loose],[]);
- assert.deepEqual([brief?.textbook,brief?.teachingMusic],[null,null]);
+ assert.equal(backgroundInput(work,inspiration,[loose]).textbook,null);
  // A free-rhythm recording is not asked about (the model's task is a beat and a bar rhythm); non-music gets no card.
  const decode=(data:Float32Array)=>async()=>({sampleRate:22050,numberOfChannels:1,length:data.length,duration:data.length/22050,getChannelData:()=>data}) as unknown as AudioBuffer;
  let seed=3;

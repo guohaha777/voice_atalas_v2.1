@@ -3,12 +3,14 @@ import {ANSWER_FIELDS,judge} from '@wanwu-v2/music-features';
 import type {AnswerField,FieldCheck,Measurement,MusicAnswers,Summary} from '@wanwu-v2/music-features';
 import {KEY_NAMES,musicCopy as copy} from './config/musicCopy.ts';
 import {useMusicLab} from './model/useMusicLab.ts';
+import {StyleCardsPanel} from './components/StyleCardsPanel.tsx';
 import type {LabSet,MusicLab} from './model/useMusicLab.ts';
 import styles from './MusicLabPage.module.css';
 
 /**
  * 系统音乐上传 (/lab/music): the internal entry for system songs and the test set — upload, measure here, fill in any
- * answers, hear it with the beat, save; then measure everything again and compare. Built only in development or a
+ * answers, hear it with the beat, save; then measure everything again and compare; and the AI background's style cards.
+ * Built only in development or a
  * preview build with VITE_ENABLE_LAB=1 (app/App.tsx); saving needs the dev server (apps/web/dev/labMusicStore.ts).
  */
 export function MusicLabPage(){
@@ -27,6 +29,8 @@ export function MusicLabPage(){
    <Upload lab={lab}/>
    <Saved lab={lab}/>
   </div>
+  {/* The AI background's style cards (rules/ai-compose.v1.json): added and taken away here. */}
+  <StyleCardsPanel/>
  </main>;
 }
 

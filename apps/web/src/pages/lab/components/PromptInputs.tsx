@@ -11,7 +11,7 @@ import styles from '../PromptLabPage.module.css';
 /** What the chosen task depends on: the work's mood, the textbook song; per task a few more inputs. */
 export function PromptInputs({lab}:{lab:PromptLab}){
  const {task,hint}=lab;
- const piece=task==='work-talk'||task==='textbook-talk'||task==='background-audio'||task==='background-notes';
+ const piece=task==='work-talk'||task==='textbook-talk'||task==='background-audio'||task==='background-compose';
  return <section className={styles.inputs} aria-label={promptCopy.inputs}>
   {(piece||task==='textbook-words')&&<label>{promptCopy.song}
    <select value={lab.track?.id??''} onChange={event=>lab.setTrackId(event.target.value||null)}>
@@ -27,7 +27,7 @@ export function PromptInputs({lab}:{lab:PromptLab}){
     </select>
    </label>
   </>}
-  {task==='background-notes'&&<label>{promptCopy.attempt}
+  {task==='background-compose'&&<label>{promptCopy.attempt}
    <select value={lab.attempt} onChange={event=>lab.setAttempt(Number(event.target.value))}>
     {[0,1,2].map(attempt=><option key={attempt} value={attempt}>{attempt+1}</option>)}
    </select>

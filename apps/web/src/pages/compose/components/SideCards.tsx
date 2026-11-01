@@ -1,4 +1,4 @@
-import {useMemo} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import type {CSSProperties} from 'react';
 import {inspirationCopy} from '../../../shared/inspiration/copy.ts';
 import type {InspirationTab} from '../../../shared/inspiration/InspirationDialog.tsx';
@@ -127,10 +127,50 @@ export function InspirationCard({compose,onOpen}:{compose:Compose;onOpen:(tab:In
  * and an AI chip once an AI background is ready (the volume is under 想听多久). Only controls here: the squirrel says
  * what each one did. The song or this card, one or the other: while the song plays the switch shows 关 (规则 23).
  */
+/** What the AI chip's bubble says: the step at work, which scheme plays, or why the program composed alone. */
+function aiSchemeText(compose:Compose){
+ const {ai,aiProgress,aiFallback,aiSource,usingAi}=compose;
+ if(ai.status==='working')
+  return aiProgress?composeCopy.aiProgress(composeCopy.aiSteps[aiProgress.step]):composeCopy.aiMaking;
+ if(ai.status==='unavailable'||aiFallback){
+  const reason=composeCopy.aiReasons[ai.status==='unavailable'?ai.reason:aiFallback??'failed'];
+  return composeCopy.aiProgram(reason)+(ai.status==='unavailable'&&ai.reason==='quota'?'':composeCopy.aiRetry);
+ }
+ if(ai.status==='ready'){
+  if(!usingAi)return composeCopy.aiSwitchOn;
+  return (aiSource in composeCopy.aiScheme?composeCopy.aiScheme[aiSource as keyof typeof composeCopy.aiScheme]:'')+composeCopy.aiSwitchOff;
+ }
+ return composeCopy.aiIdle;
+}
+
+/** While the AI composes: which model is at work, and a bar that runs over the time the page waits for it. */
+function AiProgressBar({compose}:{compose:Compose}){
+ const progress=compose.aiProgress;
+ if(compose.ai.status!=='working'||!progress)return null;
+ const label=composeCopy.aiProgress(composeCopy.aiSteps[progress.step]);
+ return <div className={styles.aiProgress} role="progressbar" aria-label={label}>
+  <span>{label}</span>
+  {/* A new step starts the bar again; it fills over the step's waiting time. */}
+  <i key={`${progress.step}|${progress.startedAt}`} style={{'--ai-wait':`${progress.timeoutMs}ms`} as CSSProperties}/>
+ </div>;
+}
+
 export function BackgroundCard({compose}:{compose:Compose}){
  const {background}=compose.state.settings;
  const chosen=new Set(compose.chosen.map(item=>item.id));
  const working=compose.ai.status==='working';
+ const failed=compose.ai.status==='unavailable';
+ // When composing ends (AI or the program), the bubble shows for a moment which scheme now plays.
+ const [tipShown,setTipShown]=useState(false);
+ const wasWorking=useRef(working);
+ useEffect(()=>{
+  const ended=wasWorking.current&&!working;
+  wasWorking.current=working;
+  if(!ended)return;
+  setTipShown(true);
+  const timer=setTimeout(()=>setTipShown(false),4000);
+  return()=>clearTimeout(timer);
+ },[working]);
  /** One or the other: while a song's background plays, this card (the AI background) is greyed; the AI chip switches. */
  const songPlays=compose.songPlays;
  return <section
@@ -143,16 +183,24 @@ export function BackgroundCard({compose}:{compose:Compose}){
     {/* AI or the song's / first background, one or the other: the AI chip keeps its colour even while the card is greyed
         (it can always be tapped); a tap switches to AI (making one for this piece if there is none yet), or back. 换一首
         shows only while AI plays. */}
-    {compose.ai.status!=='closed'&&<button
-     type="button"
-     className={styles.sourceTag}
-     aria-pressed={compose.usingAi}
-     disabled={working||!compose.state.arrangement?.events.length}
-     aria-label={composeCopy.aiLabel(compose.usingAi)}
-     onClick={compose.tapAi}>
-     {working?composeCopy.aiMaking:composeCopy.aiTag}
-    </button>}
-    {compose.usingAi&&!working&&<button type="button" className={styles.sourceTag} onClick={compose.makeAi}>
+    {/* Grey, and named 程序, when no AI made this piece's background (the program's plays); the bubble says which scheme plays —
+        on hover, keyboard focus, and for a moment after composing ends (phones have no hover). */}
+    {compose.ai.status!=='closed'&&<span className={styles.tipWrap}>
+     <button
+      type="button"
+      className={styles.sourceTag}
+      aria-pressed={compose.usingAi&&!failed}
+      data-failed={failed||undefined}
+      disabled={working||!compose.state.arrangement?.events.length}
+      aria-label={failed?composeCopy.aiProgramLabel:composeCopy.aiLabel(compose.usingAi)}
+      aria-describedby="ai-scheme"
+      onClick={compose.tapAi}>
+      {working?composeCopy.aiMaking:failed?composeCopy.aiProgramTag:composeCopy.aiTag}
+     </button>
+     <span id="ai-scheme" role="tooltip" className={styles.aiTip} data-show={tipShown||undefined}>{aiSchemeText(compose)}</span>
+    </span>}
+    {/* 换一首 while an AI background plays; when the program's plays, tapping the grey chip asks again instead. */}
+    {compose.usingAi&&!working&&!failed&&<button type="button" className={styles.sourceTag} onClick={compose.makeAi}>
      {composeCopy.aiMake}
     </button>}
    </h3>
@@ -167,6 +215,7 @@ export function BackgroundCard({compose}:{compose:Compose}){
     <i/>
    </button>
   </div>
+  <AiProgressBar compose={compose}/>
   <div className={styles.trackRow} role="group" aria-label={composeCopy.instrumentsLabel}>
    {compose.instruments.map(item=><button
     key={item.id}

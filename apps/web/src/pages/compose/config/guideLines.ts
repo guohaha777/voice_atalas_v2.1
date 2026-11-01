@@ -29,6 +29,6 @@ export const guideLines={
  aiOn:'换上了 AI 做的背景，不喜欢再点一下换回来。',
  aiOff:'换回原来的背景啦。',
  aiMaking:'AI 正在做一段背景，做好就换上。',
- aiFailed:'AI 这次没做成，先用原来的背景，可以再点一次。',
+ aiFailed:'AI 这次没做成，先放程序按你的声音编的背景，可以再点一次。',
  saved:'放进作品书架啦！去书架听一听吧。',
 };

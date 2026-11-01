@@ -4,6 +4,8 @@
 // 2026-10-31 整理时照搬当时的行为；之后按用户的纠正改（改规则先改清单，再改这里和对应测试）。
 // 10-31 用户纠正：音量条移到「想听多久」下面、对课本歌和 AI 都管用、拉满更响（规则 22）；课本和背景音乐两张卡
 // 二选一，放课本歌时背景音乐卡的开关也显示关（规则 23、24），放课本歌会把背景层打开（PLAY_SONG、规则 12）。
+// 11-01 用户纠正：AI 背景只按孩子的作品和心情做，不用课本歌（规则 3）；AI 都没做成时程序自编，也占 AI 的位置
+// （规则 11、14、16）。
 //
 // 用到的几样状态：
 // - 课本开关 songSwitch：和万物声场共用的那个开关（shared/inspiration/textbookSwitch.ts，存本机）。
@@ -29,9 +31,9 @@ export const heardSettings=(settings:ComposeSettings,inUse:boolean):ComposeSetti
  ?settings
  :{...settings,inspiration:NO_SONG};
 
-// ----- 规则 3：AI 背景按选中的歌做 -----
-/** 做 AI 背景用的是作品设置里选中的歌——课本开关关着也一样（不看规则 2）。 */
-export const aiBriefSettings=(settings:ComposeSettings):ComposeSettings=>settings;
+// ----- 规则 3：AI 背景不用课本歌 -----
+/** 做 AI 背景只看孩子的作品（每个声音的特征、疏密）和心情：当作没选歌，选不选歌、开关开不开都一样。 */
+export const aiBriefSettings=(settings:ComposeSettings):ComposeSettings=>({...settings,inspiration:NO_SONG});
 
 // ----- 规则 4：放哪个背景 -----
 /** AI 背景在用就放 AI 背景；否则放普通背景（课本歌在用时，普通背景跟着课本歌的节奏和感觉）。 */
@@ -84,8 +86,14 @@ export function tapAi(aiReady:boolean,aiUsing:boolean,chosen:boolean):Move{
 }
 
 // ----- 规则 11：AI 背景做好了（打开页面、点 AI、换一首都走这里） -----
-/** 做成了：AI 背景占上（useAiBackground 自己转成「用 AI」），课本开关关上；没做成：都不动。 */
-export const aiMade=(ok:boolean):Move=>ok?{song:false}:{};
+/**
+ * AI 做成了，或者 AI 都没做成、程序自编了一首（降级）：这首背景占上（useAiBackground 自己转成「用 AI」），课本开关
+ * 关上。`outcome` 说是哪一种；小松鼠和讲解按它说话，开关两种都一样。
+ */
+export const aiMade=(outcome:'ai'|'program'):Move=>{
+ void outcome;
+ return {song:false};
+};
 
 // ----- 规则 12：打开页面（只一次，作品和本机缓存都读到以后） -----
 /**
@@ -111,14 +119,15 @@ export const onShelf=(sameAsShelved:boolean,shelvedSource:BackgroundSource|undef
 
 // ----- 规则 14：AI 背景的状态 -----
 /**
- * `closed` = 没接 AI，或者本机记着的还没读完；`working` = 这首作品正在做；`ready` = 这首作品有做好的；
- * `unavailable` = 这首作品上次没做成；`idle` = 还没做过。
+ * `closed` = 本机记着的还没读完；`working` = 这首作品正在做；`ready` = 这首作品有 AI 做好的；`unavailable` = 这首
+ * 作品上次 AI 没做成（程序自编的在放）；`idle` = 还没做过。没接 AI 也是 `idle`：去做时直接程序自编，原因记 not-open。
  */
+export type AiSource=Exclude<BackgroundSource,'local-rules'|'program'>;
 export type AiBackgroundState=
  |{status:'closed'}
  |{status:'idle'}
  |{status:'working'}
- |{status:'ready';source:Exclude<BackgroundSource,'local-rules'>}
+ |{status:'ready';source:AiSource}
  |{status:'unavailable';reason:BackgroundUnavailable};
 /** `asking`：最近一次去做 AI（`key` 是哪首作品）；`made`：这首作品做好的 AI 背景（没有就是 null）。 */
 export function aiStatus({open,kept,asking,briefKey,made}:{
@@ -126,9 +135,10 @@ export function aiStatus({open,kept,asking,briefKey,made}:{
  kept:boolean;
  asking:{key:string;status:'working'}|{key:string;status:'unavailable';reason:BackgroundUnavailable}|null;
  briefKey:string;
- made:{source:Exclude<BackgroundSource,'local-rules'>}|null;
+ made:{source:AiSource}|null;
 }):AiBackgroundState{
- if(!open||!kept)return {status:'closed'};
+ void open;
+ if(!kept)return {status:'closed'};
  if(asking?.key===briefKey&&asking.status==='working')return {status:'working'};
  if(made)return {status:'ready',source:made.source};
  if(asking?.key===briefKey&&asking.status==='unavailable')return {status:'unavailable',reason:asking.reason};
@@ -140,9 +150,12 @@ export function aiStatus({open,kept,asking,briefKey,made}:{
 export const AI_USED_AT_START=true;
 
 // ----- 规则 16：现在放的背景来源 -----
-/** 用着 AI 且有做好的：AI 的来源（audio-ai / notes-ai）；否则是本地规则（local-rules）。存书架时记的就是它。 */
-export const usedSource=(using:boolean,made:{source:Exclude<BackgroundSource,'local-rules'>}|null):BackgroundSource=>
- using&&made?made.source:'local-rules';
+/**
+ * 用着 AI 位置时：有 AI 做好的就是它的来源（audio-ai / voice-ai / notes-ai）；AI 没做成、程序自编了就是 program；
+ * 否则是普通背景（local-rules）。存书架时记的就是它。
+ */
+export const usedSource=(using:boolean,made:{source:AiSource}|null,programMade=false):BackgroundSource=>
+ !using?'local-rules':made?made.source:programMade?'program':'local-rules';
 
 // ----- 规则 22：背景音量 -----
 /**

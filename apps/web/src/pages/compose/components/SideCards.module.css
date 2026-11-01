@@ -59,6 +59,27 @@
 /* The AI chip: shown only once an AI background is ready. */
 .sourceTag{min-height:26px;padding:0 9px;border:0;border-radius:9px;background:#fff;font-size:var(--font-caption);font-weight:700;color:var(--wk-on-fill);box-shadow:inset 0 0 0 2px var(--wk-lime)}
 .sourceTag[aria-pressed=true]{background:var(--wk-selected-fill);box-shadow:var(--wk-selected-lift)}
+/* No AI made this piece's background (the program's plays): the chip turns grey, still tappable to try again. */
+.sourceTag[data-failed]{background:var(--wk-soft);color:#a0a796;box-shadow:none}
+/* The bubble under the AI chip: which scheme plays (hover, keyboard focus, or a moment after composing ends). */
+.tipWrap{position:relative;display:inline-flex}
+/* Frosted like the 音乐小发现 panel (FooterBar .teach): translucent white over a blur, solid where blur is missing. */
+.aiTip{position:absolute;top:calc(100% + 8px);left:0;z-index:5;width:max-content;max-width:240px;padding:8px 11px;border-radius:12px;background:#ffffffeb;-webkit-backdrop-filter:blur(30px) saturate(1.6);backdrop-filter:blur(30px) saturate(1.6);color:var(--wk-ink-soft);font-size:var(--font-label);font-weight:600;line-height:1.45;box-shadow:0 24px 60px #26301a24,inset 0 0 0 1px #ffffffcc,inset 0 1px 0 #fff;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .18s,transform .18s,visibility .18s;pointer-events:none}
+.tipWrap:hover .aiTip,.tipWrap:focus-within .aiTip,.aiTip[data-show]{opacity:1;visibility:visible;transform:none}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+ .aiTip{background:#fffffff2}
+}
+/* Phones: centred under the chip and never wider than the screen allows, so it stays inside the page. */
+@media(--phone){
+ .aiTip{left:50%;max-width:min(240px,calc(100vw - 48px));transform:translate(-50%,-4px)}
+ .tipWrap:hover .aiTip,.tipWrap:focus-within .aiTip,.aiTip[data-show]{transform:translate(-50%,0)}
+}
+/* While the AI composes: which model is at work, and a bar that fills over the time the page waits for it. */
+.aiProgress{display:flex;flex-direction:column;gap:5px;margin-top:10px;font-size:var(--font-label);font-weight:600;color:var(--wk-muted)}
+.aiProgress i{position:relative;display:block;height:6px;border-radius:999px;background:#e3e7dc;overflow:hidden}
+.aiProgress i::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--wk-green-deep);transform-origin:left;transform:scaleX(0);animation:ai-wait var(--ai-wait,20s) linear forwards}
+@keyframes ai-wait{to{transform:scaleX(.96)}}
+.aiProgress+.trackRow{margin-top:10px}
 .trackRow small{display:inline-flex;align-items:center;gap:2px;margin-left:2px;font-size:var(--font-caption);font-weight:700;color:var(--wk-muted)}
 .volume{display:flex;align-items:center;gap:10px;margin-top:8px}
 .volume>svg{width:24px;height:24px;color:var(--wk-green-text)}

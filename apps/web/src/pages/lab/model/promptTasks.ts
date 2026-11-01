@@ -8,8 +8,8 @@ import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
 import {hintLines} from '@wanwu-v2/prompts/corpus';
 import {
- TASKS,buildBackgroundAudio,buildBackgroundNotes,buildMoodWords,buildSoundHint,buildTextbookFeatures,buildTextbookTalk,
- buildTextbookWords,buildWorkTalk,readBackgroundNotes,readMoodWords,readSoundHint,readTextbookTalk,readTextbookFeatures,
+ TASKS,buildBackgroundAudio,buildBackgroundCompose,buildMoodWords,buildSoundHint,buildTextbookFeatures,buildTextbookTalk,
+ buildTextbookWords,buildWorkTalk,readBackgroundCompose,readMoodWords,readSoundHint,readTextbookTalk,readTextbookFeatures,
  readTextbookWords,readWorkTalk,
 } from '@wanwu-v2/prompts/tasks';
 import type {BuiltPrompt,TaskId} from '@wanwu-v2/prompts/tasks';
@@ -93,18 +93,19 @@ export function taskView(id:TaskId,input:PromptLabInput):TaskView{
    };
   }
   case 'background-audio':
-  case 'background-notes':{
-   const brief=arrangement&&hasEvents?backgroundBrief(arrangement,inspiration,tracks,[]):null;
+  case 'background-compose':{
+   // The AI background follows the child's piece only (no song); the attempt stands for 换一首.
+   const brief=arrangement&&hasEvents?backgroundBrief(arrangement,[],input.attempt):null;
    if(!brief||!plan)return empty(promptCopy.notes.needEvents);
    const local=[`本地生成：${backgroundCopy.describe(plan,track?.title??null)}`];
    if(id==='background-audio')return {brief,local,built:buildBackgroundAudio(brief),note:promptCopy.notes.audio,check:null};
    return {
     brief,
     local,
-    built:buildBackgroundNotes(brief,input.attempt),
+    built:buildBackgroundCompose(brief),
     note:null,
     check:reply=>{
-     const {repairs,acceptance}=readBackgroundNotes(reply);
+     const {repairs,acceptance}=readBackgroundCompose(reply,brief);
      return {
       repairs,
       status:acceptance.status,

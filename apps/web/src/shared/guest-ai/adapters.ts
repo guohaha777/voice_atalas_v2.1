@@ -9,7 +9,7 @@ import type {MoodInterpreter} from '../ports/moodInterpreter.ts';
 import type {GuestAiClient,GuestReply} from './guestAiClient.ts';
 
 /** First look after this long, then every interval: AI notes are quick, AI audio takes a while. */
-const POLL={'notes-ai':{first:400,every:600},'audio-ai':{first:3000,every:2000}} as const;
+const POLL={'notes-ai':{first:600,every:600},'voice-ai':{first:600,every:600},'audio-ai':{first:3000,every:2000}} as const;
 
 const unavailableReason=(reply:Extract<GuestReply,{ok:false}>):BackgroundUnavailable=>
  reply.reason==='not-open'
@@ -72,7 +72,8 @@ export function guestMoodInterpreter(client:GuestAiClient):MoodInterpreter{
 export function guestBackgroundGenerator(client:GuestAiClient):BackgroundGenerator{
  return {
   get open(){
-   return AI_BACKGROUND_STEPS.filter(step=>client.open(step==='audio-ai'?'music':'language'));
+   // Music model, voice model (the server's built-in audio model), text model — each only when the server has it.
+   return AI_BACKGROUND_STEPS.filter(step=>step==='audio-ai'?client.open('music'):step==='voice-ai'?client.hears():client.open('language'));
   },
   async generate(brief,step:AiBackgroundStep,signal):Promise<unknown>{
    const started=await client.post('/api/v1/backgrounds',{step,brief},signal);

@@ -63,6 +63,29 @@ export const composeCopy={
  aiTag:'AI',aiLabel:(using:boolean)=>using?'正在听 AI 做的背景，点一下换回原来的':'换上 AI 做的背景',
  /** The one button that asks the model again (new music and explanation), and its label while it works. */
  aiMake:'换一首',aiMaking:'AI 在做…',
+ /** The AI steps, in the order they are tried (progress bar and bubble). */
+ aiSteps:{'audio-ai':'AI 音乐模型','voice-ai':'AI 语音模型','notes-ai':'AI 文本模型'},
+ aiProgress:(step:string)=>`${step}正在作曲…`,
+ /** The bubble on the AI chip: which scheme the background in the AI's place comes from, or why the program made it. */
+ aiScheme:{
+  'audio-ai':'这段背景是 AI 音乐模型直接生成的。',
+  'voice-ai':'这段背景是 AI 语音模型按你的声音作曲、程序编配的。',
+  'notes-ai':'这段背景是 AI 文本模型按你的声音作曲、程序编配的。',
+ },
+ aiReasons:{
+  'not-open':'AI 还没接上',
+  offline:'没有联网，AI 用不了',
+  quota:'今天的 AI 次数用完了',
+  timeout:'AI 这次想得太久了',
+  failed:'AI 这次没做成',
+ },
+ aiProgram:(reason:string)=>`${reason}，现在放的是程序按你的声音自编的背景。`,
+ aiRetry:'点一下再试一次。',
+ aiSwitchOn:'点一下换上 AI 作曲的背景。',
+ aiSwitchOff:'点一下换回普通背景。',
+ aiIdle:'点一下让 AI 按你的声音作一首背景。',
+ /** The chip while no AI made this piece's background: it names what plays instead (the program's own). */
+ aiProgramTag:'程序',aiProgramLabel:'现在放的是程序自编的背景，点一下让 AI 再试一次',
  // Discovery
  discoveryTitle:'音乐小发现',discoveryNext:'换一条',
  bulbOpen:'点小灯泡，看这首音乐有什么特征',bulbClose:'收起',

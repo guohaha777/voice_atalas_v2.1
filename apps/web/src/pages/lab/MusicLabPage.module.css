@@ -32,5 +32,10 @@
 .note{margin:0 0 12px;padding:8px 12px;border-radius:12px;background:var(--wk-cream,#fff7dc);font-size:var(--font-small)}
 .good{color:#3d6b12;font-weight:700}
 .bad{color:#b4472a;font-weight:700}
+/* 风格卡: a full-width panel under the two columns; its remove buttons are quiet text buttons. */
+.wide{margin-top:14px}
+.wide h2 small{font-weight:600}
+.linkButton{padding:0;border:0;background:none;color:#b4472a;font:inherit;font-size:var(--font-small);font-weight:700;cursor:pointer}
+.linkButton:disabled{opacity:.5;cursor:not-allowed}
 @media(--one-column){.columns{grid-template-columns:minmax(0,1fr)}.fields{display:block;overflow-x:auto}}
 @media(--phone){.page{padding:14px}}

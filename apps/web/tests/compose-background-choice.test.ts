@@ -1,6 +1,7 @@
 // 万物成曲 · 背景放谁：src/pages/compose/model/backgroundChoice.ts 的每条规则一个测试（编号同《成曲规则清单》）。
 // 这些测试记下的是 2026-10-31 的行为，不代表规则都对；改规则时先改清单，再改规则文件和这里。
 // 10-31 用户纠正：放课本歌时背景层打开（规则 7–10、12 的期望多了 background:true），新增规则 22–24。
+// 11-01 用户纠正：AI 背景不用课本歌（规则 3），AI 没做成时程序自编占上（规则 11、14、16）。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULT_COMPOSE_SETTINGS} from '@wanwu-v2/contracts/work';
@@ -27,8 +28,9 @@ test('规则 2 听到的设置：课本歌不在用时当作没选歌，其他�
  assert.equal(heard.background,withSong.background);
 });
 
-test('规则 3 AI 背景按选中的歌做：开关关着也用作品设置里的歌',()=>{
- assert.equal(choice.aiBriefSettings(withSong),withSong);
+test('规则 3 AI 背景不用课本歌：选不选歌、开关开不开，都当作没选歌',()=>{
+ assert.deepEqual(choice.aiBriefSettings(withSong),{...withSong,inspiration:NONE});
+ assert.deepEqual(choice.aiBriefSettings(DEFAULT_COMPOSE_SETTINGS),DEFAULT_COMPOSE_SETTINGS);
 });
 
 test('规则 4 放哪个背景：AI 在用放 AI，否则放普通背景',()=>{
@@ -76,9 +78,9 @@ test('规则 10 点 AI 标签：没有就做一首；在用 AI 时回到课本�
  assert.deepEqual(choice.tapAi(true,false,false),{song:false,ai:'toggle'});
 });
 
-test('规则 11 AI 背景做好了：课本开关关上；没做成：不动',()=>{
- assert.deepEqual(choice.aiMade(true),{song:false});
- assert.deepEqual(choice.aiMade(false),{});
+test('规则 11 AI 背景做好了，或 AI 没做成、程序自编了：都占上，课本开关关上',()=>{
+ assert.deepEqual(choice.aiMade('ai'),{song:false});
+ assert.deepEqual(choice.aiMade('program'),{song:false});
 });
 
 test('规则 12 打开页面：课本歌在用就放它；背景关着不动；没有 AI 就做一首；已有就只补讲解',()=>{
@@ -98,9 +100,9 @@ test('规则 13 已在书架：和书架那份一样，并且背景来源也一�
  assert.equal(choice.onShelf(true,undefined,'local-rules'),false);
 });
 
-test('规则 14 AI 背景的状态：没接 / 没读完缓存 → closed；正在做 → working；有 → ready；没做成 → unavailable；否则 idle',()=>{
+test('规则 14 AI 背景的状态：没读完缓存 → closed；正在做 → working；有 → ready；没做成 → unavailable；否则（没接 AI 也是）idle',()=>{
  const base={open:true,kept:true,asking:null,briefKey:'k',made:null};
- assert.deepEqual(choice.aiStatus({...base,open:false}),{status:'closed'});
+ assert.deepEqual(choice.aiStatus({...base,open:false}),{status:'idle'},'没接 AI：去做时直接程序自编');
  assert.deepEqual(choice.aiStatus({...base,kept:false}),{status:'closed'});
  assert.deepEqual(choice.aiStatus(base),{status:'idle'});
  assert.deepEqual(choice.aiStatus({...base,asking:{key:'k',status:'working'}}),{status:'working'});
@@ -119,10 +121,13 @@ test('规则 15 AI 背景默认在用',()=>{
  assert.equal(choice.AI_USED_AT_START,true);
 });
 
-test('规则 16 现在放的背景来源：用着 AI 且有做好的才是 AI 的来源，否则 local-rules',()=>{
+test('规则 16 现在放的背景来源：AI 做好的用它的来源；AI 没做成、程序自编的是 program；不用 AI 位置就是 local-rules',()=>{
  assert.equal(choice.usedSource(true,{source:'audio-ai'}),'audio-ai');
+ assert.equal(choice.usedSource(true,{source:'voice-ai'},true),'voice-ai','AI 做好的优先');
  assert.equal(choice.usedSource(false,{source:'audio-ai'}),'local-rules');
  assert.equal(choice.usedSource(true,null),'local-rules');
+ assert.equal(choice.usedSource(true,null,true),'program');
+ assert.equal(choice.usedSource(false,null,true),'local-rules');
 });
 
 test('规则 22 背景音量：音量条管整层背景，拉满是成曲自己的上限，比声场的上限高；背景层关着就没声音',()=>{

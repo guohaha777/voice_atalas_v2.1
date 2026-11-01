@@ -6,11 +6,12 @@ import {GuestAiClient,overrideHeader} from '../src/shared/guest-ai/guestAiClient
 import {guestBackgroundGenerator,guestMoodInterpreter,guestTalkPolisher} from '../src/shared/guest-ai/adapters.ts';
 import {emptyModelConfig} from '../src/shared/model-config/modelConfig.ts';
 import type {ModelConfig} from '../src/shared/model-config/modelConfig.ts';
+import {programPlan} from '@wanwu-v2/sound-rules/ai-compose';
 
 const token='a'.repeat(43);
-const brief:BackgroundBrief={version:'background-request-v1',workId:'work:t',seconds:20,sounding:[{start:1,end:2}],tempo:90,metre:4,mode:'major',mood:'happy',
- arrangement:{density:'medium',repetition:'low',register:'medium'},textbook:null,teachingMusic:null,instruments:[],
- rules:{analysis:'analysis-v2',shaping:'shaping-v3',background:'background-v1',mix:'mix-v1'}};
+const brief:BackgroundBrief={version:'background-request-v2',workId:'work:t',seconds:20,mood:'happy',
+ sounds:[{n:1,start:1,end:2,pitch:'mid',length:'short',contour:null,intensity:'medium',pattern:'once',kind:'one',brightness:'mid'}],
+ attempt:0,previous:null,instruments:[],rules:{analysis:'analysis-v2',shaping:'shaping-v3',background:'background-v1',mix:'mix-v2'}};
 type Seen={path:string;init:RequestInit};
 const json=(status:number,body:unknown)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json'}});
 
@@ -86,12 +87,12 @@ test('AI background: AI notes are polled to a result the chain accepts; closed s
    assert.equal(JSON.parse(init.body as string).step,'notes-ai');
    return json(202,{jobId:'11111111-2222-3333-4444-555555555555'});
   },
-  'GET /api/v1/backgrounds/:id':()=>++polls<2?json(200,{status:'pending'}):json(200,{status:'ready',source:'notes-ai',notes,model:'m',promptVersion:'p'}),
+  'GET /api/v1/backgrounds/:id':()=>++polls<2?json(200,{status:'pending'}):json(200,{status:'ready',source:'notes-ai',notes,plan:programPlan(brief),model:'m',promptVersion:'p'}),
  }));
  await client.loadStatus();
  const generator=guestBackgroundGenerator(client);
  assert.deepEqual(generator.open,['notes-ai'],'music is closed until the server has a music model');
- const outcome=await runBackgroundChain(generator,brief,new AbortController().signal,{'audio-ai':1000,'notes-ai':5000});
+ const outcome=await runBackgroundChain(generator,brief,new AbortController().signal,{'audio-ai':1000,'voice-ai':1000,'notes-ai':5000});
  assert.equal(outcome.status,'ready');
  assert.equal(polls,2);
 });

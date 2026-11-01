@@ -7,7 +7,7 @@ export const promptCopy={
  readme:'改文字：packages/prompts/corpus/（语料）和 prompts/（提示词）。说明见 packages/prompts/README.md。',
  toRules:'去调音台',
  tasks:{
-  'work-talk':'作品讲解 · 音乐小发现','textbook-talk':'课本讲解润色','background-notes':'AI 写音符','background-audio':'AI 生成背景',
+  'work-talk':'作品讲解 · 音乐小发现','textbook-talk':'课本讲解润色','background-compose':'AI 作曲（语音模型 → 文本模型）','background-audio':'AI 生成背景',
   'mood-words':'心情“自己写”','sound-hint':'向导联想','textbook-words':'课本歌曲的文字','textbook-features':'课本特征卡（听音频）',
  } satisfies Record<TaskId,string>,
  status:{open:'开放',closed:'暂不开放（只用语料）'},

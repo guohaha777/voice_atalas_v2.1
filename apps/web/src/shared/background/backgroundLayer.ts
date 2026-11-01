@@ -2,13 +2,12 @@
 // and the playback read, so the melody's gaps line up with the child's sounds on both pages.
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import {BACKGROUND_REQUEST_VERSION} from '@wanwu-v2/contracts/background';
-import type {BackgroundBrief,TextbookFeatures} from '@wanwu-v2/contracts/background';
+import type {BackgroundBrief,ComposePlan} from '@wanwu-v2/contracts/background';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
-import {backgroundPlan} from '@wanwu-v2/sound-rules/background';
+import {briefSound} from '@wanwu-v2/sound-rules/ai-compose';
 import type {BackgroundInput} from '@wanwu-v2/sound-rules/background';
 import {RULE_VERSIONS} from '@wanwu-v2/sound-rules/rules';
-import {workSummary} from '@wanwu-v2/sound-rules/textbook-match';
 import {pieceSeconds,timedEvents} from '../creation/arrangementTiming.ts';
 import {presetMood} from '../creation/moodCopy.ts';
 
@@ -44,53 +43,34 @@ export function backgroundInput(
  };
 }
 
-/** Only the features of a textbook song (never its title, audio or melody) go into an AI request. */
-export function textbookFeatures(track:TextbookTrack):TextbookFeatures{
- const {id,tempoBpm,meter,rhythmCell,onsetDensity,pitchRange,brightness,mode,repetition,mood,tonic}=track;
- return {
-  id,
-  tempoBpm,
-  meter,
-  rhythmCell:[...rhythmCell],
-  onsetDensity,
-  pitchRange:{...pitchRange},
-  brightness,
-  mode,
-  repetition,
-  mood,
-  ...(tonic===undefined?{}:{tonic}),
- };
-}
-
 /**
- * The anonymous brief an AI background request carries: the same frame the local background uses (length, when the
- * child's sounds play, tempo, metre, mode, mood), the arrangement in the textbook's words, the textbook song's features,
- * teaching music's card features like a song's (its upload id only while it has no card yet), the chosen instruments
- * and the rule versions. No recordings, sound names, makers, places or source ids.
+ * The anonymous brief an AI background request carries (background-request-v2): the piece's length and mood, and every
+ * placed sound with its number (the same sound keeps its number), when it is heard and its features — the child's
+ * choices first, the 声音体检 where none was made. No textbook song (an AI background follows the child's piece only),
+ * no recordings, sound names, makers or places. `attempt` and `previous` let 换一首 ask for a different piece.
  */
 export function backgroundBrief(
  arrangement:Arrangement,
- inspiration:Inspiration,
- tracks:readonly TextbookTrack[],
  instruments:readonly string[],
+ attempt=0,
+ previous:ComposePlan|null=null,
 ):BackgroundBrief|null{
- const summary=workSummary(arrangement);
- if(!summary)return null;
- const input=backgroundInput(arrangement,inspiration,tracks);
- const plan=backgroundPlan(input);
- const track=inspirationTrack(inspiration,tracks);
+ const events=timedEvents(arrangement);
+ if(!events.length)return null;
+ const numbers=new Map<string,number>();
+ const tenth=(value:number)=>Math.round(value*10)/10;
+ const sounds=events.map(({start,end,unit})=>{
+  if(!numbers.has(unit.id))numbers.set(unit.id,numbers.size+1);
+  return briefSound(numbers.get(unit.id)!,tenth(start),tenth(end),unit.shape,unit.analysis);
+ });
  return {
   version:BACKGROUND_REQUEST_VERSION,
   workId:arrangement.id,
-  seconds:input.seconds,
-  sounding:input.sounding.map(({start,end})=>({start,end})),
-  tempo:plan.tempo,
-  metre:plan.metre,
-  mode:plan.mode,
-  mood:input.mood,
-  arrangement:{density:summary.density,repetition:summary.repetition,register:summary.register},
-  textbook:followedTrack(track)?textbookFeatures(track!):null,
-  teachingMusic:inspiration.kind==='teaching-music'&&!track?{musicId:inspiration.musicId}:null,
+  seconds:pieceSeconds(arrangement),
+  mood:presetMood(arrangement.mood),
+  sounds,
+  attempt,
+  previous,
   instruments:[...instruments],
   rules:{...RULE_VERSIONS},
  };

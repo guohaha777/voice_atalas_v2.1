@@ -91,7 +91,8 @@ export function useCompose(
  /** 音乐小发现 and 课本讲解: corpus sentences at once, an AI rewording only where it passes the checks. */
  const talk=useTalk(state.arrangement,music.track,heard.inspiration,backgroundPlan,polisher);
  /** 规则 3: the AI background, made from the chosen song (switch on or not). */
- const ai=useAiBackground(state.arrangement,choice.aiBriefSettings(state.settings),tracks,music,generator);
+ // 规则 3: the AI background follows the child's piece only, never the song.
+ const ai=useAiBackground(state.arrangement,choice.aiBriefSettings(state.settings),music,generator);
  /** 规则 5: song or AI, one or the other. */
  const songPlays=choice.songPlays(songOn,ai.using);
  const played={
@@ -145,13 +146,13 @@ export function useCompose(
  /** 换一首: new AI music and a new explanation with it — the only way, besides opening the page, a model is asked. */
  const makeAi=(renewTalk:boolean)=>{
   dispatch({type:'said',lastAction:'ai-making'});
-  // The explanation changes only with music that was really made (a failed ask leaves both as they were).
-  // An AI background that plays takes the song's place: the 课本 switch goes off.
-  ai.generate(ok=>{
-   dispatch({type:'said',lastAction:ok?'ai-background':'ai-failed'});
+  // The explanation changes only with music an AI really made. Whatever plays in the AI's place (the AI's, or the
+  // program's when no AI made one) takes the song's place: the 课本 switch goes off.
+  ai.generate(outcome=>{
+   dispatch({type:'said',lastAction:outcome==='ai'?'ai-background':'ai-failed'});
    // 规则 11.
-   apply(choice.aiMade(ok));
-   if(ok){
+   apply(choice.aiMade(outcome));
+   if(outcome==='ai'){
     if(renewTalk)talk.renew();
     else talk.ensure();
    }
@@ -243,6 +244,9 @@ export function useCompose(
   shelfCount,
   ai:ai.state,
   aiSource:ai.source,
+  /** The AI step running now (progress bar), and why the program composed alone when it did. */
+  aiProgress:ai.progress,
+  aiFallback:ai.fallbackReason,
   usingAi:ai.using,
   /** The 课本 switch (shared with 万物声场), and whether the chosen song's background is what plays now. */
   songSwitch:choice.shownSongSwitch(songSwitch,ai.using),

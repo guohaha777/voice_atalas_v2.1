@@ -16,6 +16,7 @@ import {backgroundPlan} from '@wanwu-v2/sound-rules/background';
 import {MIX_RULES,RULE_VERSIONS} from '@wanwu-v2/sound-rules/rules';
 import {isBackgroundBrief,parseBackgroundResult} from '@wanwu-v2/contracts/background';
 import {backgroundBrief,backgroundInput} from '../src/shared/background/backgroundLayer.ts';
+import {programPlan} from '@wanwu-v2/sound-rules/ai-compose';
 import {offlineBackgroundGenerator,runBackgroundChain} from '../src/shared/background/generator.ts';
 import type {BackgroundGenerator} from '../src/shared/background/generator.ts';
 import {exampleTracks} from './fixtures/exampleTracks.ts';
@@ -192,7 +193,7 @@ test('万物成曲 refuses a length too short for the longest sound',()=>{
  assert.equal(composeReducer(state,{type:'span',spanSeconds:45,now}).arrangement!.spanSeconds,45);
 });
 
-test('课本: a chosen song is played as it is; the background, the AI brief and the talk follow it',()=>{
+test('课本: a chosen song is played as it is; the plain background and the talk follow it (the AI background does not)',()=>{
  let state=loaded(work({events:[ev('a',0,0,4),ev('b',.5,0,3)]}));
  state=composeReducer(state,{type:'inspiration',inspiration:{kind:'textbook',entryId:'tb:mock:lullaby'}});
  assert.deepEqual(state.settings.inspiration,{kind:'textbook',entryId:'tb:mock:lullaby'});
@@ -200,7 +201,7 @@ test('课本: a chosen song is played as it is; the background, the AI brief and
  assert.ok(isValidInspiration({kind:'textbook',entryId:'x',variation:'lower'}),'a variation kept by an older version is ignored');
  const input=backgroundInput(state.arrangement!,state.settings.inspiration,exampleTracks);
  assert.equal(input.textbook?.id,'tb:mock:lullaby');
- assert.equal(backgroundBrief(state.arrangement!,state.settings.inspiration,exampleTracks,[])!.textbook?.id,'tb:mock:lullaby');
+ assert.ok(!('textbook' in backgroundBrief(state.arrangement!,[])!),'the AI brief carries no song');
  const track=exampleTracks.find(item=>item.id==='tb:mock:lullaby')!;
  assert.equal(rhythmWords([2,1]),'嗒— 嗒');
  assert.equal(rhythmWords([.5,.5,1]),'嘀 嘀 嗒');
@@ -224,51 +225,49 @@ test('the shelf can rename a work and take one off; empty names are refused',()=
  assert.deepEqual(shelf.list().map(item=>item.id),['work:1']);
 });
 
-test('the AI background request is an anonymous brief with the textbook song\'s features only',()=>{
- const piece=work({events:[ev('a',0,0,4),ev('b',.5,0,3)],mood:{kind:'preset',id:'sad'}});
- assert.equal(backgroundBrief(work({events:[]}),{kind:'none'},exampleTracks,[]),null,'nothing placed: nothing to ask');
- const brief=backgroundBrief(piece,{kind:'textbook',entryId:'tb:mock:lullaby'},exampleTracks,['inst:local:organ'])!;
+test('the AI background request is an anonymous brief: each placed sound with its number, time and features; no song',()=>{
+ const piece=work({events:[ev('a',0,0,4),ev('b',.5,0,3,'u2'),ev('c',.8,0,2)],mood:{kind:'preset',id:'sad'}});
+ piece.units=piece.units.map(item=>item.id==='u1'?{...item,shape:{...item.shape,pitch:'high',contour:'rising',intensity:'loud'}}:item);
+ assert.equal(backgroundBrief(work({events:[]}),[]),null,'nothing placed: nothing to ask');
+ const brief=backgroundBrief(piece,['inst:local:organ'])!;
  assert.ok(isBackgroundBrief(brief));
- assert.deepEqual([brief.tempo,brief.metre,brief.mood,brief.textbook?.id,brief.textbook?.rhythmCell],[66,3,'sad','tb:mock:lullaby',[2,1]]);
- assert.deepEqual(brief.sounding,[{start:0,end:4},{start:15,end:18}]);
+ assert.equal(brief.mood,'sad');
+ assert.deepEqual(brief.sounds.map(({n,start,end})=>[n,start,end]),[[1,0,4],[2,15,18],[1,24,26]],'the same sound keeps its number');
+ assert.deepEqual([brief.sounds[0]!.pitch,brief.sounds[0]!.contour,brief.sounds[0]!.intensity],['high','rising','loud'],'the child\'s choices');
+ assert.deepEqual([brief.sounds[1]!.contour,brief.sounds[1]!.intensity],['flat','soft']);
+ assert.deepEqual([brief.attempt,brief.previous],[0,null]);
  assert.deepEqual(brief.rules,RULE_VERSIONS);
  const text=JSON.stringify(brief);
- for(const secret of ['蛙鸣','滴水','recording:','摇篮曲','像摇篮'])assert.ok(!text.includes(secret),`no ${secret} in the brief`);
- assert.equal(brief.teachingMusic,null,'a textbook song is not teaching music');
+ for(const secret of ['蛙鸣','滴水','recording:','摇篮曲','u1','u2'])assert.ok(!text.includes(secret),`no ${secret} in the brief`);
+ assert.equal(isBackgroundBrief({...brief,sounds:[]}),false,'at least one sound');
+ assert.equal(isBackgroundBrief({...brief,attempt:-1}),false);
+ assert.equal(isBackgroundBrief({...brief,textbook:null,sounds:[{...brief.sounds[0],pitch:'loud'}]}),false,'features from the five cards only');
 });
 
-test('teaching music rides in the same AI background brief, by its upload id only',()=>{
- const piece=work({events:[ev('a',0,0,4)]});
- const brief=backgroundBrief(piece,{kind:'teaching-music',musicId:'music:42',name:'三年级二班春游录音',durationMs:90_000},exampleTracks,[])!;
- assert.ok(isBackgroundBrief(brief));
- assert.deepEqual([brief.teachingMusic,brief.textbook],[{musicId:'music:42'},null]);
- assert.ok(!JSON.stringify(brief).includes('春游'),'the file name stays on the device');
- const bad=(change:Record<string,unknown>)=>isBackgroundBrief({...brief,...change});
- assert.equal(bad({teachingMusic:{musicId:''}}),false,'empty id');
- assert.equal(bad({teachingMusic:{musicId:'music:42',name:'春游'}}),false,'nothing beside the id');
- assert.equal(bad({teachingMusic:undefined}),false,'the field must be there');
- const withSong=backgroundBrief(piece,{kind:'textbook',entryId:'tb:mock:lullaby'},exampleTracks,[])!;
- assert.equal(isBackgroundBrief({...withSong,teachingMusic:{musicId:'music:42'}}),false,'one inspiration at a time');
-});
-
-test('the AI background chain: closed sends nothing; steps are tried in order, each with a timeout; bad results are refused',async()=>{
- const brief=backgroundBrief(work({events:[ev('a',0,0,4)]}),{kind:'none'},exampleTracks,[])!;
+test('the AI background chain: closed sends nothing; music, voice, text model in order, each with a timeout; bad results are refused',async()=>{
+ const brief=backgroundBrief(work({events:[ev('a',0,0,4)]}),[])!;
  const never=new AbortController().signal;
  assert.deepEqual(await runBackgroundChain(offlineBackgroundGenerator,brief,never),{status:'unavailable',reason:'not-open'});
  const asked:string[]=[];
  const notes=[{at:0,length:2,midi:60,part:'chord',accent:0}];
- const fake=(answers:Record<string,unknown|'hang'>):BackgroundGenerator=>({open:['audio-ai','notes-ai'],
+ const plan=programPlan(brief);
+ const fake=(answers:Record<string,unknown|'hang'>):BackgroundGenerator=>({open:['audio-ai','voice-ai','notes-ai'],
   generate:(_,step)=>{
    asked.push(step);
    const answer=answers[step];
    return answer==='hang'?new Promise(()=>{}):Promise.resolve(answer);
   }});
- const ready=await runBackgroundChain(fake({'audio-ai':{status:'unavailable',reason:'quota'},'notes-ai':{status:'ready',source:'notes-ai',notes,model:'qwen',promptVersion:'p1'}}),brief,never);
+ const started:string[]=[];
+ const ready=await runBackgroundChain(fake({'audio-ai':{status:'unavailable',reason:'quota'},'voice-ai':{status:'unavailable',reason:'failed'},
+  'notes-ai':{status:'ready',source:'notes-ai',notes,plan,model:'qwen',promptVersion:'p1'}}),brief,never,undefined,step=>started.push(step));
  assert.equal(ready.status,'ready');
- assert.deepEqual(asked,['audio-ai','notes-ai'],'audio first, then notes');
- const slow=await runBackgroundChain(fake({'audio-ai':'hang','notes-ai':'hang'}),brief,never,{'audio-ai':20,'notes-ai':20});
+ assert.deepEqual(asked,['audio-ai','voice-ai','notes-ai'],'music model, then voice model, then text model');
+ assert.deepEqual(started,asked,'each step is announced for the progress bar');
+ assert.equal((await runBackgroundChain(fake({'audio-ai':{status:'unavailable',reason:'quota'},'voice-ai':{status:'ready',source:'voice-ai',notes,model:'omni',promptVersion:'p1'}}),brief,never)).status,
+  'unavailable','composed notes need their plan');
+ const slow=await runBackgroundChain(fake({'audio-ai':'hang','voice-ai':'hang','notes-ai':'hang'}),brief,never,{'audio-ai':20,'voice-ai':20,'notes-ai':20});
  assert.deepEqual(slow,{status:'unavailable',reason:'timeout'},'too slow: keep the local background');
- const tooLong=await runBackgroundChain(fake({'audio-ai':{status:'ready',source:'audio-ai',audioUrl:'https://x/a.mp3',durationMs:99_000,model:'fun',promptVersion:'p'},'notes-ai':{status:'ready',source:'notes-ai',notes:[{...notes[0],length:99}],model:'q',promptVersion:'p'}}),brief,never);
+ const tooLong=await runBackgroundChain(fake({'audio-ai':{status:'ready',source:'audio-ai',audioUrl:'https://x/a.mp3',durationMs:99_000,model:'fun',promptVersion:'p'},'voice-ai':'hang','notes-ai':{status:'ready',source:'notes-ai',notes:[{...notes[0],length:99}],plan,model:'q',promptVersion:'p'}}),brief,never,{'audio-ai':50,'voice-ai':20,'notes-ai':50});
  assert.deepEqual(tooLong,{status:'unavailable',reason:'failed'},'a background longer than the piece is refused');
  assert.equal(parseBackgroundResult({status:'ready',source:'audio-ai',audioUrl:'http://x/a.mp3',durationMs:1000,model:'f',promptVersion:'p'},30),null,'https only');
 });

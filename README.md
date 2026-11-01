@@ -9,7 +9,7 @@
 
 ## 本机运行
 
-需要 Node.js ≥ 22.22，建议使用 Node 24。
+需要 Node.js ≥ 24.21（与部署一致，见 `.nvmrc`）。
 
 ```sh
 npm ci

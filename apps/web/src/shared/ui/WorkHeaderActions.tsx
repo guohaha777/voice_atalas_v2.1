@@ -13,19 +13,40 @@ const copy={library:'声音库',shelf:'作品书架',classroomOn:'大屏',classr
  * `onLibrary`; elsewhere 声音库 explains where the library lives. 作品书架 opens the shelf page. Place inside FlowHeader's
  * `aside`; `current` marks the shelf button on the shelf page.
  */
-export function WorkHeaderActions({onLibrary,onNavigate,current,classroom}:{onLibrary?:()=>void;onNavigate:(path:string)=>void;current?:'shelf';
+export function WorkHeaderActions({onLibrary,onNavigate,current,classroom}:{
+ onLibrary?:()=>void;
+ onNavigate:(path:string)=>void;
+ current?:'shelf';
  /** Pages shown on the classroom board (万物声场, 万物成曲) pass it to offer 大屏. */
- classroom?:Classroom}){
+ classroom?:Classroom;
+}){
  const [library,setLibrary]=useState(false);
  return <>
-  {classroom&&<button type="button" aria-pressed={classroom.on} title={copy.classroomLabel} onClick={classroom.toggle}><Glyph name="screen"/><span>{classroom.on?copy.classroomOff:copy.classroomOn}</span></button>}
-  <button type="button" onClick={onLibrary??(()=>setLibrary(true))}><Glyph name="sounds"/><span>{copy.library}</span></button>
-  <button type="button" aria-current={current==='shelf'?'page':undefined} onClick={()=>onNavigate('/works')}><Glyph name="shelf"/><span>{copy.shelf}</span></button>
+  {classroom&&<button type="button" aria-pressed={classroom.on} title={copy.classroomLabel} onClick={classroom.toggle}>
+   <Glyph name="screen"/>
+   <span>{classroom.on?copy.classroomOff:copy.classroomOn}</span>
+  </button>}
+  <button type="button" onClick={onLibrary??(()=>setLibrary(true))}>
+   <Glyph name="sounds"/>
+   <span>{copy.library}</span>
+  </button>
+  <button type="button" aria-current={current==='shelf'?'page':undefined} onClick={()=>onNavigate('/works')}>
+   <Glyph name="shelf"/>
+   <span>{copy.shelf}</span>
+  </button>
   {library&&<WorkSheet title={copy.libraryTitle} onClose={()=>setLibrary(false)}>
    {copy.libraryBody.map(line=><p key={line} className={sheetStyles.body}>{line}</p>)}
    <div className={sheetStyles.actions}>
     <button type="button" className={sheetStyles.secondary} onClick={()=>setLibrary(false)}>{copy.stay}</button>
-    <button type="button" className={sheetStyles.primary} onClick={()=>{setLibrary(false);onNavigate('/world');}}>{copy.goWorld}</button>
+    <button
+     type="button"
+     className={sheetStyles.primary}
+     onClick={()=>{
+      setLibrary(false);
+      onNavigate('/world');
+     }}>
+     {copy.goWorld}
+    </button>
    </div>
   </WorkSheet>}
  </>;

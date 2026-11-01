@@ -15,9 +15,22 @@ export function SaveDialog({compose,onClose}:{compose:Compose;onClose:()=>void})
  const [title,setTitle]=useState(compose.state.shelved?.title??save.defaultTitle(compose.shelfCount+1));
  const [shareNote,setShareNote]=useState(false);
  const [busy,setBusy]=useState(false);
- const submit=async()=>{setBusy(true);const ok=await compose.saveWork(title);setBusy(false);if(ok)onClose();};
- return <WorkSheet title={save.title} description={accountId?'保存到账号书架，并在后台生成成品音频。':save.description} onClose={onClose}>
-  <form className={styles.saveForm} onSubmit={event=>{event.preventDefault();void submit();}}>
+ const submit=async()=>{
+  setBusy(true);
+  const ok=await compose.saveWork(title);
+  setBusy(false);
+  if(ok)onClose();
+ };
+ return <WorkSheet
+  title={save.title}
+  description={accountId?'保存到账号书架，并在后台生成成品音频。':save.description}
+  onClose={onClose}>
+  <form
+   className={styles.saveForm}
+   onSubmit={event=>{
+    event.preventDefault();
+    void submit();
+   }}>
    <label className={styles.field}>
     <span>{save.name}</span>
     <input value={title} maxLength={WORK_TITLE_MAX} onChange={event=>setTitle(event.target.value)}/>
@@ -34,13 +47,32 @@ export function SaveDialog({compose,onClose}:{compose:Compose;onClose:()=>void})
      </label>;
     })}
    </fieldset>
-   <button type="button" className={styles.shareButton} onClick={()=>{if(accountId)onClose();void compose.share();setShareNote(true);}}>
-    <Glyph name="share"/>{save.share}<small>{accountId?'试听确认后发布':'需要登录'}</small>
+   <button
+    type="button"
+    className={styles.shareButton}
+    onClick={()=>{
+     // Signed in: the share dialog takes over.
+     if(accountId)onClose();
+     void compose.share();
+     setShareNote(true);
+    }}>
+    <Glyph name="share"/>
+    {save.share}
+    <small>{accountId?'试听确认后发布':'需要登录'}</small>
    </button>
-   <p className={sheetStyles.note} role="status">{shareNote?composeCopy.notices['share-off']:accountId?'云端草稿与书架成品分开保存；正式保存不会自动公开。':save.sessionOnly}</p>
+   <p className={sheetStyles.note} role="status">
+    {shareNote
+     ?composeCopy.notices['share-off']
+     :accountId
+      ?'云端草稿与书架成品分开保存；正式保存不会自动公开。'
+      :save.sessionOnly}
+   </p>
    <div className={sheetStyles.actions}>
     <button type="button" className={sheetStyles.secondary} onClick={onClose}>{save.cancel}</button>
-    <button type="submit" className={sheetStyles.primary} disabled={busy||!title.trim()}><Glyph name="save"/>{compose.state.shelved?save.update:save.submit}</button>
+    <button type="submit" className={sheetStyles.primary} disabled={busy||!title.trim()}>
+     <Glyph name="save"/>
+     {compose.state.shelved?save.update:save.submit}
+    </button>
    </div>
   </form>
  </WorkSheet>;

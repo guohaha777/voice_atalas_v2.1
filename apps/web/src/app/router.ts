@@ -1,12 +1,27 @@
 // Minimal history routing for the approved pages; no router library. Unknown paths fall back to home.
 import {useCallback,useEffect,useState} from 'react';
 
-/** `lab`: 调音台, `lab-prompts`: 提示词台, `lab-music`: 系统音乐上传 — only built in development or a preview build (the app falls back to home elsewhere). */
-export type Route={page:'home'}|{page:'sound-birth'}|{page:'sound-world'}|{page:'compose'}|{page:'works'}|{page:'lab'}|{page:'lab-prompts'}|{page:'lab-music'}|{page:'reset-password'}|{page:'admin'}|{page:'share';token:string};
+/**
+ * `lab`: 调音台, `lab-prompts`: 提示词台, `lab-music`: 系统音乐上传 — only built in development or a preview build (the
+ * app falls back to home elsewhere).
+ */
+export type Route=
+ |{page:'home'}
+ |{page:'sound-birth'}
+ |{page:'sound-world'}
+ |{page:'compose'}
+ |{page:'works'}
+ |{page:'lab'}
+ |{page:'lab-prompts'}
+ |{page:'lab-music'}
+ |{page:'reset-password'}
+ |{page:'admin'}
+ |{page:'share';token:string};
 
 export function parseRoute(pathname:string):Route{
  const path=pathname.replace(/\/+$/,'');
- const share=/^\/share\/([A-Za-z0-9_-]{1,128})$/.exec(path);if(share)return {page:'share',token:share[1]!};
+ const share=/^\/share\/([A-Za-z0-9_-]{1,128})$/.exec(path);
+ if(share)return {page:'share',token:share[1]!};
  if(path==='/admin')return {page:'admin'};
  if(path==='/world')return {page:'sound-world'};
  if(path==='/compose')return {page:'compose'};
@@ -34,11 +49,17 @@ export function routeHref(route:Route){
 export function useRoute(){
  const read=()=>parseRoute(location.pathname);
  const [route,setRoute]=useState<Route>(read);
- useEffect(()=>{const sync=()=>setRoute(read());addEventListener('popstate',sync);return()=>removeEventListener('popstate',sync);},[]);
+ // Back and forward buttons.
+ useEffect(()=>{
+  const sync=()=>setRoute(read());
+  addEventListener('popstate',sync);
+  return()=>removeEventListener('popstate',sync);
+ },[]);
  const navigate=useCallback((next:Route)=>{
   const href=routeHref(next);
   if(href!==location.pathname+location.search)history.pushState(null,'',href);
-  scrollTo(0,0);setRoute(next);
+  scrollTo(0,0);
+  setRoute(next);
  },[]);
  return [route,navigate] as const;
 }

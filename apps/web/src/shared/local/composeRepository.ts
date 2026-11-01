@@ -11,9 +11,16 @@ export const localComposeRepository:ComposeRepository={
  // The current work on this device; with none, the same example 万物声场 shows.
  async load(){
   const arrangement=workSession.current()??exampleArrangement(newId('work'),new Date());
-  return {arrangement,settings:workSession.settings(),shelved:workShelf.get(arrangement.id),shelfCount:workShelf.list().length};
+  return {
+   arrangement,
+   settings:workSession.settings(),
+   shelved:workShelf.get(arrangement.id),
+   shelfCount:workShelf.list().length,
+  };
  },
- async saveArrangement(arrangement){return workSession.save(arrangement)?{status:'device'}:{status:'failed'};},
+ async saveArrangement(arrangement){
+  return workSession.save(arrangement)?{status:'device'}:{status:'failed'};
+ },
  async saveSettings(settings){return workSession.saveSettings(settings)?{status:'device'}:{status:'failed'};},
  async saveWork(work){return workShelf.put(work)?{status:'device'}:{status:'failed'};},
  async share(){return {status:'unavailable',reason:'needs-account'};},

@@ -31,14 +31,18 @@ const local=localTalk(piece,lullaby,inspiration,plan);
 test('talk: the corpus speaks at once; the briefs carry numbered sounds, never the names a child typed',()=>{
  assert.deepEqual(local.facts.map(fact=>fact.kind),['opening','repeat','echo','rest','ending']);
  assert.equal(local.discoveries[1]!.line,'「小林家的狗」出现了 2 次，像在重复一句歌词。');
- assert.ok(local.tryThis);assert.ok(local.textbook);
- assert.ok(isWorkTalkBrief(local.work!.brief));assert.ok(isTextbookTalkBrief(local.textbook!.briefed.brief));
+ assert.ok(local.tryThis);
+ assert.ok(local.textbook);
+ assert.ok(isWorkTalkBrief(local.work!.brief));
+ assert.ok(isTextbookTalkBrief(local.textbook!.briefed.brief));
  const sent=JSON.stringify([local.work!.brief,local.textbook!.briefed.brief]);
  assert.ok(!sent.includes('小林')&&!sent.includes('王老师'),sent);
  assert.deepEqual(local.work!.names,['小林家的狗','王老师的铃']);
- assert.equal(local.work!.brief.mood,'calm');assert.equal(local.work!.brief.textbookTitle,'摇篮曲');
+ assert.equal(local.work!.brief.mood,'calm');
+ assert.equal(local.work!.brief.textbookTitle,'摇篮曲');
  const shown=mergeTalk(local,null,false);
- assert.deepEqual(shown.origin,{work:'local',textbook:'local'});assert.equal(shown.polishOpen,false);
+ assert.deepEqual(shown.origin,{work:'local',textbook:'local'});
+ assert.equal(shown.polishOpen,false);
  assert.deepEqual(shown.discoveries,local.discoveries);
 });
 
@@ -56,7 +60,10 @@ test('talk: accepted AI lines replace corpus lines one by one, with the names pu
    {kind:'repeat',line:'「声音1」响了 5 次。'},
    {kind:'echo',line:'「声音1」问，「声音2」答，像打电话。'},
   ],tryThis:'把「声音2」挪到最后，听听结尾变了没有。'};},
-  async textbookTalk(brief){askedSong=brief;return {...brief.local,feature:'「摇篮曲」三拍子，一晃一晃的。'};},
+  async textbookTalk(brief){
+   askedSong=brief;
+   return {...brief.local,feature:'「摇篮曲」三拍子，一晃一晃的。'};
+  },
  };
  const polished=await polishTalk(local,polisher,new AbortController().signal);
  assert.ok(asked&&askedSong);
@@ -74,7 +81,8 @@ test('talk: accepted AI lines replace corpus lines one by one, with the names pu
 test('the prompt lab has its own address next to the tuning lab',()=>{
  assert.deepEqual(parseRoute('/lab/prompts/'),{page:'lab-prompts'});
  assert.equal(routeHref({page:'lab-prompts'}),'/lab/prompts');
- assert.deepEqual(parseRoute('/lab/music'),{page:'lab-music'});assert.equal(routeHref({page:'lab-music'}),'/lab/music');
+ assert.deepEqual(parseRoute('/lab/music'),{page:'lab-music'});
+ assert.equal(routeHref({page:'lab-music'}),'/lab/music');
  assert.deepEqual(parseRoute('/lab/sound-rules'),{page:'lab'});
 });
 

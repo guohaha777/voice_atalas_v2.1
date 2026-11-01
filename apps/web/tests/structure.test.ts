@@ -5,7 +5,10 @@ import {join,relative} from 'node:path';
 
 const SRC=new URL('../src/',import.meta.url).pathname;
 function files(dir:string):string[]{
- return readdirSync(dir).flatMap(name=>{const path=join(dir,name);return statSync(path).isDirectory()?files(path):/\.tsx?$/.test(name)?[path]:[];});
+ return readdirSync(dir).flatMap(name=>{
+  const path=join(dir,name);
+  return statSync(path).isDirectory()?files(path):/\.tsx?$/.test(name)?[path]:[];
+ });
 }
 
 test('no mock data is left in the page: the old examples are test fixtures only',()=>{
@@ -23,7 +26,10 @@ test('pages read only the corpus, the word rules and the reply checks; prompts a
 
 test('pages take shared data through the service ports: no page reads the example sound list or the textbook cards itself (the dev-only lab excepted)',()=>{
  const direct=files(SRC).filter(path=>relative(SRC,path).startsWith('pages/')&&!relative(SRC,path).startsWith('pages/lab/'))
-  .filter(path=>{const text=readFileSync(path,'utf8');return /import\s*\{[^}]*\bexampleSounds\b[^}]*\}/.test(text)||/inspiration\/textbookTracks/.test(text);})
+  .filter(path=>{
+   const text=readFileSync(path,'utf8');
+   return /import\s*\{[^}]*\bexampleSounds\b[^}]*\}/.test(text)||/inspiration\/textbookTracks/.test(text);
+  })
   .map(path=>relative(SRC,path));
  assert.deepEqual(direct,[]);
 });

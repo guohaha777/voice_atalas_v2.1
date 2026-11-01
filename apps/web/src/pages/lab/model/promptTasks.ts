@@ -7,8 +7,11 @@ import type {SoundDimension,SoundKind} from '@wanwu-v2/contracts/sound';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
 import {hintLines} from '@wanwu-v2/prompts/corpus';
-import {TASKS,buildBackgroundAudio,buildBackgroundNotes,buildMoodWords,buildSoundHint,buildTextbookFeatures,buildTextbookTalk,buildTextbookWords,buildWorkTalk,
- readBackgroundNotes,readMoodWords,readSoundHint,readTextbookTalk,readTextbookFeatures,readTextbookWords,readWorkTalk} from '@wanwu-v2/prompts/tasks';
+import {
+ TASKS,buildBackgroundAudio,buildBackgroundNotes,buildMoodWords,buildSoundHint,buildTextbookFeatures,buildTextbookTalk,
+ buildTextbookWords,buildWorkTalk,readBackgroundNotes,readMoodWords,readSoundHint,readTextbookTalk,readTextbookFeatures,
+ readTextbookWords,readWorkTalk,
+} from '@wanwu-v2/prompts/tasks';
 import type {BuiltPrompt,TaskId} from '@wanwu-v2/prompts/tasks';
 import {backgroundPlan} from '@wanwu-v2/sound-rules/background';
 import {backgroundBrief,backgroundInput} from '../../../shared/background/backgroundLayer';
@@ -18,12 +21,22 @@ import {localTalk,mergeTalk} from '../../../shared/talk/talkView';
 import {promptCopy} from '../config/promptCopy';
 
 export type PromptLabInput={
- arrangement:Arrangement|null;tracks:readonly TextbookTrack[];
- mood:MoodId|null;track:TextbookTrack|null;attempt:number;
- hint:{dimension:SoundDimension;value:string;kind:SoundKind|null};moodText:string;
+ arrangement:Arrangement|null;
+ tracks:readonly TextbookTrack[];
+ mood:MoodId|null;
+ track:TextbookTrack|null;
+ attempt:number;
+ hint:{dimension:SoundDimension;value:string;kind:SoundKind|null};
+ moodText:string;
 };
 export type ReplyCheck={repairs:string[];status:'accepted'|'partly'|'rejected';notes:string[];shown:string[]};
-export type TaskView={brief:unknown;local:string[];built:BuiltPrompt|null;note:string|null;check:((reply:string)=>ReplyCheck)|null};
+export type TaskView={
+ brief:unknown;
+ local:string[];
+ built:BuiltPrompt|null;
+ note:string|null;
+ check:((reply:string)=>ReplyCheck)|null;
+};
 
 const json=(value:unknown)=>JSON.stringify(value);
 const TALK_PARTS=['feature','meeting','task'] as const;
@@ -37,62 +50,179 @@ export function taskView(id:TaskId,input:PromptLabInput):TaskView{
  const empty=(note:string):TaskView=>({brief:null,local:[],built:null,note,check:null});
  switch(id){
   case 'work-talk':{
-   const local=localTalk(arrangement,track,inspiration,plan),briefed=local.work;
+   const local=localTalk(arrangement,track,inspiration,plan);
+   const briefed=local.work;
    if(!briefed)return empty(promptCopy.notes.needEvents);
-   return {brief:briefed.brief,built:buildWorkTalk(briefed.brief),note:null,
+   return {
+    brief:briefed.brief,
+    built:buildWorkTalk(briefed.brief),
+    note:null,
     local:[...local.discoveries.map(text=>text.line),`试一试：${local.tryThis}`],
-    check:reply=>{const {repairs,acceptance}=readWorkTalk(reply,briefed.brief),shown=mergeTalk(local,{work:acceptance.value,textbook:null},true);
-     return {repairs,status:acceptance.status,notes:acceptance.notes,shown:[...shown.discoveries.map(text=>text.line),`试一试：${shown.tryThis}`]};}};
+    check:reply=>{
+     const {repairs,acceptance}=readWorkTalk(reply,briefed.brief);
+     const shown=mergeTalk(local,{work:acceptance.value,textbook:null},true);
+     return {
+      repairs,
+      status:acceptance.status,
+      notes:acceptance.notes,
+      shown:[...shown.discoveries.map(text=>text.line),`试一试：${shown.tryThis}`],
+     };
+    },
+   };
   }
   case 'textbook-talk':{
-   const local=localTalk(arrangement,track,inspiration,plan),song=local.textbook;
+   const local=localTalk(arrangement,track,inspiration,plan);
+   const song=local.textbook;
    if(!hasEvents)return empty(promptCopy.notes.needEvents);
    if(!song)return empty(promptCopy.notes.needSong);
-   return {brief:song.briefed.brief,built:buildTextbookTalk(song.briefed.brief),note:null,local:TALK_PARTS.map(part=>song.talk[part]),
-    check:reply=>{const {repairs,acceptance}=readTextbookTalk(reply,song.briefed.brief),shown=mergeTalk(local,{work:null,textbook:acceptance.value},true);
-     return {repairs,status:acceptance.status,notes:acceptance.notes,shown:TALK_PARTS.map(part=>shown.textbook![part])};}};
+   return {
+    brief:song.briefed.brief,
+    built:buildTextbookTalk(song.briefed.brief),
+    note:null,
+    local:TALK_PARTS.map(part=>song.talk[part]),
+    check:reply=>{
+     const {repairs,acceptance}=readTextbookTalk(reply,song.briefed.brief);
+     const shown=mergeTalk(local,{work:null,textbook:acceptance.value},true);
+     return {
+      repairs,
+      status:acceptance.status,
+      notes:acceptance.notes,
+      shown:TALK_PARTS.map(part=>shown.textbook![part]),
+     };
+    },
+   };
   }
-  case 'background-audio':case 'background-notes':{
+  case 'background-audio':
+  case 'background-notes':{
    const brief=arrangement&&hasEvents?backgroundBrief(arrangement,inspiration,tracks,[]):null;
    if(!brief||!plan)return empty(promptCopy.notes.needEvents);
    const local=[`本地生成：${backgroundCopy.describe(plan,track?.title??null)}`];
    if(id==='background-audio')return {brief,local,built:buildBackgroundAudio(brief),note:promptCopy.notes.audio,check:null};
-   return {brief,local,built:buildBackgroundNotes(brief,input.attempt),note:null,
-    check:reply=>{const {repairs,acceptance}=readBackgroundNotes(reply);return {repairs,status:acceptance.status,notes:acceptance.notes,shown:acceptance.value?[json(acceptance.value)]:[]};}};
+   return {
+    brief,
+    local,
+    built:buildBackgroundNotes(brief,input.attempt),
+    note:null,
+    check:reply=>{
+     const {repairs,acceptance}=readBackgroundNotes(reply);
+     return {
+      repairs,
+      status:acceptance.status,
+      notes:acceptance.notes,
+      shown:acceptance.value?[json(acceptance.value)]:[],
+     };
+    },
+   };
   }
   case 'sound-hint':{
    const brief=input.hint;
-   return {brief,local:hintLines(brief.dimension,brief.value,brief.kind),built:buildSoundHint(brief),note:promptCopy.notes.hintClosed,
-    check:reply=>{const {repairs,acceptance}=readSoundHint(reply);return {repairs,status:acceptance.status,notes:acceptance.notes,shown:acceptance.value?[acceptance.value]:[]};}};
+   return {
+    brief,
+    local:hintLines(brief.dimension,brief.value,brief.kind),
+    built:buildSoundHint(brief),
+    note:promptCopy.notes.hintClosed,
+    check:reply=>{
+     const {repairs,acceptance}=readSoundHint(reply);
+     return {repairs,status:acceptance.status,notes:acceptance.notes,shown:acceptance.value?[acceptance.value]:[]};
+    },
+   };
   }
   case 'mood-words':{
    const text=[...input.moodText.replace(/\s+/g,' ').trim()].slice(0,MOOD_TEXT_MAX).join('');
    if(!text)return empty(promptCopy.moodText);
-   return {brief:{text},local:[promptCopy.notes.moodOff],built:buildMoodWords({text}),note:null,
-    check:reply=>{const {repairs,acceptance}=readMoodWords(reply),nearest=acceptance.value?.nearest;
-     return {repairs,status:acceptance.status,notes:acceptance.notes,shown:acceptance.value?[`「${text}」→ ${nearest?moodLabels[nearest]:'都不像（null）'}`]:[]};}};
+   return {
+    brief:{text},
+    local:[promptCopy.notes.moodOff],
+    built:buildMoodWords({text}),
+    note:null,
+    check:reply=>{
+     const {repairs,acceptance}=readMoodWords(reply);
+     const nearest=acceptance.value?.nearest;
+     return {
+      repairs,
+      status:acceptance.status,
+      notes:acceptance.notes,
+      shown:acceptance.value?[`「${text}」→ ${nearest?moodLabels[nearest]:'都不像（null）'}`]:[],
+     };
+    },
+   };
   }
   case 'textbook-features':{
    // The lab has no recording: the card's own numbers stand in for the measurement, and no audio is attached.
    const card=track??tracks[0];
    if(!card)return empty(promptCopy.notes.needSong);
-   const brief={title:card.title,listenSeconds:0,tempoBpm:card.tempoBpm,meter:card.meter,meterConfidence:1,mode:card.mode,onsetDensity:card.onsetDensity,
-    brightness:card.brightness,candidates:[{cell:card.rhythmCell,bars:1}],fallbackCell:card.rhythmCell,
-    others:tracks.filter(other=>other.id!==card.id).map(other=>({title:other.title,rhythmCell:other.rhythmCell,childLine:other.childLine}))};
-   return {brief,local:[`${card.title}：${moodLabels[card.mood]} · ${card.childLine}`],built:buildTextbookFeatures(brief),note:null,
-    check:reply=>{const {repairs,acceptance}=readTextbookFeatures(reply,brief),value=acceptance.value;
-     return {repairs,status:acceptance.status,notes:acceptance.notes,shown:value?[`[${value.rhythmCell.join(', ')}] · ${value.meter} 拍 · ${value.tempoBpm} BPM`,`${moodLabels[value.mood]} · ${value.childLine??'（这句退回）'}`,value.teacherNote??'（老师说明退回）']:[]};}};
+   const brief={
+    title:card.title,
+    listenSeconds:0,
+    tempoBpm:card.tempoBpm,
+    meter:card.meter,
+    meterConfidence:1,
+    mode:card.mode,
+    onsetDensity:card.onsetDensity,
+    brightness:card.brightness,
+    candidates:[{cell:card.rhythmCell,bars:1}],
+    fallbackCell:card.rhythmCell,
+    others:tracks
+     .filter(other=>other.id!==card.id)
+     .map(other=>({title:other.title,rhythmCell:other.rhythmCell,childLine:other.childLine})),
+   };
+   return {
+    brief,
+    local:[`${card.title}：${moodLabels[card.mood]} · ${card.childLine}`],
+    built:buildTextbookFeatures(brief),
+    note:null,
+    check:reply=>{
+     const {repairs,acceptance}=readTextbookFeatures(reply,brief);
+     const value=acceptance.value;
+     return {
+      repairs,
+      status:acceptance.status,
+      notes:acceptance.notes,
+      shown:value?[
+       `[${value.rhythmCell.join(', ')}] · ${value.meter} 拍 · ${value.tempoBpm} BPM`,
+       `${moodLabels[value.mood]} · ${value.childLine??'（这句退回）'}`,
+       value.teacherNote??'（老师说明退回）',
+      ]:[],
+     };
+    },
+   };
   }
   case 'textbook-words':{
    const card=track??tracks[0];
    if(!card)return empty(promptCopy.notes.needSong);
    const {title,tempoBpm,meter,rhythmCell,onsetDensity,pitchRange,brightness,mode,repetition}=card;
-   const brief={title,tempoBpm,meter,rhythmCell,onsetDensity,pitchRange,brightness,mode,repetition,others:tracks.filter(other=>other.id!==card.id)};
-   return {brief,local:[`${card.extraction.words==='example'?promptCopy.notes.example:card.title}：${moodLabels[card.mood]} · ${card.childLine}`],built:buildTextbookWords(brief),note:null,
-    check:reply=>{const {repairs,acceptance}=readTextbookWords(reply);return {repairs,status:acceptance.status,notes:acceptance.notes,shown:acceptance.value?[`${moodLabels[acceptance.value.mood]} · ${acceptance.value.childLine}`]:[]};}};
+   const brief={
+    title,
+    tempoBpm,
+    meter,
+    rhythmCell,
+    onsetDensity,
+    pitchRange,
+    brightness,
+    mode,
+    repetition,
+    others:tracks.filter(other=>other.id!==card.id),
+   };
+   return {
+    brief,
+    local:[`${card.extraction.words==='example'?promptCopy.notes.example:card.title}：${moodLabels[card.mood]} · ${card.childLine}`],
+    built:buildTextbookWords(brief),
+    note:null,
+    check:reply=>{
+     const {repairs,acceptance}=readTextbookWords(reply);
+     return {
+      repairs,
+      status:acceptance.status,
+      notes:acceptance.notes,
+      shown:acceptance.value?[`${moodLabels[acceptance.value.mood]} · ${acceptance.value.childLine}`]:[],
+     };
+    },
+   };
   }
  }
 }
 
 /** The example reply in the task's prompt file, to start from. */
-export const exampleReply=(id:TaskId)=>TASKS[id].file.example===undefined?'':JSON.stringify(TASKS[id].file.example,null,1);
+export const exampleReply=(id:TaskId)=>TASKS[id].file.example===undefined
+ ?''
+ :JSON.stringify(TASKS[id].file.example,null,1);

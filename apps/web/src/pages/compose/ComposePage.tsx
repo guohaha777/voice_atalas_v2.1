@@ -21,15 +21,25 @@ import styles from './ComposePage.module.css';
 
 /** What the squirrel says about the background switch, volume and instruments (the card itself holds only controls). */
 function spokenBackground(compose:Compose){
- const plan=compose.backgroundPlan,{volume}=compose.state.settings.background;
+ const plan=compose.backgroundPlan;
+ const {volume}=compose.state.settings.background;
  switch(compose.state.lastAction){
-  case 'background-on':return plan?guideLines.backgroundOn(backgroundCopy.describe(plan,compose.entry&&compose.entry.pulse!=='none'?compose.entry.title:null)):null;
+  // A free-rhythm song lends nothing, so it is not named.
+  case 'background-on':return plan
+   ?guideLines.backgroundOn(backgroundCopy.describe(plan,compose.entry&&compose.entry.pulse!=='none'?compose.entry.title:null))
+   :null;
   case 'background-off':return guideLines.backgroundOff;
   case 'background-volume':return guideLines.volume(volume<.3?'soft':volume>.7?'loud':'medium');
   case 'instrument':
-   return compose.chosen.length?guideLines.instruments(backgroundCopy.parts(compose.parts,Object.fromEntries(compose.chosen.map(item=>[item.id,item.name])))):guideLines.instrumentsNone;
+   return compose.chosen.length
+    ?guideLines.instruments(backgroundCopy.parts(
+     compose.parts,
+     Object.fromEntries(compose.chosen.map(item=>[item.id,item.name]))))
+    :guideLines.instrumentsNone;
   case 'instrument-coming':return guideLines.instrumentsComing(compose.comingInstruments.join('、'));
-  case 'ai-background':return compose.ai.status==='ready'?compose.usingAi?guideLines.aiOn:guideLines.aiOff:null;
+  case 'ai-background':return compose.ai.status==='ready'
+   ?compose.usingAi?guideLines.aiOn:guideLines.aiOff
+   :null;
   case 'ai-making':return compose.ai.status==='working'?guideLines.aiMaking:null;
   case 'ai-failed':return compose.ai.status==='unavailable'?guideLines.aiFailed:null;
   default:return null;
@@ -46,9 +56,14 @@ function guideText(compose:Compose){
  if(lastAction==='saved'&&compose.shelved)return guideLines.saved;
  if(compose.ended)return guideLines.ended;
  if(lastAction==='span')return guideLines.span(arrangement.spanSeconds);
- if(lastAction==='span-blocked'){const longest=longestSound(arrangement);if(longest)return guideLines.spanBlocked(longest.unit.name,Math.ceil(longest.seconds-1e-6),minSpan(arrangement));}
- const said=spokenBackground(compose);if(said)return said;
- if(lastAction==='inspiration')return compose.entry?guideLines.inspirationSong(compose.entry.title):guideLines.inspirationMusic;
+ if(lastAction==='span-blocked'){
+  const longest=longestSound(arrangement);
+  if(longest)return guideLines.spanBlocked(longest.unit.name,Math.ceil(longest.seconds-1e-6),minSpan(arrangement));
+ }
+ const said=spokenBackground(compose);
+ if(said)return said;
+ if(lastAction==='inspiration')
+  return compose.entry?guideLines.inspirationSong(compose.entry.title):guideLines.inspirationMusic;
  if(lastAction==='inspiration-none')return guideLines.inspirationNone;
  if(compose.now>0)return guideLines.paused;
  if(arrangement.origin==='example')return guideLines.example;
@@ -57,15 +72,25 @@ function guideText(compose:Compose){
 
 type Dialog='save'|{textbook:InspirationTab}|'again'|null;
 
-/** 万物成曲: the field's arrangement as a graphic score with one playback clock, plus length, background, inspiration and the shelf. */
+/**
+ * 万物成曲: the field's arrangement as a graphic score with one playback clock, plus length, background, inspiration
+ * and the shelf.
+ */
 export function ComposePage({onNavigate}:{onNavigate:(path:string)=>void}){
  const compose=useCompose();
  const classroom=useClassroom();
  const [dialog,setDialog]=useState<Dialog>(null);
  const text=guideText(compose);
  const savedNote=compose.state.lastAction==='saved'&&compose.shelved;
- const requestSave=()=>{if(compose.canSave())setDialog('save');};
- const startAgain=async()=>{if(await compose.startNew()){setDialog(null);onNavigate('/create');}};
+ const requestSave=()=>{
+  if(compose.canSave())setDialog('save');
+ };
+ const startAgain=async()=>{
+  if(await compose.startNew()){
+   setDialog(null);
+   onNavigate('/create');
+  }
+ };
  const again=()=>{
   const arrangement=compose.state.arrangement;
   // Only the child's own, unshelved piece would be lost; an example or an empty field just moves on.
@@ -73,11 +98,30 @@ export function ComposePage({onNavigate}:{onNavigate:(path:string)=>void}){
   else void startAgain();
  };
  return <div className={styles.shell}>
-  <FlowHeader steps={flowSteps} current="compose" onNavigate={onNavigate} aside={<WorkHeaderActions onNavigate={onNavigate} classroom={classroom}/>}/>
+  <FlowHeader
+   steps={flowSteps}
+   current="compose"
+   onNavigate={onNavigate}
+   aside={<WorkHeaderActions onNavigate={onNavigate} classroom={classroom}/>}/>
   <main className={styles.page}>
-   <WorkIntro title={composeCopy.title} subtitle={composeCopy.subtitle} guide={composeGuide} text={text} tone={compose.state.notice?.tone} fit className={styles.intro}/>
+   <WorkIntro
+    title={composeCopy.title}
+    subtitle={composeCopy.subtitle}
+    guide={composeGuide}
+    text={text}
+    tone={compose.state.notice?.tone}
+    fit
+    className={styles.intro}/>
    <div className={styles.workspace}>
-    <ScoreCard compose={compose} onBack={()=>onNavigate('/world')} shelfLink={savedNote?<button type="button" onClick={()=>onNavigate('/works')}><Glyph name="shelf"/>{composeCopy.goShelf}</button>:null}/>
+    <ScoreCard
+     compose={compose}
+     onBack={()=>onNavigate('/world')}
+     shelfLink={savedNote
+      ?<button type="button" onClick={()=>onNavigate('/works')}>
+       <Glyph name="shelf"/>
+       {composeCopy.goShelf}
+      </button>
+      :null}/>
     <div className={styles.side}>
      <SpanCard compose={compose}/>
      <InspirationCard compose={compose} onOpen={tab=>setDialog({textbook:tab})}/>
@@ -87,7 +131,21 @@ export function ComposePage({onNavigate}:{onNavigate:(path:string)=>void}){
    <FooterBar compose={compose} onSave={requestSave} onBack={()=>onNavigate('/world')} onAgain={again}/>
   </main>
   {dialog==='save'&&<SaveDialog compose={compose} onClose={()=>setDialog(null)}/>}
-  {typeof dialog==='object'&&dialog&&<InspirationDialog value={compose.state.settings.inspiration} entries={compose.entries} initialTab={dialog.textbook} teachingOpen={compose.teachingOpen} teachingItems={compose.teachingItems} onAnalyse={compose.analyseTeaching} onChange={compose.setInspiration} onClose={()=>{compose.applyChosenSong();setDialog(null);}}/>}
-  {dialog==='again'&&<AgainDialog onClose={()=>setDialog(null)} onSave={()=>setDialog(compose.canSave()?'save':null)} onDiscard={()=>void startAgain()}/>}
+  {typeof dialog==='object'&&dialog&&<InspirationDialog
+   value={compose.state.settings.inspiration}
+   entries={compose.entries}
+   initialTab={dialog.textbook}
+   teachingOpen={compose.teachingOpen}
+   teachingItems={compose.teachingItems}
+   onAnalyse={compose.analyseTeaching}
+   onChange={compose.setInspiration}
+   onClose={()=>{
+    compose.applyChosenSong();
+    setDialog(null);
+   }}/>}
+  {dialog==='again'&&<AgainDialog
+   onClose={()=>setDialog(null)}
+   onSave={()=>setDialog(compose.canSave()?'save':null)}
+   onDiscard={()=>void startAgain()}/>}
  </div>;
 }

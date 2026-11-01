@@ -5,19 +5,35 @@
 import {useEffect,useState} from 'react';
 
 const KEY='wanwu:classroom';
-const read=()=>{try{return localStorage.getItem(KEY)==='on';}catch{return false;}};
-const write=(on:boolean)=>{try{if(on)localStorage.setItem(KEY,'on');else localStorage.removeItem(KEY);}catch{/* storage blocked: still works for this visit */}};
+const read=()=>{
+ try{
+  return localStorage.getItem(KEY)==='on';
+ }catch{
+  return false;
+ }
+};
+const write=(on:boolean)=>{
+ try{
+  if(on)localStorage.setItem(KEY,'on');
+  else localStorage.removeItem(KEY);
+ }catch{/* storage blocked: still works for this visit */}
+};
 
 export function useClassroom(){
  const [on,setOn]=useState(read);
  useEffect(()=>{
   const root=document.documentElement;
-  if(on)root.dataset.classroom='on';else delete root.dataset.classroom;
-  return()=>{delete root.dataset.classroom;};
+  if(on)root.dataset.classroom='on';
+  else delete root.dataset.classroom;
+  return()=>{
+   delete root.dataset.classroom;
+  };
  },[on]);
  /** Turning it on also asks for full screen (a tap, so the browser allows it); turning it off leaves full screen. */
  const toggle=()=>{
-  const next=!on;setOn(next);write(next);
+  const next=!on;
+  setOn(next);
+  write(next);
   if(next&&!document.fullscreenElement)void document.documentElement.requestFullscreen?.().catch(()=>{});
   if(!next&&document.fullscreenElement)void document.exitFullscreen?.().catch(()=>{});
  };

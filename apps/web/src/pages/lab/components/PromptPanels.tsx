@@ -14,12 +14,17 @@ export function PromptPanels({lab}:{lab:PromptLab}){
    </section>
    <section className={styles.panel} aria-labelledby="pl-local">
     <h2 id="pl-local">{promptCopy.local}</h2>
-    {view.local.length?<ol>{view.local.map((line,i)=><li key={i}>{line}</li>)}</ol>:<p className={styles.muted}>{promptCopy.noPrompt}</p>}
+    {view.local.length
+     ?<ol>{view.local.map((line,i)=><li key={i}>{line}</li>)}</ol>
+     :<p className={styles.muted}>{promptCopy.noPrompt}</p>}
    </section>
    <section className={styles.panel} aria-labelledby="pl-prompt">
     <h2 id="pl-prompt">{promptCopy.prompt}</h2>
     {view.built?<>
-     {view.built.system&&<details><summary>{promptCopy.system}</summary><pre>{view.built.system}</pre></details>}
+     {view.built.system&&<details>
+      <summary>{promptCopy.system}</summary>
+      <pre>{view.built.system}</pre>
+     </details>}
      <pre>{view.built.prompt}</pre>
      <p className={styles.muted}>temperature {view.built.temperature}</p>
     </>:<p className={styles.muted}>{promptCopy.noPrompt}</p>}
@@ -32,12 +37,20 @@ export function PromptPanels({lab}:{lab:PromptLab}){
     <button type="button" onClick={lab.fillExample}>{promptCopy.fillExample}</button>
     <button type="button" onClick={()=>lab.setReply('')} disabled={!lab.reply}>{promptCopy.clear}</button>
    </div>
-   <textarea value={lab.reply} rows={6} spellCheck={false} aria-label={promptCopy.reply} onChange={event=>lab.setReply(event.target.value)}/>
+   <textarea
+    value={lab.reply}
+    rows={6}
+    spellCheck={false}
+    aria-label={promptCopy.reply}
+    onChange={event=>lab.setReply(event.target.value)}/>
    {check&&<div className={styles.check} data-status={check.status} role="status">
     <b>{promptCopy.verdict[check.status]}</b>
     {check.repairs.length>0&&<p>{promptCopy.repairs}：{check.repairs.join('；')}</p>}
     {check.notes.length>0&&<ul>{check.notes.map((note,i)=><li key={i}>{note}</li>)}</ul>}
-    {check.shown.length>0&&<><h3>{promptCopy.shown}</h3><ol>{check.shown.map((line,i)=><li key={i}>{line}</li>)}</ol></>}
+    {check.shown.length>0&&<>
+     <h3>{promptCopy.shown}</h3>
+     <ol>{check.shown.map((line,i)=><li key={i}>{line}</li>)}</ol>
+    </>}
    </div>}
   </section>}
  </>;

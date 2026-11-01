@@ -18,8 +18,15 @@ export function PromptLabPage(){
    <p>{promptCopy.subtitle}<br/>{promptCopy.readme}</p>
   </header>
   <nav className={styles.tasks} role="tablist" aria-label={promptCopy.title}>
-   {TASK_IDS.map(id=><button key={id} type="button" role="tab" aria-selected={lab.task===id} data-closed={TASKS[id].file.status==='closed'||undefined}
-    onClick={()=>lab.pickTask(id)}>{promptCopy.tasks[id]}</button>)}
+   {TASK_IDS.map(id=><button
+    key={id}
+    type="button"
+    role="tab"
+    aria-selected={lab.task===id}
+    data-closed={TASKS[id].file.status==='closed'||undefined}
+    onClick={()=>lab.pickTask(id)}>
+    {promptCopy.tasks[id]}
+   </button>)}
   </nav>
   <p className={styles.meta}>
    <b>{promptCopy.status[info.file.status]}</b>

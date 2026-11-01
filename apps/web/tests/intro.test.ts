@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {initialIntro,transitionIntro,shouldRememberIntro} from '../src/pages/home/model/introState.ts';
 test('resource timeout is terminal: late decode cannot bring the intro back',()=>{
  const state=transitionIntro(initialIntro(),{type:'TIMEOUT'});
- assert.equal(state.phase,'settled');assert.deepEqual(transitionIntro(state,{type:'READY',elapsed:900}),state);
+ assert.equal(state.phase,'settled');
+ assert.deepEqual(transitionIntro(state,{type:'READY',elapsed:900}),state);
 });
 test('only an actually started or explicitly skipped opening counts as seen',()=>{
  for(const type of ['TIMEOUT','FAILED','HIDDEN','REDUCED'] as const)assert.equal(shouldRememberIntro(transitionIntro(initialIntro(),{type})),false);

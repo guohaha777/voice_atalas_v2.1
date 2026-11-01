@@ -18,17 +18,37 @@ export function MoodPicker({world}:{world:SoundWorld}){
  const [writing,setWriting]=useState(false);
  const custom=mood?.kind==='custom'?mood:null;
  const presetChecked=(id:MoodId|null)=>id===null?mood===null:mood?.kind==='preset'&&mood.id===id;
- const option=(key:string,checked:boolean,face:Parameters<typeof MoodFace>[0]['name'],label:string,onClick:()=>void,extra?:string)=>
-  <button key={key} type="button" role="radio" aria-checked={checked} data-mood={key} className={styles.moodOption} disabled={!world.state.arrangement} onClick={onClick}>
-   <MoodFace name={face} className={styles.moodFace}/><span>{label}</span>{extra&&<small>{extra}</small>}
-  </button>;
+ /** One mood button (a face and its name; `extra` is a small note under it). */
+ const option=(
+  key:string,
+  checked:boolean,
+  face:Parameters<typeof MoodFace>[0]['name'],
+  label:string,
+  onClick:()=>void,
+  extra?:string,
+ )=><button
+  key={key}
+  type="button"
+  role="radio"
+  aria-checked={checked}
+  data-mood={key}
+  className={styles.moodOption}
+  disabled={!world.state.arrangement}
+  onClick={onClick}>
+  <MoodFace name={face} className={styles.moodFace}/>
+  <span>{label}</span>
+  {extra&&<small>{extra}</small>}
+ </button>;
  return <div className={styles.mood} role="radiogroup" aria-labelledby="mood-title">
   <span id="mood-title" className={styles.moodTitle}>{worldCopy.moodTitle}</span>
   <div className={styles.moodOptions}>
    {MOODS.map(id=>option(id,presetChecked(id),id,moodLabels[id],()=>world.pickMood(id)))}
    {option('unset',presetChecked(null),'unset',worldCopy.moodUnset,()=>world.pickMood(null))}
    {option('custom',!!custom,'custom',custom?custom.text:worldCopy.moodCustom,
-    ()=>{if(world.moodModelAvailable)setWriting(true);else void world.customMood('');},
+    ()=>{
+     if(world.moodModelAvailable)setWriting(true);
+     else void world.customMood('');
+    },
     world.moodModelAvailable?undefined:worldCopy.moodCustomOff)}
   </div>
   {writing&&<CustomMoodDialog world={world} initial={custom?.text??''} onClose={()=>setWriting(false)}/>}
@@ -43,11 +63,29 @@ function CustomMoodDialog({world,initial,onClose}:{world:SoundWorld;initial:stri
  const [failed,setFailed]=useState(false);
  const input=useRef<HTMLInputElement>(null);
  // The modal focuses its close button when it opens; move focus to the text box right after.
- useEffect(()=>{const frame=requestAnimationFrame(()=>input.current?.focus());return()=>cancelAnimationFrame(frame);},[]);
- const submit=async()=>{setFailed(false);if(await world.customMood(text))onClose();else setFailed(true);};
+ useEffect(()=>{
+  const frame=requestAnimationFrame(()=>input.current?.focus());
+  return()=>cancelAnimationFrame(frame);
+ },[]);
+ const submit=async()=>{
+  setFailed(false);
+  if(await world.customMood(text))onClose();
+  else setFailed(true);
+ };
  return <WorkSheet title={copy.title} description={copy.description} onClose={onClose}>
-  <form className={styles.customMood} onSubmit={event=>{event.preventDefault();void submit();}}>
-   <input ref={input} value={text} maxLength={MOOD_TEXT_MAX} placeholder={copy.placeholder} aria-label={copy.title} onChange={event=>setText(event.target.value)}/>
+  <form
+   className={styles.customMood}
+   onSubmit={event=>{
+    event.preventDefault();
+    void submit();
+   }}>
+   <input
+    ref={input}
+    value={text}
+    maxLength={MOOD_TEXT_MAX}
+    placeholder={copy.placeholder}
+    aria-label={copy.title}
+    onChange={event=>setText(event.target.value)}/>
    <p role="status" className={sheetStyles.note}>{world.interpreting?copy.working:failed?copy.failed:''}</p>
    <div className={sheet.clipActions}>
     <button type="button" className={sheet.clipCancel} onClick={onClose}>{copy.cancel}</button>

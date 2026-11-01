@@ -37,22 +37,36 @@ test('status opens kinds; a visitor language model opens language even when the 
  const client=new GuestAiClient(()=>config,server({...base,'GET /api/v1/guest/status':()=>json(200,{language:false,music:false})}));
  assert.equal(client.open('language'),true,'optimistic until the status arrives');
  await client.loadStatus();
- assert.equal(client.open('language'),false);assert.equal(client.open('music'),false);
+ assert.equal(client.open('language'),false);
+ assert.equal(client.open('music'),false);
  config={...config,language:{baseUrl:'https://api.example.com/v1',model:'m',apiKey:'sk-test-only-123'}};
  assert.equal(client.open('language'),true);
 });
 
 test('POSTs carry the CSRF token and the override; a stale token is fetched again once',async()=>{
- const seen:Seen[]=[];let tokens=0,fail=true;
+ const seen:Seen[]=[];
+ let tokens=0,fail=true;
  const config={...emptyModelConfig(),language:{baseUrl:'https://api.example.com/v1',model:'m',apiKey:'sk-test-only-123'}};
  const client=new GuestAiClient(()=>config,server({...base,
-  'GET /api/v1/auth/csrf':()=>{tokens++;return json(200,{csrfToken:token});},
-  'POST /api/v1/moods/interpret':()=>{if(fail){fail=false;return json(403,{status:'error',reason:'csrf-failed',requestId:'r'});}return json(200,{nearest:'calm',model:'m',promptVersion:'p'});},
+  'GET /api/v1/auth/csrf':()=>{
+   tokens++;
+   return json(200,{csrfToken:token});
+  },
+  'POST /api/v1/moods/interpret':()=>{
+   if(fail){
+    fail=false;
+    return json(403,{status:'error',reason:'csrf-failed',requestId:'r'});
+   }
+   return json(200,{nearest:'calm',model:'m',promptVersion:'p'});
+  },
  },seen));
  const result=await guestMoodInterpreter(client).interpret('困了',new AbortController().signal);
- assert.deepEqual(result,{nearest:'calm',model:'m',promptVersion:'p'});assert.equal(tokens,2);
+ assert.deepEqual(result,{nearest:'calm',model:'m',promptVersion:'p'});
+ assert.equal(tokens,2);
  const post=seen.filter(item=>item.init.method==='POST').at(-1)!,headers=post.init.headers as Record<string,string>;
- assert.equal(headers['X-CSRF-Token'],token);assert.ok(headers['X-Wanwu-Model-Config']);assert.equal(post.init.credentials,'same-origin');
+ assert.equal(headers['X-CSRF-Token'],token);
+ assert.ok(headers['X-Wanwu-Model-Config']);
+ assert.equal(post.init.credentials,'same-origin');
  assert.equal(seen.some(item=>item.path.includes('sk-test')),false,'keys never go into a URL');
 });
 
@@ -68,14 +82,18 @@ test('AI background: AI notes are polled to a result the chain accepts; closed s
  let polls=0;
  const notes=[{at:0,length:1,midi:60,part:'chord',accent:0}];
  const client=new GuestAiClient(emptyModelConfig,server({...base,
-  'POST /api/v1/backgrounds':init=>{assert.equal(JSON.parse(init.body as string).step,'notes-ai');return json(202,{jobId:'11111111-2222-3333-4444-555555555555'});},
+  'POST /api/v1/backgrounds':init=>{
+   assert.equal(JSON.parse(init.body as string).step,'notes-ai');
+   return json(202,{jobId:'11111111-2222-3333-4444-555555555555'});
+  },
   'GET /api/v1/backgrounds/:id':()=>++polls<2?json(200,{status:'pending'}):json(200,{status:'ready',source:'notes-ai',notes,model:'m',promptVersion:'p'}),
  }));
  await client.loadStatus();
  const generator=guestBackgroundGenerator(client);
  assert.deepEqual(generator.open,['notes-ai'],'music is closed until the server has a music model');
  const outcome=await runBackgroundChain(generator,brief,new AbortController().signal,{'audio-ai':1000,'notes-ai':5000});
- assert.equal(outcome.status,'ready');assert.equal(polls,2);
+ assert.equal(outcome.status,'ready');
+ assert.equal(polls,2);
 });
 
 test('AI background: quota, not-open and lost jobs become the chain reasons',async()=>{

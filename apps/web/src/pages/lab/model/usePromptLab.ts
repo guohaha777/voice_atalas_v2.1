@@ -15,7 +15,11 @@ export function usePromptLab(){
  const [mood,setMood]=useState<MoodId|null>(null);
  const [trackId,setTrackId]=useState<string|null>(null);
  const [attempt,setAttempt]=useState(0);
- const [hint,setHint]=useState<{dimension:SoundDimension;value:string;kind:SoundKind|null}>({dimension:'pitch',value:'high',kind:'series'});
+ const [hint,setHint]=useState<{dimension:SoundDimension;value:string;kind:SoundKind|null}>({
+  dimension:'pitch',
+  value:'high',
+  kind:'series',
+ });
  const [moodText,setMoodText]=useState('有点想家');
  const [reply,setReply]=useState('');
 
@@ -23,19 +27,28 @@ export function usePromptLab(){
   let live=true;
   void Promise.all([services.composeRepository.load(),services.inspirationCatalog.list()]).then(([work,catalogue])=>{
    if(!live)return;
-   setArrangement(work.arrangement);setTracks(catalogue.entries);setMood(presetMood(work.arrangement.mood));
+   setArrangement(work.arrangement);
+   setTracks(catalogue.entries);
+   setMood(presetMood(work.arrangement.mood));
    const settings=work.settings.inspiration;
    if(settings.kind==='textbook')setTrackId(settings.entryId);
   });
-  return()=>{live=false;};
+  return()=>{
+   live=false;
+  };
  },[]);
 
  const track=tracks.find(item=>item.id===trackId)??null;
- const view=useMemo(()=>taskView(task,{arrangement,tracks,mood,track,attempt,hint,moodText}),[task,arrangement,tracks,mood,track,attempt,hint,moodText]);
+ const view=useMemo(
+  ()=>taskView(task,{arrangement,tracks,mood,track,attempt,hint,moodText}),
+  [task,arrangement,tracks,mood,track,attempt,hint,moodText]);
  const check=useMemo(()=>reply.trim()&&view.check?view.check(reply):null,[reply,view]);
  return {
   task,arrangement,tracks,mood,track,attempt,hint,moodText,reply,view,check,
-  pickTask:(next:TaskId)=>{setTask(next);setReply('');},
+  pickTask:(next:TaskId)=>{
+   setTask(next);
+   setReply('');
+  },
   setMood,setTrackId,setAttempt,setHint,setMoodText,setReply,
   fillExample:()=>setReply(exampleReply(task)),
  };

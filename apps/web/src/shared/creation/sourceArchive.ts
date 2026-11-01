@@ -17,29 +17,78 @@ export class SessionSourceArchive{
  private activeAccount:string|null=null;
  save(source:SoundSource,buffer:AudioBuffer,original?:LocalOriginal){
   const previous=this.entries.get(source.id)?.original;
-  if(previous&&original&&(previous.blob!==original.blob||previous.selection?.startMs!==original.selection?.startMs
+  // An original is never replaced by different bytes or a different part.
+  if(previous&&original&&(previous.blob!==original.blob
+   ||previous.selection?.startMs!==original.selection?.startMs
    ||previous.selection?.endMs!==original.selection?.endMs))throw new Error('original-source-cannot-be-replaced');
   const retained=original??previous;
-  this.entries.set(source.id,{source,buffer,ownerId:this.entries.get(source.id)?.ownerId??(source.kind.startsWith('local-')?this.activeAccount??undefined:undefined),original:retained&&Object.freeze({...retained,
-   ...(retained.selection?{selection:Object.freeze({...retained.selection})}:{})})});this.emit();
+  this.entries.set(source.id,{
+   source,
+   buffer,
+   // A new local recording belongs to the signed-in account (if any); an owner once set stays.
+   ownerId:this.entries.get(source.id)?.ownerId??(source.kind.startsWith('local-')?this.activeAccount??undefined:undefined),
+   original:retained&&Object.freeze({
+    ...retained,
+    ...(retained.selection?{selection:Object.freeze({...retained.selection})}:{}),
+   }),
+  });
+  this.emit();
  }
- update(source:SoundSource){const entry=this.entries.get(source.id);if(!entry)return;this.entries.set(source.id,{...entry,source});this.emit();}
- private visible(entry:Entry|undefined){return entry&&(!entry.ownerId||entry.ownerId===this.activeAccount)?entry:null;}
- buffer(id:string){return this.visible(this.entries.get(id))?.buffer??null;}
- original(id:string){return this.visible(this.entries.get(id))?.original??null;}
- setAccount(id:string|null){this.activeAccount=id;this.emit();}
- claim(id:string,ownerId:string){const entry=this.entries.get(id);if(entry){this.entries.set(id,{...entry,ownerId});this.emit();}}
- ownedBy(id:string){return [...this.entries.values()].some(entry=>entry.ownerId===id);}
+ update(source:SoundSource){
+  const entry=this.entries.get(source.id);
+  if(!entry)return;
+  this.entries.set(source.id,{...entry,source});
+  this.emit();
+ }
+ /** An entry is seen by visitors (no owner) or by the account that owns it. */
+ private visible(entry:Entry|undefined){
+  return entry&&(!entry.ownerId||entry.ownerId===this.activeAccount)?entry:null;
+ }
+ buffer(id:string){
+  return this.visible(this.entries.get(id))?.buffer??null;
+ }
+ original(id:string){
+  return this.visible(this.entries.get(id))?.original??null;
+ }
+ setAccount(id:string|null){
+  this.activeAccount=id;
+  this.emit();
+ }
+ claim(id:string,ownerId:string){
+  const entry=this.entries.get(id);
+  if(entry){
+   this.entries.set(id,{...entry,ownerId});
+   this.emit();
+  }
+ }
+ ownedBy(id:string){
+  return [...this.entries.values()].some(entry=>entry.ownerId===id);
+ }
  /** A visitor's sounds (not claimed by an account), with their original bytes when there are any, for the device store. */
- guestEntries(){return [...this.entries.values()].filter(entry=>!entry.ownerId&&entry.source.kind!=='uploaded').map(entry=>({source:entry.source,original:entry.original??null}));}
+ guestEntries(){
+  return [...this.entries.values()]
+   .filter(entry=>!entry.ownerId&&entry.source.kind!=='uploaded')
+   .map(entry=>({source:entry.source,original:entry.original??null}));
+ }
  list=():ArchiveSnapshot=>this.snapshot;
- subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
+ subscribe=(listener:()=>void)=>{
+  this.listeners.add(listener);
+  return()=>{
+   this.listeners.delete(listener);
+  };
+ };
  /** Most recent first, distinct, non-empty values of a provenance field — for one-tap reuse. */
  recent(field:'recordedBy'|'place'|'group'){
   const seen=new Set<string>();
-  for(const source of [...this.snapshot].reverse()){const value=source.provenance[field];if(value)seen.add(value);}
+  for(const source of [...this.snapshot].reverse()){
+   const value=source.provenance[field];
+   if(value)seen.add(value);
+  }
   return [...seen];
  }
- private emit(){this.snapshot=[...this.entries.values()].filter(entry=>this.visible(entry)).map(entry=>entry.source);for(const listener of this.listeners)listener();}
+ private emit(){
+  this.snapshot=[...this.entries.values()].filter(entry=>this.visible(entry)).map(entry=>entry.source);
+  for(const listener of this.listeners)listener();
+ }
 }
 export const sessionArchive=new SessionSourceArchive();

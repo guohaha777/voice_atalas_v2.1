@@ -1,4 +1,5 @@
-// 音乐小发现 and 课本讲解 as 万物成曲 shows them (and the prompt lab inspects them). Pure, so the merge rules are tested with fake polishers:
+// 音乐小发现 and 课本讲解 as 万物成曲 shows them (and the prompt lab inspects them). Pure, so the merge rules are
+// tested with fake polishers:
 // 1. `localTalk`: facts counted by fixed rules, said with the corpus — what is shown at once, without a network;
 // 2. `polishTalk`: asks the polisher (if open) with anonymous briefs and keeps only the lines that pass the checks;
 // 3. `mergeTalk`: each accepted line replaces its corpus line, with the child's names put back.
@@ -24,7 +25,9 @@ import type {TalkPolisher} from './polisher';
 export type TalkView={
  /** The facts counted from the arrangement (the score's listening prompt reads them). */
  facts:Discovery[];
- discoveries:DiscoveryText[];tryThis:string|null;textbook:TextbookTalk|null;
+ discoveries:DiscoveryText[];
+ tryThis:string|null;
+ textbook:TextbookTalk|null;
  origin:{work:TalkOrigin;textbook:TalkOrigin};
  /** Whether an AI rewording can be asked for at all (false while no model is connected). */
  polishOpen:boolean;
@@ -32,32 +35,59 @@ export type TalkView={
 export type LocalTalk=ReturnType<typeof localTalk>;
 export type Polished={work:WorkTalkLines|null;textbook:TextbookTalkLines|null};
 
-export function localTalk(arrangement:Arrangement|null,track:TextbookTrack|null,inspiration:Inspiration,plan:BackgroundPlan|null){
+export function localTalk(
+ arrangement:Arrangement|null,
+ track:TextbookTrack|null,
+ inspiration:Inspiration,
+ plan:BackgroundPlan|null,
+){
  const facts=arrangement?findDiscoveries(arrangement):[];
  // 课本讲解 for a textbook song, and for teaching music once its card is made.
  const textbook=arrangement&&track&&inspiration.kind!=='none'&&plan&&arrangement.events.length?(()=>{
-  const timed=timedEvents(arrangement),meeting=backgroundMeeting(plan,timed.map(({start,end})=>({start,end})));
+  const timed=timedEvents(arrangement);
+  const meeting=backgroundMeeting(plan,timed.map(({start,end})=>({start,end})));
   const name=meeting.example===null?null:timed[meeting.example]?.unit.name??null;
   return {talk:textbookTalk(track,meeting,name),briefed:textbookTalkBrief(track,meeting.kind,name)};
  })():null;
- const work=arrangement?workTalkBrief(facts,arrangement.spanSeconds,presetMood(arrangement.mood),textbook?track!.title:null):null;
- return {facts,discoveries:facts.map(fact=>discoveryText(fact)),tryThis:localTryThis(facts),textbook,work};
+ const work=arrangement
+  ?workTalkBrief(facts,arrangement.spanSeconds,presetMood(arrangement.mood),textbook?track!.title:null)
+  :null;
+ return {
+  facts,
+  discoveries:facts.map(fact=>discoveryText(fact)),
+  tryThis:localTryThis(facts),
+  textbook,
+  work,
+ };
 }
 /** What would be sent; a new key asks again. */
 export const talkKey=(local:LocalTalk)=>JSON.stringify([local.work?.brief??null,local.textbook?.briefed.brief??null]);
 
 /** Waits for one request at most `timeoutMs`; anything slow or broken counts as no answer. */
 async function ask(request:(signal:AbortSignal)=>Promise<unknown>,signal:AbortSignal,timeoutMs:number){
- const attempt=new AbortController(),stop=()=>attempt.abort();
+ const attempt=new AbortController();
+ const stop=()=>attempt.abort();
  signal.addEventListener('abort',stop);
  const timer=setTimeout(stop,timeoutMs);
  const gaveUp=new Promise<null>(resolve=>attempt.signal.addEventListener('abort',()=>resolve(null),{once:true}));
- try{return await Promise.race([request(attempt.signal),gaveUp]);}catch{return null;}
- finally{clearTimeout(timer);signal.removeEventListener('abort',stop);}
+ try{
+  return await Promise.race([request(attempt.signal),gaveUp]);
+ }catch{
+  return null;
+ }
+ finally{
+  clearTimeout(timer);
+  signal.removeEventListener('abort',stop);
+ }
 }
 
 /** Asks for both rewordings at once; null when the polisher is closed or there is nothing to say. */
-export async function polishTalk(local:LocalTalk,polisher:TalkPolisher,signal:AbortSignal,timeoutMs=TALK_TIMEOUT_MS):Promise<Polished|null>{
+export async function polishTalk(
+ local:LocalTalk,
+ polisher:TalkPolisher,
+ signal:AbortSignal,
+ timeoutMs=TALK_TIMEOUT_MS,
+):Promise<Polished|null>{
  const {work,textbook}=local;
  if(!polisher.open||(!work&&!textbook))return null;
  const [workReply,textbookReply]=await Promise.all([
@@ -70,14 +100,31 @@ export async function polishTalk(local:LocalTalk,polisher:TalkPolisher,signal:Ab
  };
 }
 
+/** The local talk with every line the model got right in its place (the child's names put back). */
 export function mergeTalk(local:LocalTalk,polished:Polished|null,polishOpen:boolean):TalkView{
- const names=local.work?.names??[],textbookNames=local.textbook?.briefed.names??[];
- const lines=polished?.work?.lines??[],aiTry=polished?.work?.tryThis??null,parts=polished?.textbook??null;
- const discoveries=local.discoveries.map((text,i)=>{const line=lines[i];return line?{...text,line:restoreNames(line,names)}:text;});
+ const names=local.work?.names??[];
+ const textbookNames=local.textbook?.briefed.names??[];
+ const lines=polished?.work?.lines??[];
+ const aiTry=polished?.work?.tryThis??null;
+ const parts=polished?.textbook??null;
+ const discoveries=local.discoveries.map((text,i)=>{
+  const line=lines[i];
+  return line?{...text,line:restoreNames(line,names)}:text;
+ });
  const textbook=local.textbook&&{...local.textbook.talk};
- if(textbook&&parts)for(const part of ['feature','meeting','task'] as const){const line=parts[part];if(line)textbook[part]=restoreNames(line,textbookNames);}
+ if(textbook&&parts)for(const part of ['feature','meeting','task'] as const){
+  const line=parts[part];
+  if(line)textbook[part]=restoreNames(line,textbookNames);
+ }
  return {
-  facts:local.facts,discoveries,tryThis:aiTry?restoreNames(aiTry,names):local.tryThis,textbook,polishOpen,
-  origin:{work:lines.some(Boolean)||aiTry?'ai':'local',textbook:parts&&Object.values(parts).some(Boolean)?'ai':'local'},
+  facts:local.facts,
+  discoveries,
+  tryThis:aiTry?restoreNames(aiTry,names):local.tryThis,
+  textbook,
+  polishOpen,
+  origin:{
+   work:lines.some(Boolean)||aiTry?'ai':'local',
+   textbook:parts&&Object.values(parts).some(Boolean)?'ai':'local',
+  },
  };
 }

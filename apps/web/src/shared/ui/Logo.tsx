@@ -11,16 +11,24 @@ import {media} from '../../styles/breakpoints';
 // Decorative only: the text is the name.
 type Mood='look'|'happy'|'surprised';
 type Arm={hand:readonly [number,number];wave?:boolean};
-type Stone={marker:number;char:number;size:number;
+type Stone={
+ marker:number;
+ char:number;
+ size:number;
  /** Position of the pebble's box from the character's left / bottom edge (em). */
- x:number;y:number;tilt:number;
+ x:number;
+ y:number;
+ tilt:number;
  /** `behind`: the character's strokes cover the body; `front`: the body covers the strokes. Hands are always in front. */
- layer:'behind'|'front';mood:Mood;gaze?:readonly [number,number];
+ layer:'behind'|'front';
+ mood:Mood;
+ gaze?:readonly [number,number];
  motion:'sway'|'hop'|'bob'|'breathe';
  /** Standing on the ground (contact shadow) or resting on a stroke (soft cast shadow on the letter). */
  grounded:boolean;
  /** Arm per side (0 left, 1 right); the hand is relative to the shoulder in marker units. Missing = tucked away. */
- arms:readonly (Arm|null)[]};
+ arms:readonly (Arm|null)[];
+};
 
 const STONES:readonly Stone[]=[
  // 万: a big green one hides behind the left of the character and hugs its stroke.
@@ -36,17 +44,29 @@ const STONES:readonly Stone[]=[
  {marker:2,char:3,size:.62,x:.84,y:-.02,tilt:-4,layer:'behind',mood:'look',gaze:[-.45,0],motion:'breathe',grounded:true,
   arms:[{hand:[-130,10]},null]},
 ];
-const INK='#171a16',ARM=34,HAND=30;
+const INK='#171a16';
+const ARM=34;
+const HAND=30;
 
 function Eyes({id,mood,gaze=[0,0]}:{id:string;mood:Mood;gaze?:readonly [number,number]}){
  const pose=spiritPoses[id]!;
  return <>{pose.eyes.map(([x,y,angle,rx,ry],i)=><g key={i} transform={`translate(${x} ${y}) rotate(${angle})`}>
   {mood==='happy'
-   ?<path d={`M${-rx*.8} ${ry*.25}Q0 ${-ry*.8} ${rx*.8} ${ry*.25}`} fill="none" stroke={INK} strokeWidth="22" strokeLinecap="round"/>
+   ?<path
+    d={`M${-rx*.8} ${ry*.25}Q0 ${-ry*.8} ${rx*.8} ${ry*.25}`}
+    fill="none"
+    stroke={INK}
+    strokeWidth="22"
+    strokeLinecap="round"/>
    :<>
     <ellipse cx="8" cy="2" rx={rx} ry={ry} fill="#777a72" opacity=".45"/>
     <ellipse rx={rx} ry={ry} fill="#fffefa"/>
-    <ellipse cx={gaze[0]*rx} cy={gaze[1]*ry} rx={rx*(mood==='surprised'?.34:.5)} ry={ry*(mood==='surprised'?.34:.52)} fill="#111510"/>
+    <ellipse
+     cx={gaze[0]*rx}
+     cy={gaze[1]*ry}
+     rx={rx*(mood==='surprised'?.34:.5)}
+     ry={ry*(mood==='surprised'?.34:.52)}
+     fill="#111510"/>
    </>}
   {mood==='happy'&&<ellipse cx={i?rx*.9:-rx*.9} cy={ry*.9} rx={rx*.42} ry={ry*.24} fill="#ffd4d9"/>}
  </g>)}</>;
@@ -55,20 +75,43 @@ function Eyes({id,mood,gaze=[0,0]}:{id:string;mood:Mood;gaze?:readonly [number,n
 function Arms({stone,shoulders,still}:{stone:Stone;shoulders:readonly (readonly [number,number])[];still:boolean}){
  return <>{stone.arms.map((arm,i)=>{
   if(!arm)return null;
-  const [sx,sy]=shoulders[i]!,[hx,hy]=arm.hand;
-  const limb=<><path d={`M0 0Q${hx*.5} ${hy*.15-40} ${hx} ${hy}`} fill="none" stroke={INK} strokeWidth={ARM} strokeLinecap="round"/><circle cx={hx} cy={hy} r={HAND} fill={INK}/></>;
+  const [sx,sy]=shoulders[i]!;
+  const [hx,hy]=arm.hand;
+  const limb=<>
+   <path d={`M0 0Q${hx*.5} ${hy*.15-40} ${hx} ${hy}`} fill="none" stroke={INK} strokeWidth={ARM} strokeLinecap="round"/>
+   <circle cx={hx} cy={hy} r={HAND} fill={INK}/>
+  </>;
   return <g key={i} transform={`translate(${sx} ${sy})`}>
-   {arm.wave?<g>{limb}{!still&&<animateTransform attributeName="transform" type="rotate" values="-6;16;-6" dur="1.2s" repeatCount="indefinite"/>}</g>:limb}
+   {arm.wave
+    ?<g>
+     {limb}
+     {!still&&<animateTransform attributeName="transform" type="rotate" values="-6;16;-6" dur="1.2s" repeatCount="indefinite"/>}
+    </g>
+    :limb}
   </g>;
  })}</>;
 }
 
 function Pebble({stone,still}:{stone:Stone;still:boolean}){
- const marker=soundMarkers[stone.marker]!,pose=spiritPoses[marker.id]!,{crop}=marker;
+ const marker=soundMarkers[stone.marker]!;
+ const pose=spiritPoses[marker.id]!;
+ const {crop}=marker;
  const box=`${crop.left} ${crop.top} ${crop.width} ${crop.height}`;
- const style={'--size':`${stone.size}em`,'--x':`${stone.x}em`,'--y':`${stone.y}em`,'--tilt':`${stone.tilt}deg`,'--ratio':crop.height/crop.width} as CSSProperties;
+ const style={
+  '--size':`${stone.size}em`,
+  '--x':`${stone.x}em`,
+  '--y':`${stone.y}em`,
+  '--tilt':`${stone.tilt}deg`,
+  '--ratio':crop.height/crop.width,
+ } as CSSProperties;
  // Body and hands are separate layers so the character's strokes can pass between them.
- return <span className={styles.pebble} data-layer={stone.layer} data-motion={stone.motion} data-grounded={stone.grounded||undefined} style={style} aria-hidden="true">
+ return <span
+  className={styles.pebble}
+  data-layer={stone.layer}
+  data-motion={stone.motion}
+  data-grounded={stone.grounded||undefined}
+  style={style}
+  aria-hidden="true">
   {stone.grounded&&<span className={styles.contact}/>}
   <span className={styles.body}>
    <ArtPicture variants={marker.variants} className={styles.art} fallback={<span className={styles.shape}/>}/>

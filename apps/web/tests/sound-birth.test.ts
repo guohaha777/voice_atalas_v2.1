@@ -18,7 +18,10 @@ const example:SoundSource={id:'example:bird',kind:'example',label:'鸟鸣',durat
 const recording:SoundSource={id:'recording:1',kind:'local-recording',label:'我的录音',durationMs:5000,mimeType:'audio/webm',
  provenance:{recordedBy:null,recordedOn:'2026-10-22',place:null,group:null,provenanceUrl:null}};
 const ready=(source:SoundSource)=>({type:'source-ready' as const,source});
-const chooseAll=(state:ReturnType<typeof initialSoundBirth>)=>{for(const [dimension,value] of Object.entries(NEUTRAL_SHAPE))state=soundBirthReducer(state,{type:'choose',dimension:dimension as keyof typeof NEUTRAL_SHAPE,value});return state;};
+const chooseAll=(state:ReturnType<typeof initialSoundBirth>)=>{
+ for(const [dimension,value] of Object.entries(NEUTRAL_SHAPE))state=soundBirthReducer(state,{type:'choose',dimension:dimension as keyof typeof NEUTRAL_SHAPE,value});
+ return state;
+};
 
 test('the page opens with no dialog and nothing preselected',()=>{
  assert.equal(initialSoundBirth().dialog,null);
@@ -141,7 +144,9 @@ test('library: examples first, then this device grouped by 分组, ungrouped las
  const archive=new SessionSourceArchive();
  const fake={duration:1} as AudioBuffer;
  const at=(id:string,group:string|null,by:string)=>({...recording,id,provenance:{...recording.provenance,group,recordedBy:by}});
- archive.save(at('r1',null,'小林'),fake);archive.save(at('r2','秋天的后山','小周'),fake);archive.save(at('r3','秋天的后山','小林'),fake);
+ archive.save(at('r1',null,'小林'),fake);
+ archive.save(at('r2','秋天的后山','小周'),fake);
+ archive.save(at('r3','秋天的后山','小林'),fake);
  const exampleItem={url:'/x.mp3',source:example};
  const groups=libraryGroups([exampleItem],archive.list());
  assert.deepEqual(groups.map(group=>group.title),['示例声音','秋天的后山','本页未分组']);
@@ -209,7 +214,9 @@ test('a part of a long example stays an example with its own id and is not liste
   provenance:{recordedBy:'旧版项目授权录音',recordedOn:null,place:null,group:'示例声音',provenanceUrl:'/legal/sound-sources.html'}};
  const part={length:1,duration:30,sampleRate:1,numberOfChannels:1,getChannelData:()=>new Float32Array(1)} as unknown as AudioBuffer;
  const excerpt=describeExcerpt(example,{startMs:8000,endMs:38_000},part);
- assert.equal(excerpt.id,'example:bird#8000-38000');assert.equal(excerpt.kind,'example');assert.equal(excerpt.durationMs,30_000);
+ assert.equal(excerpt.id,'example:bird#8000-38000');
+ assert.equal(excerpt.kind,'example');
+ assert.equal(excerpt.durationMs,30_000);
  assert.equal(excerpt.provenance.recordedBy,'旧版项目授权录音');
  archive.save(excerpt,part);
  assert.deepEqual(libraryGroups([],archive.list()).map(group=>group.title),['示例声音']);
@@ -223,7 +230,8 @@ test('返回声音诞生 goes on editing the last sound: same id and number; a n
  const first=toSoundUnitDraft(state,'unit:1',now)!;
  assert.equal(session.addUnit(first,example).status,'added');
  const last=session.lastMade()!;
- assert.equal(last.unit.id,'unit:1');assert.equal(last.source,example);
+ assert.equal(last.unit.id,'unit:1');
+ assert.equal(last.source,example);
  // Reopened: source, name, five choices and number come back, the card stays checked.
  let editing=editingSoundBirth(last.unit,last.source);
  assert.deepEqual([editing.source,editing.name,editing.shape,editing.markerIndex,editing.cardConfirmed],[example,first.name,{pitch:'high'},0,true]);
@@ -233,11 +241,14 @@ test('返回声音诞生 goes on editing the last sound: same id and number; a n
  assert.equal(session.updateUnit({...changed,markerIndex:5},example),true);
  const work=session.current()!;
  assert.equal(work.units.length,1,'updated, not added');
- assert.deepEqual(work.units[0]!.shape,{pitch:'high',duration:'long'});assert.equal(work.units[0]!.markerIndex,0,'the number never changes');
+ assert.deepEqual(work.units[0]!.shape,{pitch:'high',duration:'long'});
+ assert.equal(work.units[0]!.markerIndex,0,'the number never changes');
  // A new recording while editing takes the next number.
  const next=soundBirthReducer(editing,{type:'source-ready',source:recording,markerIndex:1});
- assert.equal(next.markerIndex,1);assert.equal(next.source,recording);
- session.reset();assert.equal(session.lastMade(),null,'再来一首 starts with no sound to edit');
+ assert.equal(next.markerIndex,1);
+ assert.equal(next.source,recording);
+ session.reset();
+ assert.equal(session.lastMade(),null,'再来一首 starts with no sound to edit');
 });
 
 test('再做一个: each sound joins the work with its own number, and the page starts empty for the next one',()=>{

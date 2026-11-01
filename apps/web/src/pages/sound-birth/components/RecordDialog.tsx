@@ -19,16 +19,41 @@ export function RecordDialog({birth}:{birth:Birth}){
  return <WorkSheet title={copy.title} description={copy.description} onClose={birth.closeDialog}>
   <div className={styles.recorder} data-phase={phase}>
    {phase==='review'&&take?<>
-    <Waveform className={styles.recorderWave} buffer={take} progress={progress} label="刚录的声音" playing={birth.playing==='take'} onPlay={birth.listenTake}/>
+    <Waveform
+     className={styles.recorderWave}
+     buffer={take}
+     progress={progress}
+     label="刚录的声音"
+     playing={birth.playing==='take'}
+     onPlay={birth.listenTake}/>
     <div className={sheetStyles.actions}>
-     <button type="button" className={`${ui.pill} ${ui.outline} ${controls.secondary}`} onClick={()=>void birth.startRecording()}><Glyph name="replay"/>{copy.retake}</button>
-     <button type="button" className={`${ui.pill} ${ui.go} ${controls.primary}`} onClick={birth.useTake}>{copy.use}<Glyph name="arrow"/></button>
+     <button type="button" className={`${ui.pill} ${ui.outline} ${controls.secondary}`} onClick={()=>void birth.startRecording()}>
+      <Glyph name="replay"/>
+      {copy.retake}
+     </button>
+     <button type="button" className={`${ui.pill} ${ui.go} ${controls.primary}`} onClick={birth.useTake}>
+      {copy.use}
+      <Glyph name="arrow"/>
+     </button>
     </div>
    </>:<>
-    <p className={styles.recTime} role="timer" aria-live="off">{phase==='recording'&&<span className={styles.recDot} aria-hidden="true"/>}{seconds(birth.record.ms)}<small> / {seconds(SOUND_SOURCE_MAX_MS)}</small></p>
+    <p className={styles.recTime} role="timer" aria-live="off">
+     {phase==='recording'&&<span className={styles.recDot} aria-hidden="true"/>}
+     {seconds(birth.record.ms)}<small> / {seconds(SOUND_SOURCE_MAX_MS)}</small>
+    </p>
     {phase==='recording'
-     ?<button type="button" className={styles.recButton} data-active onClick={()=>void birth.stopRecording()}><Glyph name="stop"/>{copy.stop}</button>
-     :<button type="button" className={styles.recButton} disabled={phase==='starting'} onClick={()=>void birth.startRecording()}><Glyph name="mic"/>{phase==='starting'?copy.starting:copy.start}</button>}
+     ?<button type="button" className={styles.recButton} data-active onClick={()=>void birth.stopRecording()}>
+      <Glyph name="stop"/>
+      {copy.stop}
+     </button>
+     :<button
+      type="button"
+      className={styles.recButton}
+      disabled={phase==='starting'}
+      onClick={()=>void birth.startRecording()}>
+      <Glyph name="mic"/>
+      {phase==='starting'?copy.starting:copy.start}
+     </button>}
     {ms===0&&<p className={sheetStyles.note} role="status">{error}</p>}
    </>}
   </div>

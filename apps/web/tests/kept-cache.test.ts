@@ -13,9 +13,16 @@ const settle=()=>new Promise(resolve=>setTimeout(resolve,0));
 
 test('a kept AI result comes back after a reload; only the newest stay; other caches are left alone',async()=>{
  const store=memory();
- const first=keptCache<string>('ai-background',store,2);await first.ready;
- first.set('a','one');await settle();first.set('b','two');await settle();first.set('c','three');await settle();
- assert.equal(first.get('a'),null,'the oldest is let go');assert.ok(!store.data.has('ai-background:a'));
+ const first=keptCache<string>('ai-background',store,2);
+ await first.ready;
+ first.set('a','one');
+ await settle();
+ first.set('b','two');
+ await settle();
+ first.set('c','three');
+ await settle();
+ assert.equal(first.get('a'),null,'the oldest is let go');
+ assert.ok(!store.data.has('ai-background:a'));
  store.data.set('ai-talk:x','not mine');
  const reloaded=keptCache<string>('ai-background',store,2);
  assert.equal(reloaded.get('c'),null,'nothing is known before what was kept is read');
@@ -26,12 +33,20 @@ test('a kept AI result comes back after a reload; only the newest stay; other ca
 test('storage that hangs does not hold the page up: after the limit the cache is ready (empty)',async()=>{
  const hanging:KeyValue={get:()=>new Promise(()=>{}),set:()=>new Promise(()=>{}),delete:()=>new Promise(()=>{}),keys:()=>new Promise(()=>{})};
  const cache=keptCache<number>('ai-background',hanging,24,20);
- await cache.ready;assert.equal(cache.get('k'),null);cache.set('k',3);assert.equal(cache.get('k'),3);
+ await cache.ready;
+ assert.equal(cache.get('k'),null);
+ cache.set('k',3);
+ assert.equal(cache.get('k'),3);
 });
 
 test('without working storage the cache still works for this visit',async()=>{
  const broken:KeyValue={get:async()=>{throw new Error('x');},set:async()=>{throw new Error('x');},delete:async()=>{throw new Error('x');},keys:async()=>{throw new Error('x');}};
- const cache=keptCache<number>('ai-talk',broken);await cache.ready;
- cache.set('k',1);assert.equal(cache.get('k'),1);
- const none=keptCache<number>('ai-talk',null);await none.ready;none.set('k',2);assert.equal(none.get('k'),2);
+ const cache=keptCache<number>('ai-talk',broken);
+ await cache.ready;
+ cache.set('k',1);
+ assert.equal(cache.get('k'),1);
+ const none=keptCache<number>('ai-talk',null);
+ await none.ready;
+ none.set('k',2);
+ assert.equal(none.get('k'),2);
 });

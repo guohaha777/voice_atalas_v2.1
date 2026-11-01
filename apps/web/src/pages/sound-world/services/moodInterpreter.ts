@@ -15,10 +15,18 @@ export type MoodInterpreter={
  interpret(text:string,signal?:AbortSignal):Promise<MoodInterpretation|null>;
 };
 
-export const offlineMoodInterpreter:MoodInterpreter={available:false,async interpret(){return null;}};
+export const offlineMoodInterpreter:MoodInterpreter={
+ available:false,
+ async interpret(){
+  return null;
+ },
+};
 
 /** Trim and cap the child's words; empty means nothing to send. */
-export function cleanMoodText(text:string){const clean=[...text.replace(/\s+/g,' ').trim()].slice(0,MOOD_TEXT_MAX).join('');return clean||null;}
+export function cleanMoodText(text:string){
+ const clean=[...text.replace(/\s+/g,' ').trim()].slice(0,MOOD_TEXT_MAX).join('');
+ return clean||null;
+}
 /** Guards whatever a future model returns before the page trusts it. */
 export function parseInterpretation(value:unknown):MoodInterpretation|null{
  if(!value||typeof value!=='object')return null;

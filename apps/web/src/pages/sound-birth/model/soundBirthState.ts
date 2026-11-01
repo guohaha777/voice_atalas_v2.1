@@ -1,4 +1,6 @@
-import {SOUND_CHOICES,SOUND_CONTRACT_VERSION,SOUND_DIMENSIONS,missingProvenance,normalizeMakerName,normalizeSoundName} from '@wanwu-v2/contracts/sound';
+import {
+ SOUND_CHOICES,SOUND_CONTRACT_VERSION,SOUND_DIMENSIONS,missingProvenance,normalizeMakerName,normalizeSoundName,
+} from '@wanwu-v2/contracts/sound';
 import type {ChosenShape,SoundAnalysis,SoundDimension,SoundShape,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 
 /** `trim`: an upload longer than the source limit, waiting for the child to pick the part to keep. */
@@ -39,14 +41,35 @@ export type SoundBirthAction=
  /** 再做一个: the sound just made went into the work; the page starts empty for the next one, with its own number. */
  |{type:'next';markerIndex:number;notice:Notice};
 
-/** Going on editing a sound already in the work: its source, name, maker, five choices and number; the card stays checked. */
+/**
+ * Going on editing a sound already in the work: its source, name, maker, five choices and number; the card stays
+ * checked.
+ */
 export function editingSoundBirth(unit:SoundUnitDraft,source:SoundSource):SoundBirthState{
- return {...initialSoundBirth(unit.markerIndex),source,name:unit.name,maker:unit.maker,cardConfirmed:true,shape:{...unit.shape}};
+ return {
+  ...initialSoundBirth(unit.markerIndex),
+  source,
+  name:unit.name,
+  maker:unit.maker,
+  cardConfirmed:true,
+  shape:{...unit.shape},
+ };
 }
 
 /** `markerIndex` is assigned by the work this sound joins (its number in 万物声场), so the marker never changes later. */
 export function initialSoundBirth(markerIndex=0):SoundBirthState{
- return {source:null,name:'',maker:null,cardConfirmed:false,shape:{},cardPhoto:null,dialog:null,reading:false,notice:null,markerIndex};
+ return {
+  source:null,
+  name:'',
+  maker:null,
+  cardConfirmed:false,
+  shape:{},
+  cardPhoto:null,
+  dialog:null,
+  reading:false,
+  notice:null,
+  markerIndex,
+ };
 }
 
 export function soundBirthReducer(state:SoundBirthState,action:SoundBirthAction):SoundBirthState{
@@ -58,13 +81,28 @@ export function soundBirthReducer(state:SoundBirthState,action:SoundBirthAction)
    // The maker starts as whoever recorded a local sound; it is only a suggestion and stays editable.
    const maker=followsRecorder(state)?recorderName(action.source):state.maker;
    // Bundled examples are documented already; a local sound starts unconfirmed until its info is checked.
-   return {...state,source:action.source,name:action.source.label,maker,cardConfirmed:action.source.kind==='example',dialog:null,reading:false,notice:null,
-    markerIndex:action.markerIndex??state.markerIndex};
+   return {
+    ...state,
+    source:action.source,
+    name:action.source.label,
+    maker,
+    cardConfirmed:action.source.kind==='example',
+    dialog:null,
+    reading:false,
+    notice:null,
+    markerIndex:action.markerIndex??state.markerIndex,
+   };
   }
   case 'source-update':
    if(state.source?.id!==action.source.id)return state;
    // Changing 记录人 changes the marker's name too, until the child writes a name of their own on the marker.
-   return {...state,source:action.source,maker:followsRecorder(state)?recorderName(action.source):state.maker,notice:state.notice?.area==='info'&&!missingProvenance(action.source).length?null:state.notice};
+   return {
+    ...state,
+    source:action.source,
+    maker:followsRecorder(state)?recorderName(action.source):state.maker,
+    // The info notice goes once nothing is missing any more.
+    notice:state.notice?.area==='info'&&!missingProvenance(action.source).length?null:state.notice,
+   };
   case 'rename':return {...state,name:normalizeSoundName(action.name,state.source?.label??'')};
   case 'maker':return {...state,maker:normalizeMakerName(action.name)};
   case 'card':
@@ -72,7 +110,12 @@ export function soundBirthReducer(state:SoundBirthState,action:SoundBirthAction)
    if(action.confirmed&&(!state.source||missingProvenance(state.source).length))return state;
    // On confirm, an unwritten maker defaults to whoever recorded the sound (still editable on the marker).
    const maker=action.confirmed?state.maker??normalizeMakerName(state.source?.provenance.recordedBy??''):state.maker;
-   return {...state,cardConfirmed:action.confirmed,maker,notice:action.confirmed&&state.notice?.area==='info'?null:state.notice};
+   return {
+    ...state,
+    cardConfirmed:action.confirmed,
+    maker,
+    notice:action.confirmed&&state.notice?.area==='info'?null:state.notice,
+   };
   case 'choose':{
    if(!(SOUND_CHOICES[action.dimension] as readonly string[]).includes(action.value))return state;
    const shape={...state.shape,[action.dimension]:action.value};
@@ -80,7 +123,8 @@ export function soundBirthReducer(state:SoundBirthState,action:SoundBirthAction)
   }
   case 'clear':{
    if(state.shape[action.dimension]===undefined)return state;
-   const shape={...state.shape};delete shape[action.dimension];
+   const shape={...state.shape};
+   delete shape[action.dimension];
    return {...state,shape};
   }
   case 'card-photo':return {...state,cardPhoto:action.url};
@@ -90,22 +134,32 @@ export function soundBirthReducer(state:SoundBirthState,action:SoundBirthAction)
 }
 
 /** Who recorded a local sound, as a marker name (examples have no maker). */
-const recorderName=(source:SoundSource|null)=>!source||source.kind==='example'?null:normalizeMakerName(source.provenance.recordedBy??'');
+const recorderName=(source:SoundSource|null)=>!source||source.kind==='example'
+ ?null
+ :normalizeMakerName(source.provenance.recordedBy??'');
 /** The marker's name is still the one taken from 记录人 (or none yet), not one the child wrote on the marker. */
 const followsRecorder=(state:SoundBirthState)=>state.maker===null||state.maker===recorderName(state.source);
 
 /** Child-facing summary of the chosen options, in row order, e.g. 「高高的、有起伏」. */
 export function describeShape(shape:Partial<SoundShape>,labels:{[K in SoundDimension]:Record<string,string>}){
- return SOUND_DIMENSIONS.flatMap(dimension=>{const value=shape[dimension];return value?[labels[dimension][value]!]:[];}).join('、');
+ return SOUND_DIMENSIONS.flatMap(dimension=>{
+  const value=shape[dimension];
+  return value?[labels[dimension][value]!]:[];
+ }).join('、');
 }
 
-export function remainingDimensions(shape:Partial<SoundShape>){return SOUND_DIMENSIONS.filter(dimension=>shape[dimension]===undefined);}
+export function remainingDimensions(shape:Partial<SoundShape>){
+ return SOUND_DIMENSIONS.filter(dimension=>shape[dimension]===undefined);
+}
 
 /**
  * What still blocks 做好了, in the order the page guides the child / teacher through it. The five choices are optional:
  * a child may go on with the original sound, so only a sound and its provenance are required.
  */
-export type FinishCheck={kind:'no-source'}|{kind:'missing-provenance';fields:ReturnType<typeof missingProvenance>}|{kind:'ready'};
+export type FinishCheck=
+ |{kind:'no-source'}
+ |{kind:'missing-provenance';fields:ReturnType<typeof missingProvenance>}
+ |{kind:'ready'};
 export function finishCheck(state:Pick<SoundBirthState,'source'>):FinishCheck{
  if(!state.source)return {kind:'no-source'};
  const fields=missingProvenance(state.source);
@@ -116,6 +170,17 @@ export function finishCheck(state:Pick<SoundBirthState,'source'>):FinishCheck{
 /** `analysis`: the source's 声音体检, kept with the unit so later pages time it from the work's data alone. */
 export function toSoundUnitDraft(state:SoundBirthState,id:string,now:Date,analysis?:SoundAnalysis):SoundUnitDraft|null{
  if(finishCheck(state).kind!=='ready'||!state.source)return null;
- return {version:SOUND_CONTRACT_VERSION,id,sourceId:state.source.id,name:state.name||state.source.label,maker:state.maker,markerIndex:state.markerIndex,
-  shape:{...state.shape},input:state.cardPhoto?'paper-card-reference':'manual',createdAt:now.toISOString(),...(analysis?{analysis}:{})};
+ return {
+  version:SOUND_CONTRACT_VERSION,
+  id,
+  sourceId:state.source.id,
+  name:state.name||state.source.label,
+  maker:state.maker,
+  markerIndex:state.markerIndex,
+  shape:{...state.shape},
+  // A photo of the paper card is reference only: the choices are still entered by hand.
+  input:state.cardPhoto?'paper-card-reference':'manual',
+  createdAt:now.toISOString(),
+  ...(analysis?{analysis}:{}),
+ };
 }

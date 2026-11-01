@@ -14,8 +14,10 @@ export const localSoundWorldRepository:SoundWorldRepository={
  async scope(scope){
   switch(scope){
    // The same library 声音诞生 picks from (shared/creation/soundLibrary.ts), as units with the examples' presets.
-   case 'example':return {status:'ready',units:(await bundledSoundLibrary.list()).examples.map(example=>exampleUnit(example.id,0))};
-   case 'mine':return {status:'ready',units:workSession.current()?.units.filter(unit=>unit.input!=='example-preset')??[]};
+   case 'example':
+    return {status:'ready',units:(await bundledSoundLibrary.list()).examples.map(example=>exampleUnit(example.id,0))};
+   case 'mine':
+    return {status:'ready',units:workSession.current()?.units.filter(unit=>unit.input!=='example-preset')??[]};
    case 'class':return {status:'unavailable',reason:'needs-account'};
    case 'teachers':return {status:'unavailable',reason:'needs-account'};
    case 'public':return {status:'unavailable',reason:'needs-review'};

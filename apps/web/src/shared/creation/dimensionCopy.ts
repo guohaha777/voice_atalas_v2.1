@@ -16,5 +16,8 @@ export const dimensionCopy:{[K in SoundDimension]:DimensionCopy<K>}={
 
 /** The chosen options in row order, e.g. 「低低的、慢慢出现」; empty when nothing was chosen (the original sound). */
 export function shapeWords(shape:ChosenShape){
- return SOUND_DIMENSIONS.flatMap(dimension=>{const value=shape[dimension];return value?[(dimensionCopy[dimension].options as Record<string,string>)[value]!]:[];}).join('、');
+ return SOUND_DIMENSIONS.flatMap(dimension=>{
+  const value=shape[dimension];
+  return value?[(dimensionCopy[dimension].options as Record<string,string>)[value]!]:[];
+ }).join('、');
 }

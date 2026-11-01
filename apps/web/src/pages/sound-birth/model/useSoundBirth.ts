@@ -1,5 +1,7 @@
 import {useCallback,useEffect,useMemo,useReducer,useRef,useState,useSyncExternalStore} from 'react';
-import {SOUND_SOURCE_MAX_MS,SOUND_SOURCE_SLACK_MS,cleanSourceText,missingProvenance,normalizeSoundName} from '@wanwu-v2/contracts/sound';
+import {
+ SOUND_SOURCE_MAX_MS,SOUND_SOURCE_SLACK_MS,cleanSourceText,missingProvenance,normalizeSoundName,
+} from '@wanwu-v2/contracts/sound';
 import type {SoundDimension,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {audioSupported} from '../../../shared/audio/audioContext';
 import {unchangedBy} from '@wanwu-v2/sound-rules/shaping';
@@ -34,20 +36,50 @@ export type ProvenanceField='label'|'recordedBy'|'recordedOn'|'place'|'group';
 /** A sound already in the work, opened again from 万物声场 (返回声音诞生) to go on editing it. */
 export type EditingSound={unit:SoundUnitDraft;source:SoundSource};
 
-/** 声音诞生: bring a sound in (library, file, recording), shape it with the five choices, check its card, finish.
- *  Recording, trimming, library loading and the shaped preview live in their own hooks; this one ties them together. */
-export function useSoundBirth(markerIndex:number,onFinish:(sound:FinishedSound,then:FinishThen)=>FinishResult,hints:SoundHintProvider=services.soundHints,editing:EditingSound|null=null,
- sounds:SoundLibraryService=services.soundLibrary){
- const [state,dispatch]=useReducer(soundBirthReducer,null,()=>editing?editingSoundBirth(editing.unit,editing.source):initialSoundBirth(markerIndex));
+/**
+ * 声音诞生: bring a sound in (library, file, recording), shape it with the five choices, check its card, finish.
+ * Recording, trimming, library loading and the shaped preview live in their own hooks; this one ties them together.
+ */
+export function useSoundBirth(
+ markerIndex:number,
+ onFinish:(sound:FinishedSound,then:FinishThen)=>FinishResult,
+ hints:SoundHintProvider=services.soundHints,
+ editing:EditingSound|null=null,
+ sounds:SoundLibraryService=services.soundLibrary,
+){
+ const [state,dispatch]=useReducer(
+  soundBirthReducer,
+  null,
+  ()=>editing?editingSoundBirth(editing.unit,editing.source):initialSoundBirth(markerIndex));
  /** While the child keeps the same source, 做好了 updates the sound being edited; a new source makes a new sound. */
- const editTarget=useRef<EditTarget>(editing&&{unitId:editing.unit.id,sourceId:editing.source.id,markerIndex:editing.unit.markerIndex});
+ const editTarget=useRef<EditTarget>(editing&&{
+  unitId:editing.unit.id,
+  sourceId:editing.source.id,
+  markerIndex:editing.unit.markerIndex,
+ });
  const local=useSyncExternalStore(sessionArchive.subscribe,sessionArchive.list);
  // The library's examples come through the shared port (the same list 万物声场 offers).
  const [examples,setExamples]=useState<readonly LibraryItem[]>([]);
  const [cloudEntries,setCloudEntries]=useState<SoundLibraryList['entries']>([]);
  const {accountId}=useCloud();
- useEffect(()=>{let live=true;void sounds.list().then(list=>{if(live){setExamples(list.examples.map(exampleLibraryItem));setCloudEntries(list.entries??[]);}});return()=>{live=false;};},[sounds,accountId]);
- useEffect(()=>{const canonical=local.find(source=>source.id===state.source?.id&&source.kind==='uploaded');if(canonical&&canonical!==state.source)dispatch({type:'source-update',source:canonical});},[local,state.source]);
+ // The library again when the account changes (its own sounds come with it).
+ useEffect(()=>{
+  let live=true;
+  void sounds.list().then(list=>{
+   if(live){
+    setExamples(list.examples.map(exampleLibraryItem));
+    setCloudEntries(list.entries??[]);
+   }
+  });
+  return()=>{
+   live=false;
+  };
+ },[sounds,accountId]);
+ // A source uploaded meanwhile: the page takes the server's version of it.
+ useEffect(()=>{
+  const canonical=local.find(source=>source.id===state.source?.id&&source.kind==='uploaded');
+  if(canonical&&canonical!==state.source)dispatch({type:'source-update',source:canonical});
+ },[local,state.source]);
  const [playing,setPlaying]=useState<string|null>(null);
  const [progress,setProgress]=useState(0);
  const [blocked,setBlocked]=useState(false);
@@ -57,38 +89,78 @@ export function useSoundBirth(markerIndex:number,onFinish:(sound:FinishedSound,t
  const player=useMemo(()=>new SequencePlayer(setPlaying),[]);
  const buffers=useRef(new Map<string,AudioBuffer>());
  const photo=useRef<string|null>(null);
- const latest=useRef(state);latest.current=state;
+ const latest=useRef(state);
+ latest.current=state;
 
  const notify=useCallback<Notify>((area,text,tone='error')=>dispatch({type:'notice',notice:{tone,area,text}}),[]);
  const bufferOf=(id:string)=>sessionArchive.buffer(id)??buffers.current.get(id)??null;
  const sourceBuffer=state.source?bufferOf(state.source.id):null;
 
- const preview=useShapedPreview(player,playing,notify,()=>{const source=latest.current.source;return {source,buffer:source&&bufferOf(source.id)||null};},sourceBuffer??null,state.shape);
+ const preview=useShapedPreview(
+  player,
+  playing,
+  notify,
+  ()=>{
+   const source=latest.current.source;
+   return {source,buffer:source&&bufferOf(source.id)||null};
+  },
+  sourceBuffer??null,
+  state.shape);
+ /** A source becomes the one being shaped (its marker stays the edited sound's when it is that sound's source). */
  const useSource=(source:SoundSource,buffer:AudioBuffer)=>{
-  buffers.current.set(source.id,buffer);player.stop();preview.reset();setBlocked(false);
+  buffers.current.set(source.id,buffer);
+  player.stop();
+  preview.reset();
+  setBlocked(false);
   const target=editTarget.current;
-  dispatch({type:'source-ready',source,markerIndex:target?(source.id===target.sourceId?target.markerIndex:markerIndex):undefined});
+  dispatch({
+   type:'source-ready',
+   source,
+   markerIndex:target?(source.id===target.sourceId?target.markerIndex:markerIndex):undefined,
+  });
   // Nothing to hear (声音体检 found no sound): tell the child right away; the recording itself is kept.
   if(analysisOf(buffer).silent)notify('bar',birthCopy.silent,'info');
  };
- const archiveAndUse=(source:SoundSource,buffer:AudioBuffer,original?:LocalOriginal)=>{sessionArchive.save(source,buffer,original);useSource(source,buffer);};
- const recording=useRecording(player,playing,notify,take=>archiveAndUse(describeLocal('local-recording',birthCopy.defaultRecordingName,take.buffer,take.mimeType),take.buffer,{blob:take.original}));
- const trimming=useTrimUpload(player,playing,({label,part,mimeType,range,from,original,rawDurationMs})=>
-  archiveAndUse(from?describeExcerpt(from,range,part):describeLocal('local-file',label,part,mimeType),part,original?{blob:original,selection:range,rawDurationMs}:undefined));
+ const archiveAndUse=(source:SoundSource,buffer:AudioBuffer,original?:LocalOriginal)=>{
+  sessionArchive.save(source,buffer,original);
+  useSource(source,buffer);
+ };
+ const recording=useRecording(player,playing,notify,take=>archiveAndUse(
+  describeLocal('local-recording',birthCopy.defaultRecordingName,take.buffer,take.mimeType),
+  take.buffer,
+  {blob:take.original}));
+ const trimming=useTrimUpload(player,playing,({label,part,mimeType,range,from,original,rawDurationMs})=>archiveAndUse(
+  from?describeExcerpt(from,range,part):describeLocal('local-file',label,part,mimeType),
+  part,
+  original?{blob:original,selection:range,rawDurationMs}:undefined));
  /** Longer than a source may be: the child picks the part to keep (the original is untouched). */
  const openTrim=(buffer:AudioBuffer,label:string,mimeType:string,from:SoundSource|null,original:Blob|null=null)=>{
   trimming.start(buffer,label,mimeType,from,original);
-  dispatch({type:'reading',reading:false});dispatch({type:'notice',notice:null});dispatch({type:'dialog',dialog:'trim'});
+  dispatch({type:'reading',reading:false});
+  dispatch({type:'notice',notice:null});
+  dispatch({type:'dialog',dialog:'trim'});
  };
  const tooLong=(buffer:AudioBuffer)=>buffer.duration*1000>SOUND_SOURCE_MAX_MS+SOUND_SOURCE_SLACK_MS;
- const library=useLibraryItems(player,playing,notify,{get:bufferOf,set:(id,buffer)=>buffers.current.set(id,buffer)},
+ const library=useLibraryItems(
+  player,
+  playing,
+  notify,
+  {get:bufferOf,set:(id,buffer)=>buffers.current.set(id,buffer)},
   (source,buffer)=>tooLong(buffer)?openTrim(buffer,source.label,source.mimeType,source):useSource(source,buffer));
 
  // Progress follows the audio clock only while something plays.
  useEffect(()=>{
-  if(!playing){setProgress(0);return;}
-  let frame=0;const tick=()=>{setProgress(player.progress()??0);frame=requestAnimationFrame(tick);};
-  frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame);
+  if(!playing){
+   setProgress(0);
+   return;
+  }
+  let frame=0;
+  const tick=()=>{
+   setProgress(player.progress()??0);
+   frame=requestAnimationFrame(tick);
+  };
+  frame=requestAnimationFrame(tick);
+  return()=>cancelAnimationFrame(frame);
  },[playing,player]);
 
  // Editing a sound again: say so, and load its audio if this page does not hold it (a library example).
@@ -98,19 +170,34 @@ export function useSoundBirth(markerIndex:number,onFinish:(sound:FinishedSound,t
   const {source}=editing;
   if(bufferOf(source.id))return;
   const url=source.kind==='example'?exampleSourceUrl(source.id):null;
-  if(!url){notify('bar',birthCopy.editMissing);return;}
+  if(!url){
+   notify('bar',birthCopy.editMissing);
+   return;
+  }
   const controller=new AbortController();
   dispatch({type:'reading',reading:true});
   void loadAudio(url,{signal:controller.signal,timeoutMs:EXAMPLE_TIMEOUT_MS})
-   .then(buffer=>{buffers.current.set(source.id,buffer);dispatch({type:'reading',reading:false});})
-   .catch(()=>{if(!controller.signal.aborted){dispatch({type:'reading',reading:false});notify('bar',birthCopy.editMissing);}});
+   .then(buffer=>{
+    buffers.current.set(source.id,buffer);
+    dispatch({type:'reading',reading:false});
+   })
+   .catch(()=>{
+    if(!controller.signal.aborted){
+     dispatch({type:'reading',reading:false});
+     notify('bar',birthCopy.editMissing);
+    }
+   });
   return()=>controller.abort();
  // Once, for the sound this page was opened with.
  },[]);
 
  // Leaving the page or hiding the tab stops sound; a running recording is stopped and kept for review.
  useEffect(()=>{
-  const hidden=()=>{if(document.visibilityState!=='hidden')return;player.stop();if(recording.active())void recording.stop();};
+  const hidden=()=>{
+   if(document.visibilityState!=='hidden')return;
+   player.stop();
+   if(recording.active())void recording.stop();
+  };
   document.addEventListener('visibilitychange',hidden);
   return()=>{
    document.removeEventListener('visibilitychange',hidden);
@@ -122,87 +209,187 @@ export function useSoundBirth(markerIndex:number,onFinish:(sound:FinishedSound,t
  const chooseFile=async(file:File)=>{
   if(!audioSupported())return notify('bar',birthCopy.noAudio);
   if(file.size>FILE_MAX_BYTES)return notify('bar',birthCopy.fileTooBig);
-  if(file.type&&!file.type.startsWith('audio/')&&!file.type.startsWith('video/'))return notify('bar',birthCopy.fileUnreadable);
+  if(file.type&&!file.type.startsWith('audio/')&&!file.type.startsWith('video/'))
+   return notify('bar',birthCopy.fileUnreadable);
   dispatch({type:'reading',reading:true});
   try{
    const buffer=await decodeAudio(await file.arrayBuffer());
-   const label=cleanSourceText(baseName(file.name))??birthCopy.defaultRecordingName,mimeType=file.type||'application/octet-stream';
-   if(buffer.duration*1000>TRIM_FILE_MAX_MS){dispatch({type:'reading',reading:false});return notify('bar',birthCopy.tooLong);}
+   const label=cleanSourceText(baseName(file.name))??birthCopy.defaultRecordingName;
+   const mimeType=file.type||'application/octet-stream';
+   // Too long even to trim: refused; longer than a source may be: the child picks the part to keep.
+   if(buffer.duration*1000>TRIM_FILE_MAX_MS){
+    dispatch({type:'reading',reading:false});
+    return notify('bar',birthCopy.tooLong);
+   }
    if(tooLong(buffer))return openTrim(buffer,label,mimeType,null,file);
    archiveAndUse(describeLocal('local-file',label,buffer,mimeType),buffer,{blob:file,rawDurationMs:buffer.duration*1000});
-  }catch{dispatch({type:'reading',reading:false});notify('bar',birthCopy.fileUnreadable);}
+  }catch{
+   dispatch({type:'reading',reading:false});
+   notify('bar',birthCopy.fileUnreadable);
+  }
  };
- const openRecord=()=>{recording.open();dispatch({type:'notice',notice:null});dispatch({type:'dialog',dialog:'record'});};
+ const openRecord=()=>{
+  recording.open();
+  dispatch({type:'notice',notice:null});
+  dispatch({type:'dialog',dialog:'record'});
+ };
  const closeDialog=()=>{
-  recording.cancel();trimming.cancel();
+  recording.cancel();
+  trimming.cancel();
   if(playing==='take'||playing==='trim'||playing?.startsWith('item:'))player.stop();
-  library.abort();dispatch({type:'dialog',dialog:null});
+  library.abort();
+  dispatch({type:'dialog',dialog:null});
  };
 
  /** 声音体检 of the current source (cached per buffer). */
- const analysisNow=()=>{const source=latest.current.source,buffer=source&&bufferOf(source.id);return buffer?analysisOf(buffer):null;};
+ const analysisNow=()=>{
+  const source=latest.current.source;
+  const buffer=source&&bufferOf(source.id);
+  return buffer?analysisOf(buffer):null;
+ };
  const choose=(dimension:SoundDimension,value:string)=>{
-  dispatch({type:'choose',dimension,value});setBlocked(false);setLastChosen(dimension);
+  dispatch({type:'choose',dimension,value});
+  setBlocked(false);
+  setLastChosen(dimension);
   hintRequest.current?.abort();
   // When the sound is already like that, say so — otherwise the child may think the choice did nothing.
   const same=unchangedBy(dimension,value,analysisNow());
   if(same)setHint({text:birthCopy.unchanged(dimension,value,same),origin:'preset',key:`${dimension}:${value}:same`});
   // Otherwise ask the guide for an association; a newer choice cancels an older request.
-  const controller=new AbortController();hintRequest.current=controller;
-  if(!same)void hints.hint({dimension,value,shape:{...latest.current.shape,[dimension]:value},kind:analysisNow()?.kind??null},controller.signal)
-   .then(result=>{if(result&&!controller.signal.aborted)setHint({...result,key:`${dimension}:${value}`});}).catch(()=>{});
+  const controller=new AbortController();
+  hintRequest.current=controller;
+  if(!same)void hints.hint(
+   {dimension,value,shape:{...latest.current.shape,[dimension]:value},kind:analysisNow()?.kind??null},
+   controller.signal)
+   .then(result=>{
+    if(result&&!controller.signal.aborted)setHint({...result,key:`${dimension}:${value}`});
+   }).catch(()=>{});
   if(!latest.current.source)return notify('editor',birthCopy.noSoundYet,'info');
   void preview.play({...latest.current.shape,[dimension]:value},'current',true);
  };
  /** Take a choice back: that dimension returns to the original, and the result plays so the change can be heard. */
  const clear=(dimension:SoundDimension)=>{
   const was=latest.current.shape[dimension];
-  dispatch({type:'clear',dimension});setBlocked(false);setLastChosen(dimension);
+  dispatch({type:'clear',dimension});
+  setBlocked(false);
+  setLastChosen(dimension);
   hintRequest.current?.abort();
   setHint(was?{text:birthCopy.cleared(dimension,was),origin:'preset',key:`${dimension}:${was}:cleared`}:null);
   if(!latest.current.source)return;
-  const shape={...latest.current.shape};delete shape[dimension];
+  const shape={...latest.current.shape};
+  delete shape[dimension];
   void preview.play(shape,'current',true);
  };
+ /** A field of the source's provenance (bundled and uploaded sources are not changed here). */
  const updateSource=(field:ProvenanceField,value:string)=>{
-  const source=latest.current.source;if(!source||source.kind==='example'||source.kind==='uploaded')return;
+  const source=latest.current.source;
+  if(!source||source.kind==='example'||source.kind==='uploaded')return;
   const clean=field==='recordedOn'?(/^\d{4}-\d{2}-\d{2}$/.test(value)?value:null):cleanSourceText(value);
-  const next:SoundSource=field==='label'?{...source,label:clean??''}:{...source,provenance:{...source.provenance,[field]:clean}};
-  sessionArchive.update(next);dispatch({type:'source-update',source:next});
+  const next:SoundSource=field==='label'
+   ?{...source,label:clean??''}
+   :{...source,provenance:{...source.provenance,[field]:clean}};
+  sessionArchive.update(next);
+  dispatch({type:'source-update',source:next});
  };
  const setCardPhoto=(file:File|null)=>{
   if(photo.current)URL.revokeObjectURL(photo.current);
   photo.current=file?URL.createObjectURL(file):null;
   dispatch({type:'card-photo',url:photo.current});
  };
- const finish=useFinish({state,dispatch,notify,analysis:analysisNow,editTarget,onFinish,stop:()=>player.stop(),block:()=>setBlocked(true),
+ const finish=useFinish({
+  state,
+  dispatch,
+  notify,
+  analysis:analysisNow,
+  editTarget,
+  onFinish,
+  stop:()=>player.stop(),
+  block:()=>setBlocked(true),
   clearPage:()=>{
-   hintRequest.current?.abort();setHint(null);setLastChosen(null);setBlocked(false);preview.reset();
-   if(photo.current){URL.revokeObjectURL(photo.current);photo.current=null;}
-  }});
+   hintRequest.current?.abort();
+   setHint(null);
+   setLastChosen(null);
+   setBlocked(false);
+   preview.reset();
+   if(photo.current){
+    URL.revokeObjectURL(photo.current);
+    photo.current=null;
+   }
+  },
+ });
 
- const {shown,currentBuffer}=preview,trim=trimming.trim;
+ const {shown,currentBuffer}=preview;
+ const trim=trimming.trim;
+ // The waveform shows the shaped sound while it is the one shown, else the original.
  const displayBuffer=shown==='current'&&currentBuffer?currentBuffer:sourceBuffer;
  const showingCurrent=!!currentBuffer&&displayBuffer===currentBuffer;
  return {
-  state,dispatch,playing,loadingId:library.loadingId,blocked,lastChosen,hint,local,groups:useMemo(()=>libraryGroups(examples,local,cloudEntries),[examples,local,cloudEntries]),
-  wave:{buffer:displayBuffer,original:sourceBuffer??null,target:showingCurrent?'current' as const:'original' as const,progress:playing===(showingCurrent?'current':'original')?progress:0},
-  record:{phase:recording.phase,ms:recording.ms,take:recording.take?.buffer??null,progress:playing==='take'?progress:0},
-  trim:trim&&{buffer:trim.buffer,label:trim.label,range:trim.range,playing:playing==='trim',progress:playing==='trim'?progress:0},
-  setTrimRange:trimming.setRange,listenTrim:trimming.listen,useTrim:trimming.use,
-  suggestions:{recordedBy:sessionArchive.recent('recordedBy'),place:sessionArchive.recent('place'),group:sessionArchive.recent('group')},
-  previewItem:library.preview,pickItem:library.pick,chooseFile,openRecord,startRecording:recording.start,stopRecording:recording.stop,
-  listenTake:recording.listen,useTake:recording.use,closeDialog,
-  playCompare:preview.playCompare,playShown:preview.playShown,choose,clear,updateSource,setCardPhoto,
-  finish:()=>finish('world'),another:()=>finish('another'),
+  state,
+  dispatch,
+  playing,
+  loadingId:library.loadingId,
+  blocked,
+  lastChosen,
+  hint,
+  local,
+  groups:useMemo(()=>libraryGroups(examples,local,cloudEntries),[examples,local,cloudEntries]),
+  wave:{
+   buffer:displayBuffer,
+   original:sourceBuffer??null,
+   target:showingCurrent?'current' as const:'original' as const,
+   progress:playing===(showingCurrent?'current':'original')?progress:0,
+  },
+  record:{
+   phase:recording.phase,
+   ms:recording.ms,
+   take:recording.take?.buffer??null,
+   progress:playing==='take'?progress:0,
+  },
+  trim:trim&&{
+   buffer:trim.buffer,
+   label:trim.label,
+   range:trim.range,
+   playing:playing==='trim',
+   progress:playing==='trim'?progress:0,
+  },
+  setTrimRange:trimming.setRange,
+  listenTrim:trimming.listen,
+  useTrim:trimming.use,
+  suggestions:{
+   recordedBy:sessionArchive.recent('recordedBy'),
+   place:sessionArchive.recent('place'),
+   group:sessionArchive.recent('group'),
+  },
+  previewItem:library.preview,
+  pickItem:library.pick,
+  chooseFile,
+  openRecord,
+  startRecording:recording.start,
+  stopRecording:recording.stop,
+  listenTake:recording.listen,
+  useTake:recording.use,
+  closeDialog,
+  playCompare:preview.playCompare,
+  playShown:preview.playShown,
+  choose,
+  clear,
+  updateSource,
+  setCardPhoto,
+  finish:()=>finish('world'),
+  another:()=>finish('another'),
   /** A new name: the sound marker says it back. */
   rename:(name:string)=>{
-   const before=latest.current.name;dispatch({type:'rename',name});
+   const before=latest.current.name;
+   dispatch({type:'rename',name});
    const after=normalizeSoundName(name,latest.current.source?.label??'');
    if(after!==before)setHint({text:birthCopy.bubble.renamed(after),origin:'preset',key:`rename:${after}`});
   },
   confirmCard:()=>{
-   if(latest.current.source&&missingProvenance(latest.current.source).length){notify('info',birthCopy.needProvenance,'info');return;}
+   // The card is confirmed only once its source can be traced.
+   if(latest.current.source&&missingProvenance(latest.current.source).length){
+    notify('info',birthCopy.needProvenance,'info');
+    return;
+   }
    dispatch({type:'card',confirmed:true});
   },
  };

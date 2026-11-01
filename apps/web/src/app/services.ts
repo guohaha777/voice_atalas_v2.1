@@ -66,7 +66,12 @@ if(typeof window!=='undefined')void teachingMusic.attach(indexedDbStore('wanwu-t
 export const services:Services={
  inspirationCatalog:bundledInspirationCatalog,
  backgroundLibrary:localBackgroundLibrary,
- ...cloudAdapters(cloud,{composeRepository:localComposeRepository,soundWorldRepository:localSoundWorldRepository,shelfRepository:localShelfRepository,soundLibrary:bundledSoundLibrary}),
+ ...cloudAdapters(cloud,{
+  composeRepository:localComposeRepository,
+  soundWorldRepository:localSoundWorldRepository,
+  shelfRepository:localShelfRepository,
+  soundLibrary:bundledSoundLibrary,
+ }),
  // Real cookie adapter. A missing/disabled API reports unavailable, never a fake login.
  account,cloud,
  // Guest AI from the server: mood words, AI background (AI notes now; AI audio once the music model is connected) and

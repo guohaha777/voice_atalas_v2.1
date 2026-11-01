@@ -36,7 +36,8 @@ const LAB_ENABLED=import.meta.env.DEV||import.meta.env.VITE_ENABLE_LAB==='1';
 const LabPage=LAB_ENABLED?lazy(()=>import('../pages/lab/LabPage').then(module=>({default:module.LabPage}))):null;
 const PromptLabPage=LAB_ENABLED?lazy(()=>import('../pages/lab/PromptLabPage').then(module=>({default:module.PromptLabPage}))):null;
 const MusicLabPage=LAB_ENABLED?lazy(()=>import('../pages/lab/MusicLabPage').then(module=>({default:module.MusicLabPage}))):null;
-// Prefetch 声音诞生 before the home → birth crossfade; fetch its code once the home page and its opening have had the network to themselves.
+// Prefetch 声音诞生 before the home → birth crossfade; fetch its code once the home page and its opening have had the
+// network to themselves.
 const birthPrefetchDelayMs=3000;
 /** The next step's code waits a little longer than the current page's own artwork and sounds. */
 const nextPagePrefetchDelayMs=1500;
@@ -45,13 +46,19 @@ const nextPagePrefetchDelayMs=1500;
 const routeFor=(path:string):Route=>parseRoute(path);
 
 export function App(){
- return <AccountProvider client={services.account}><CloudProvider workspace={services.cloud}><AppContent/></CloudProvider></AccountProvider>;
+ return <AccountProvider client={services.account}>
+  <CloudProvider workspace={services.cloud}>
+   <AppContent/>
+  </CloudProvider>
+ </AccountProvider>;
 }
 function AppContent(){
  const cloud=useCloud();
  const [opened,navigate]=useRoute();
  // Without the lab in this build, its address is just the home page.
- const route:Route=(opened.page==='lab'||opened.page==='lab-prompts'||opened.page==='lab-music')&&!LAB_ENABLED?{page:'home'}:opened;
+ const route:Route=(opened.page==='lab'||opened.page==='lab-prompts'||opened.page==='lab-music')&&!LAB_ENABLED
+  ?{page:'home'}
+  :opened;
  const transition=useHomeBirthTransition(route.page,()=>navigate({page:'sound-birth'}));
  const [pending,setPending]=useState<HomeDestination|null>(null);
  /** 返回声音诞生 from a work page goes on editing the last sound; from home, or 做一个新声音 (`/create?new`), starts fresh. */
@@ -63,12 +70,20 @@ function AppContent(){
  };
  // Keys exist only in React memory for this page session; never write them to browser storage.
  const [modelConfig,setModelConfig]=useState(emptyModelConfig);
- useEffect(()=>{setModelConfig(emptyModelConfig);},[cloud.accountId]);
+ useEffect(()=>{
+  setModelConfig(emptyModelConfig);
+ },[cloud.accountId]);
  // The guest AI client reads the applied settings when it sends; it holds them in memory only, like this state.
- useEffect(()=>{visitorModels.set(modelConfig);},[modelConfig]);
- useEffect(()=>{if(route.page==='home')return prefetchWhenIdle(loadSoundBirth,birthPrefetchDelayMs);},[route.page]);
+ useEffect(()=>{
+  visitorModels.set(modelConfig);
+ },[modelConfig]);
+ useEffect(()=>{
+  if(route.page==='home')return prefetchWhenIdle(loadSoundBirth,birthPrefetchDelayMs);
+ },[route.page]);
  // 万物声场 follows 声音诞生, so warm its code while the child shapes a sound.
- useEffect(()=>{if(route.page==='sound-birth')return prefetchWhenIdle(loadSoundWorld,nextPagePrefetchDelayMs);},[route.page]);
+ useEffect(()=>{
+  if(route.page==='sound-birth')return prefetchWhenIdle(loadSoundWorld,nextPagePrefetchDelayMs);
+ },[route.page]);
  // 万物成曲 follows 万物声场; the shelf is one tap from 万物成曲.
  useEffect(()=>{
   if(route.page==='sound-world')return prefetchWhenIdle(loadCompose,nextPagePrefetchDelayMs);
@@ -83,27 +98,54 @@ function AppContent(){
    if(workSession.hasUnit(draft.id))workSession.updateUnit(draft,source);
    else if(workSession.addUnit(draft,source).status==='full')return {status:'full'};
   }else if(!workSession.unitCount())return {status:'empty'};
-  if(then==='another')return {status:'kept',nextMarkerIndex:workSession.nextMarkerIndex(),count:workSession.unitCount()};
+  if(then==='another')
+   return {status:'kept',nextMarkerIndex:workSession.nextMarkerIndex(),count:workSession.unitCount()};
   navigate({page:'sound-world'});
   return {status:'opened'};
  };
  const renderPage=()=>{
-  if(route.page==='share')return <Suspense fallback={<PageFallback current={null}/>}><PublicSharePage token={route.token}/></Suspense>;
-  if(route.page==='admin')return <Suspense fallback={<PageFallback current={null}/>}><AdminPage onHome={()=>navigate({page:'home'})}/></Suspense>;
-  if(route.page==='reset-password')return <Suspense fallback={<PageFallback current={null}/>}><ResetPasswordPage onHome={()=>navigate({page:'home'})}/></Suspense>;
+  if(route.page==='share')return <Suspense fallback={<PageFallback current={null}/>}>
+   <PublicSharePage token={route.token}/>
+  </Suspense>;
+  if(route.page==='admin')return <Suspense fallback={<PageFallback current={null}/>}>
+   <AdminPage onHome={()=>navigate({page:'home'})}/>
+  </Suspense>;
+  if(route.page==='reset-password')return <Suspense fallback={<PageFallback current={null}/>}>
+   <ResetPasswordPage onHome={()=>navigate({page:'home'})}/>
+  </Suspense>;
   if(route.page==='sound-birth')return <Suspense fallback={<PageFallback current="birth"/>}>
-   <HomeBirthDestination onReady={transition.ready}><SoundBirthPage key={cloud.epoch} entryMotion={transition.phase==='idle'} markerIndex={workSession.nextMarkerIndex()} editing={birthEditing?workSession.lastMade():null} onNavigate={go} onFinish={finishSound}/></HomeBirthDestination>
+   <HomeBirthDestination onReady={transition.ready}>
+    <SoundBirthPage
+     key={cloud.epoch}
+     entryMotion={transition.phase==='idle'}
+     markerIndex={workSession.nextMarkerIndex()}
+     editing={birthEditing?workSession.lastMade():null}
+     onNavigate={go}
+     onFinish={finishSound}/>
+   </HomeBirthDestination>
   </Suspense>;
   // 万物声场 → 万物成曲: the arrangement is already kept in the current work by the field's repository.
   if(route.page==='sound-world')return <Suspense fallback={<PageFallback current="world"/>}>
-   <SoundWorldPage key={cloud.epoch} onNavigate={go} onFinish={()=>{navigate({page:'compose'});return {status:'opened'};}}/>
+   <SoundWorldPage
+    key={cloud.epoch}
+    onNavigate={go}
+    onFinish={()=>{
+     navigate({page:'compose'});
+     return {status:'opened'};
+    }}/>
   </Suspense>;
   if(route.page==='compose')return <Suspense fallback={<PageFallback current="compose"/>}>
    <ComposePage key={cloud.epoch} onNavigate={go}/>
   </Suspense>;
-  if(route.page==='lab'&&LabPage)return <Suspense fallback={<PageFallback current={null}/>}><LabPage/></Suspense>;
-  if(route.page==='lab-prompts'&&PromptLabPage)return <Suspense fallback={<PageFallback current={null}/>}><PromptLabPage/></Suspense>;
-  if(route.page==='lab-music'&&MusicLabPage)return <Suspense fallback={<PageFallback current={null}/>}><MusicLabPage/></Suspense>;
+  if(route.page==='lab'&&LabPage)return <Suspense fallback={<PageFallback current={null}/>}>
+   <LabPage/>
+  </Suspense>;
+  if(route.page==='lab-prompts'&&PromptLabPage)return <Suspense fallback={<PageFallback current={null}/>}>
+   <PromptLabPage/>
+  </Suspense>;
+  if(route.page==='lab-music'&&MusicLabPage)return <Suspense fallback={<PageFallback current={null}/>}>
+   <MusicLabPage/>
+  </Suspense>;
   if(route.page==='works')return <Suspense fallback={<PageFallback current={null}/>}>
    <WorksPage key={cloud.epoch} onNavigate={go}/>
   </Suspense>;
@@ -113,15 +155,29 @@ function AppContent(){
  const showHome=route.page==='home'||(route.page==='sound-birth'&&crossfading);
  return <>
   {route.page!=='share'&&route.page!=='reset-password'&&<CloudToolbar onNavigate={go}/>}
-  <HomeBirthTransition phase={transition.phase} overlay={route.page!=='home'} scrollOffset={transition.scrollOffset}
-   home={showHome&&<HomePage onNavigate={page=>{
-    if(page==='create'){setBirthEditing(false);void loadSoundBirth().catch(()=>{});transition.start();}
-    else if(page==='shelf')navigate({page:'works'});
-    else setPending(page);
-   }} suspended={pending!==null} departing={crossfading}/>}
+  <HomeBirthTransition
+   phase={transition.phase}
+   overlay={route.page!=='home'}
+   scrollOffset={transition.scrollOffset}
+   home={showHome&&<HomePage
+    onNavigate={page=>{
+     if(page==='create'){
+      setBirthEditing(false);
+      void loadSoundBirth().catch(()=>{});
+      transition.start();
+     }
+     else if(page==='shelf')navigate({page:'works'});
+     else setPending(page);
+    }}
+    suspended={pending!==null}
+    departing={crossfading}/>}
   >{renderPage()}</HomeBirthTransition>
-  {route.page==='home'&&(pending==='login'?<AccountDialog onClose={()=>setPending(null)}/>:pending==='api'?<ModelConfigDialog config={modelConfig} onApply={setModelConfig} onClose={()=>setPending(null)}/>:pending&&<NoticeDialog title="这里还在准备中" onClose={()=>setPending(null)}>
-   <p>先点点小鸟、青蛙，听听森林里的声音吧。</p>
-  </NoticeDialog>)}
+  {route.page==='home'&&(pending==='login'
+   ?<AccountDialog onClose={()=>setPending(null)}/>
+   :pending==='api'
+    ?<ModelConfigDialog config={modelConfig} onApply={setModelConfig} onClose={()=>setPending(null)}/>
+    :pending&&<NoticeDialog title="这里还在准备中" onClose={()=>setPending(null)}>
+     <p>先点点小鸟、青蛙，听听森林里的声音吧。</p>
+    </NoticeDialog>)}
  </>;
 }

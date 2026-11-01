@@ -20,32 +20,49 @@ import type {ComposeNoticeKey} from './composeState';
 import {scoreLayout} from './scoreLayout';
 import {usePiecePlayback} from './usePiecePlayback';
 import {useTalk} from './useTalk';
+import * as choice from './backgroundChoice';
+import type {Move} from './backgroundChoice';
 
-/** What the background borrows while the 课本 switch is off. */
-const NO_SONG:Inspiration={kind:'none'};
-
-/** 万物成曲: listen to the work as a piece, set its length, inspiration and background, then put it on the shelf.
- *  The playback clock lives in usePiecePlayback and the background layer (shared with 万物声场) in useBackgroundLayer. */
-export function useCompose(repository:ComposeRepository=services.composeRepository,backgrounds:BackgroundLibrary=services.backgroundLibrary,inspirations:InspirationCatalog=services.inspirationCatalog,generator:BackgroundGenerator=services.backgroundGenerator,
- polisher:TalkPolisher=services.talkPolisher,teaching:TeachingMusicService=services.teachingMusic){
+/**
+ * 万物成曲: listen to the work as a piece, set its length, inspiration and background, then put it on the shelf.
+ * The playback clock lives in usePiecePlayback and the background layer (shared with 万物声场) in useBackgroundLayer.
+ */
+export function useCompose(
+ repository:ComposeRepository=services.composeRepository,
+ backgrounds:BackgroundLibrary=services.backgroundLibrary,
+ inspirations:InspirationCatalog=services.inspirationCatalog,
+ generator:BackgroundGenerator=services.backgroundGenerator,
+ polisher:TalkPolisher=services.talkPolisher,
+ teaching:TeachingMusicService=services.teachingMusic,
+){
  const [state,dispatch]=useReducer(composeReducer,initialCompose);
  const [shelfCount,setShelfCount]=useState(0);
  const [instruments,setInstruments]=useState<readonly Instrument[]>([]);
  const [comingInstruments,setComing]=useState<readonly string[]>([]);
  /** The 课本灵感 switch, shared with 万物声场 (there it plays the song's beat): on = the chosen song's background plays. */
  const [songSwitch,setSwitchState]=useState(textbookSwitch.get);
- const switchSong=(on:boolean)=>{setSwitchState(on);textbookSwitch.set(on);};
- const latest=useRef(state);latest.current=state;
- const notify=useCallback((key:ComposeNoticeKey,tone:'info'|'error'='error')=>dispatch({type:'notice',notice:{tone,key}}),[]);
+ const switchSong=(on:boolean)=>{
+  setSwitchState(on);
+  textbookSwitch.set(on);
+ };
+ const latest=useRef(state);
+ latest.current=state;
+ const notify=useCallback(
+  (key:ComposeNoticeKey,tone:'info'|'error'='error')=>dispatch({type:'notice',notice:{tone,key}}),
+  []);
 
  useEffect(()=>{
   let live=true;
   void Promise.all([repository.load(),backgrounds.list()]).then(([current,library])=>{
    if(!live)return;
-   setInstruments(library.instruments);setComing(library.coming);setShelfCount(current.shelfCount);
+   setInstruments(library.instruments);
+   setComing(library.coming);
+   setShelfCount(current.shelfCount);
    dispatch({type:'loaded',arrangement:current.arrangement,settings:current.settings,shelved:current.shelved});
   });
-  return()=>{live=false;};
+  return()=>{
+   live=false;
+  };
  },[repository,backgrounds]);
 
  // Length changes go back to the same work 万物声场 edits; an untouched example is not stored.
@@ -53,15 +70,18 @@ export function useCompose(repository:ComposeRepository=services.composeReposito
   const arrangement=state.arrangement;
   if(arrangement?.origin==='child')void repository.saveArrangement(arrangement);
  },[state.arrangement,repository]);
- useEffect(()=>{if(latest.current.arrangement)void repository.saveSettings(state.settings);},[state.settings,repository]);
+ useEffect(()=>{
+  if(latest.current.arrangement)void repository.saveSettings(state.settings);
+ },[state.settings,repository]);
 
  // ----- derived: score, background, talk -----
  const layout=useMemo(()=>state.arrangement?scoreLayout(state.arrangement):null,[state.arrangement]);
  // 课本灵感: the same songs as 万物声场 (shared/inspiration).
  const {entries,tracks,teachingItems,analyseTeaching,teachingOpen}=useInspirationCatalog(inspirations,teaching);
- /** The chosen song is used only while the 课本 switch is on: what is heard (and kept on the shelf) follows that. */
- const songOn=songSwitch&&state.settings.inspiration.kind!=='none';
- const heard=useMemo(()=>songOn?state.settings:{...state.settings,inspiration:NO_SONG},[songOn,state.settings]);
+ // 背景放谁: every rule is in ./backgroundChoice.ts (numbered as in 成曲规则清单); this hook only carries them out.
+ /** 规则 1–2: the chosen song is used only while the 课本 switch is on; what is heard (and kept) follows that. */
+ const songOn=choice.songInUse(songSwitch,state.settings.inspiration);
+ const heard=useMemo(()=>choice.heardSettings(state.settings,songOn),[songOn,state.settings]);
  // Teaching music is borrowed like a song once its card is made.
  const music=useBackgroundLayer(heard,instruments,tracks);
  /** What the background is made of right now (mood colour, borrowed rhythm), for the card. */
@@ -70,11 +90,18 @@ export function useCompose(repository:ComposeRepository=services.composeReposito
  [state.arrangement,music.key]);
  /** 音乐小发现 and 课本讲解: corpus sentences at once, an AI rewording only where it passes the checks. */
  const talk=useTalk(state.arrangement,music.track,heard.inspiration,backgroundPlan,polisher);
- /** AI background on top of the local one: made from the chosen song (switch on or not), used while the song is not. */
- const ai=useAiBackground(state.arrangement,state.settings,tracks,music,generator);
- /** Song or AI, one or the other: the song's background plays while the switch is on and the AI one is not. */
- const songPlays=songOn&&!ai.using;
- const played={gain:music.gain,key:`${music.key}|${ai.source}`,buffer:(arrangement:Arrangement)=>ai.buffer(arrangement)??music.buffer(arrangement)};
+ /** 规则 3: the AI background, made from the chosen song (switch on or not). */
+ const ai=useAiBackground(state.arrangement,choice.aiBriefSettings(state.settings),tracks,music,generator);
+ /** 规则 5: song or AI, one or the other. */
+ const songPlays=choice.songPlays(songOn,ai.using);
+ const played={
+  gain:music.gain,
+  key:`${music.key}|${ai.source}`,
+  // 规则 4: the AI background while it is used, else the local one.
+  buffer:(arrangement:Arrangement)=>choice.playedBackground(ai.using)==='ai'
+   ?ai.buffer(arrangement)??music.buffer(arrangement)
+   :music.buffer(arrangement),
+ };
  const playback=usePiecePlayback(latest,notify,played,layout);
 
  // ----- settings -----
@@ -84,21 +111,31 @@ export function useCompose(repository:ComposeRepository=services.composeReposito
   if(work&&spanHolds(work,spanSeconds))playback.reset();
   dispatch({type:'span',spanSeconds,now:new Date()});
  };
- /** Back to the chosen song: the 课本 switch goes on and the AI background steps aside. */
- const playSong=()=>{switchSong(true);ai.useLocal();};
- /** A song chosen plays the song's background at once (AI or song: one or the other); letting it go turns the switch off
-  *  and the AI background (when this piece has one) plays again. */
+ /** Carries out one step of the rules: the 课本 switch first, then the AI background, then the talk. */
+ const apply=(move:Move)=>{
+  if(move.song!==undefined)switchSong(move.song);
+  if(move.ai==='local')ai.useLocal();
+  else if(move.ai==='prefer-ai')ai.preferAi();
+  else if(move.ai==='toggle')ai.toggle();
+  else if(move.ai==='make')makeAi(false);
+  if(move.talk==='ensure')talk.ensure();
+ };
+ /** Whether a song is chosen right now (read at the moment of the tap). */
+ const chosen=()=>latest.current.settings.inspiration.kind!=='none';
+ /** 规则 7: choosing or letting go of a song in 课本灵感. */
  const setInspiration=(next:Inspiration)=>{
-  if(next.kind!=='none')playSong();else{switchSong(false);ai.preferAi();}
+  apply(choice.chooseInspiration(next));
   dispatch({type:'inspiration',inspiration:next});
  };
- /** Closing 课本灵感 with a song chosen: the chosen song is the one in use (正在用), so it plays. */
- const applyChosenSong=()=>{if(latest.current.settings.inspiration.kind!=='none'&&!songPlays)playSong();};
- /** The 课本 switch: on = the chosen song plays (a song must be chosen first: false asks the page to open 课本灵感);
-  *  off = the AI background plays when this piece has one. */
+ /** 规则 8: closing 课本灵感. */
+ const applyChosenSong=()=>{
+  apply(choice.closeInspiration(chosen(),songPlays));
+ };
+ /** 规则 9: the 课本 switch; false asks the page to open 课本灵感 (no song chosen yet). */
  const setSongSwitch=(on:boolean)=>{
-  if(on&&latest.current.settings.inspiration.kind==='none')return false;
-  if(on)playSong();else{switchSong(false);ai.preferAi();}
+  const move=choice.tapSongSwitch(on,chosen());
+  if(move==='pick-song')return false;
+  apply(move);
   dispatch({type:'said',lastAction:on?'inspiration':'inspiration-none'});
   return true;
  };
@@ -107,19 +144,26 @@ export function useCompose(repository:ComposeRepository=services.composeReposito
   dispatch({type:'said',lastAction:'ai-making'});
   // The explanation changes only with music that was really made (a failed ask leaves both as they were).
   // An AI background that plays takes the song's place: the 课本 switch goes off.
-  ai.generate(ok=>{dispatch({type:'said',lastAction:ok?'ai-background':'ai-failed'});if(ok){switchSong(false);if(renewTalk)talk.renew();else talk.ensure();}});
+  ai.generate(ok=>{
+   dispatch({type:'said',lastAction:ok?'ai-background':'ai-failed'});
+   // 规则 11.
+   apply(choice.aiMade(ok));
+   if(ok){
+    if(renewTalk)talk.renew();
+    else talk.ensure();
+   }
+  });
  };
- // Opening the page, once the piece and what this device kept are there: with a song chosen, the song's background plays
- // (song or AI, one or the other) and nothing is asked; with the background switched off nothing is asked either;
- // otherwise one AI background and its explanation are made — unless this piece already has them.
+ // 规则 12: opening the page, once the piece and what this device kept are there.
  const opened=useRef(false);
  useEffect(()=>{
   if(opened.current||!state.arrangement?.events.length||!ai.kept)return;
   opened.current=true;
-  const {background}=state.settings;
-  if(songOn){ai.useLocal();return;}
-  if(!background.enabled)return;
-  if(ai.state.status==='idle')makeAi(false);else if(ai.state.status==='ready')talk.ensure();
+  apply(choice.openPage({
+   inUse:songOn,
+   backgroundEnabled:state.settings.background.enabled,
+   aiStatus:ai.state.status,
+  }));
  // Once, when the piece and the kept cache are there.
  },[state.arrangement,ai.kept]);
 
@@ -127,54 +171,107 @@ export function useCompose(repository:ComposeRepository=services.composeReposito
  /** Whether this piece can go on the shelf; says why not (empty, or the untouched example). */
  const canSave=()=>{
   const arrangement=latest.current.arrangement;
-  if(!arrangement?.events.length){notify('need-event','info');return false;}
-  if(arrangement.origin==='example'){notify('example-save','info');return false;}
+  if(!arrangement?.events.length){
+   notify('need-event','info');
+   return false;
+  }
+  if(arrangement.origin==='example'){
+   notify('example-save','info');
+   return false;
+  }
   return true;
  };
  const saveWork=async(title:string)=>{
   const current=latest.current;
   if(!canSave())return false;
   // What is kept is what is heard: a song with the 课本 switch off is not part of it.
-  const work=shelfEntry({...current,settings:heard},title,new Date(),{background:ai.source,prompt:ai.prompt,rules:{...RULE_VERSIONS}});
+  const work=shelfEntry(
+   {...current,settings:heard},
+   title,
+   new Date(),
+   {background:ai.source,prompt:ai.prompt,rules:{...RULE_VERSIONS}});
   if(!work)return false;
   const result=await repository.saveWork(work);
-  if(result.status==='failed'){notify('save-failed');return false;}
+  if(result.status==='failed'){
+   notify('save-failed');
+   return false;
+  }
   if(!current.shelved)setShelfCount(count=>count+1);
   dispatch({type:'saved',work});
   return true;
  };
- const share=async()=>{const result=await repository.share(latest.current.arrangement?.id??'');if(result.status==='unavailable')notify('share-off','info');};
- const startNew=async()=>{playback.pause();try{await repository.startNew();return true;}catch{notify('save-failed');return false;}};
+ const share=async()=>{
+  const result=await repository.share(latest.current.arrangement?.id??'');
+  if(result.status==='unavailable')notify('share-off','info');
+ };
+ const startNew=async()=>{
+  playback.pause();
+  try{
+   await repository.startNew();
+   return true;
+  }catch{
+   notify('save-failed');
+   return false;
+  }
+ };
 
  return {
-  state,layout,instruments,comingInstruments,chosen:music.chosen,parts:music.parts,entries,entry:music.track,teachingOpen,teachingItems,analyseTeaching,backgroundPlan,
-  playing:playback.playing,preparing:playback.preparing,ended:playback.ended,
+  state,
+  layout,
+  instruments,
+  comingInstruments,
+  chosen:music.chosen,
+  parts:music.parts,
+  entries,
+  entry:music.track,
+  teachingOpen,
+  teachingItems,
+  analyseTeaching,
+  backgroundPlan,
+  playing:playback.playing,
+  preparing:playback.preparing,
+  ended:playback.ended,
   /** The one playback time (seconds) the playhead, progress bar and highlights read. */
-  now:playback.now,total:playback.total,sounding:playback.sounding,
+  now:playback.now,
+  total:playback.total,
+  sounding:playback.sounding,
   // On the shelf only if the background kept is the one saved, too.
-  shelved:isShelved({...state,settings:heard})&&state.shelved?.rendering.background===ai.source,shelfCount,
-  ai:ai.state,aiSource:ai.source,usingAi:ai.using,
+  shelved:choice.onShelf(isShelved({...state,settings:heard}),state.shelved?.rendering.background,ai.source),
+  shelfCount,
+  ai:ai.state,
+  aiSource:ai.source,
+  usingAi:ai.using,
   /** The 课本 switch (shared with 万物声场), and whether the chosen song's background is what plays now. */
-  songSwitch:songSwitch&&!ai.using,songPlays,setSongSwitch,applyChosenSong,
-  togglePlay:playback.togglePlay,restart:playback.restart,playFrom:playback.playFrom,scrubTo:playback.scrubTo,endScrub:playback.endScrub,
-  setSpan,setInspiration,talk,
+  songSwitch:choice.shownSongSwitch(songSwitch,ai.using),
+  songPlays,
+  setSongSwitch,
+  applyChosenSong,
+  togglePlay:playback.togglePlay,
+  restart:playback.restart,
+  playFrom:playback.playFrom,
+  scrubTo:playback.scrubTo,
+  endScrub:playback.endScrub,
+  setSpan,
+  setInspiration,
+  talk,
   /** A shape: the squirrel invites the child to press 播放 and find what changed. */
   setBackgroundEnabled:(enabled:boolean)=>dispatch({type:'background-enabled',enabled}),
   setBackgroundVolume:(volume:number)=>dispatch({type:'background-volume',volume}),
   toggleInstrument:(id:string)=>dispatch({type:'instrument',id}),
   showComing:()=>dispatch({type:'said',lastAction:'instrument-coming'}),
-  /** The AI chip: switch between AI and local when an AI background is ready; otherwise the squirrel says why not. */
-  /** The AI chip: back and forth when this piece has an AI background; otherwise one is made and played. */
-  /** Turning AI on turns the 课本 switch off; turning it off goes back to the chosen song (when there is one). */
+  /** 规则 10: the AI chip (making one first when this piece has none; the squirrel then says how it went). */
   tapAi:()=>{
-   if(ai.state.status!=='ready')return makeAi(false);
-   if(ai.using){if(latest.current.settings.inspiration.kind!=='none')playSong();else ai.toggle();}
-   else{switchSong(false);ai.toggle();}
+   const move=choice.tapAi(ai.state.status==='ready',ai.using,chosen());
+   apply(move);
+   if(move.ai==='make')return;
    dispatch({type:'said',lastAction:'ai-background'});
   },
   /** 换一首: new AI music and its explanation; the squirrel says how it went. */
   makeAi:()=>makeAi(true),
-  canSave,saveWork,share,startNew,
+  canSave,
+  saveWork,
+  share,
+  startNew,
   clearNotice:()=>dispatch({type:'notice',notice:null}),
  };
 }

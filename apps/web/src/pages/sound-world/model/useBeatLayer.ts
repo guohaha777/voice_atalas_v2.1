@@ -17,11 +17,14 @@ export function useBeatLayer(track:TextbookTrack|null,on:boolean){
  const renders=useRef(new Map<string,Promise<AudioBuffer>>());
  const buffer=(arrangement:Arrangement)=>{
   if(!track)return Promise.reject(new Error('no song'));
-  const seconds=pieceSeconds(arrangement),key=`${track.id}|${track.tempoBpm}|${track.meter}|${track.pulse??''}|${seconds}`,cache=renders.current;
+  const seconds=pieceSeconds(arrangement);
+  const key=`${track.id}|${track.tempoBpm}|${track.meter}|${track.pulse??''}|${seconds}`;
+  const cache=renders.current;
   let render=cache.get(key);
   if(!render){
    render=renderBeat(songBeat(track,seconds));
-   cache.set(key,render);render.catch(()=>cache.delete(key));
+   cache.set(key,render);
+   render.catch(()=>cache.delete(key));
    while(cache.size>KEEP)cache.delete(cache.keys().next().value!);
   }
   return render;

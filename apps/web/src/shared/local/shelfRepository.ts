@@ -5,8 +5,12 @@ import {workSession} from '../creation/workSession';
 import {workShelf} from '../creation/workShelf';
 
 const subscribeBoth=(listener:()=>void)=>{
- const offShelf=workShelf.subscribe(listener),offSession=workSession.subscribe(listener);
- return()=>{offShelf();offSession();};
+ const offShelf=workShelf.subscribe(listener);
+ const offSession=workSession.subscribe(listener);
+ return()=>{
+  offShelf();
+  offSession();
+ };
 };
 
 export const localShelfRepository:ShelfRepository={
@@ -19,9 +23,13 @@ export const localShelfRepository:ShelfRepository={
   const current=workSession.current();
   if(current?.origin!=='child'||!current.events.length)return false;
   const shelved=workShelf.get(current.id);
-  return !shelved||shelved.arrangement.updatedAt!==current.updatedAt||JSON.stringify(shelved.settings)!==JSON.stringify(workSession.settings());
+  return !shelved
+   ||shelved.arrangement.updatedAt!==current.updatedAt
+   ||JSON.stringify(shelved.settings)!==JSON.stringify(workSession.settings());
  },
- async open(work){workSession.open(work);},
+ async open(work){
+  workSession.open(work);
+ },
  async remove(id){return workShelf.remove(id);},
  async rename(id,title){return workShelf.rename(id,title);},
 };

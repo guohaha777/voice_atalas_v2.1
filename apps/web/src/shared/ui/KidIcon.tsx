@@ -1,5 +1,6 @@
 // Playful icon set for the work pages: chunky rounded strokes, a soft inner tint and a small white shine.
-// The home page keeps its fine-line Icon set; these are for 声音诞生 and the steps after it.
+// The home page keeps its fine-line Icon set; these are for 声音诞生 and the steps after it. The shape table keeps
+// each icon's drawing together (one or two lines of SVG per layer): it is drawing data.
 import type {ReactNode} from 'react';
 
 export type KidIconName='mic'|'upload'|'library'|'camera'|'pitch'|'duration'|'contour'|'intensity'|'pattern'
@@ -9,13 +10,26 @@ export type KidIconName='mic'|'upload'|'library'|'camera'|'pitch'|'duration'|'co
 const tint={fill:'currentColor',fillOpacity:.24} as const;
 const shine={fill:'none',stroke:'#fff',strokeOpacity:.9,strokeWidth:2} as const;
 const BLUSH='#ff9fb1';
-/** A tiny friendly face: two dot eyes, a smile and optional blush — the detail that makes the set feel like a children's app. */
+/**
+ * A tiny friendly face: two dot eyes, a smile and optional blush — the detail that makes the set feel like a children's
+ * app.
+ */
 function face(cx:number,cy:number,size=1,blush=true){
- const e=2.4*size,r=.95*size;
+ const e=2.4*size;
+ const r=.95*size;
  return <g stroke="none">
-  <circle cx={cx-e} cy={cy} r={r} fill="currentColor"/><circle cx={cx+e} cy={cy} r={r} fill="currentColor"/>
-  <path d={`M${cx-1.3*size} ${cy+1.7*size}q${1.3*size} ${1.2*size} ${2.6*size} 0`} fill="none" stroke="currentColor" strokeWidth={1.3*size} strokeLinecap="round"/>
-  {blush&&<><circle cx={cx-e-1.5*size} cy={cy+1.6*size} r={.95*size} fill={BLUSH}/><circle cx={cx+e+1.5*size} cy={cy+1.6*size} r={.95*size} fill={BLUSH}/></>}
+  <circle cx={cx-e} cy={cy} r={r} fill="currentColor"/>
+  <circle cx={cx+e} cy={cy} r={r} fill="currentColor"/>
+  <path
+   d={`M${cx-1.3*size} ${cy+1.7*size}q${1.3*size} ${1.2*size} ${2.6*size} 0`}
+   fill="none"
+   stroke="currentColor"
+   strokeWidth={1.3*size}
+   strokeLinecap="round"/>
+  {blush&&<>
+   <circle cx={cx-e-1.5*size} cy={cy+1.6*size} r={.95*size} fill={BLUSH}/>
+   <circle cx={cx+e+1.5*size} cy={cy+1.6*size} r={.95*size} fill={BLUSH}/>
+  </>}
  </g>;
 }
 /** Four-point sparkle. */

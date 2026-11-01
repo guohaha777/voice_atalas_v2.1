@@ -13,17 +13,30 @@ export function prefetchWhenIdle(load:()=>Promise<unknown>,delayMs:number):()=>v
  const connection=(navigator as Navigator&{connection?:Connection}).connection;
  if(connection?.saveData||/2g/.test(connection?.effectiveType??''))return ()=>{};
  let cancelled=false,timer=0,idle=0;
- const fetchNow=()=>{if(!cancelled)void load().catch(()=>{});};
- const whenIdle=()=>{idle=typeof requestIdleCallback==='function'?requestIdleCallback(fetchNow,{timeout:2000}):window.setTimeout(fetchNow,0);};
+ const fetchNow=()=>{
+  if(!cancelled)void load().catch(()=>{});
+ };
+ // Safari has no requestIdleCallback: a zero timeout instead.
+ const whenIdle=()=>{
+  idle=typeof requestIdleCallback==='function'
+   ?requestIdleCallback(fetchNow,{timeout:2000})
+   :window.setTimeout(fetchNow,0);
+ };
  const whenImagesSettle=(deadline:number)=>{
   if(cancelled)return;
   if(imagesSettled()||Date.now()>deadline)whenIdle();
   else timer=window.setTimeout(()=>whenImagesSettle(deadline),400);
  };
- const afterLoad=()=>{timer=window.setTimeout(()=>whenImagesSettle(Date.now()+IMAGE_WAIT_MS),delayMs);};
- if(document.readyState==='complete')afterLoad();else window.addEventListener('load',afterLoad,{once:true});
+ const afterLoad=()=>{
+  timer=window.setTimeout(()=>whenImagesSettle(Date.now()+IMAGE_WAIT_MS),delayMs);
+ };
+ if(document.readyState==='complete')afterLoad();
+ else window.addEventListener('load',afterLoad,{once:true});
  return ()=>{
-  cancelled=true;clearTimeout(timer);window.removeEventListener('load',afterLoad);
-  if(typeof cancelIdleCallback==='function')cancelIdleCallback(idle);clearTimeout(idle);
+  cancelled=true;
+  clearTimeout(timer);
+  window.removeEventListener('load',afterLoad);
+  if(typeof cancelIdleCallback==='function')cancelIdleCallback(idle);
+  clearTimeout(idle);
  };
 }

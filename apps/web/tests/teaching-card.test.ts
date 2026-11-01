@@ -26,7 +26,9 @@ test('the excerpt is a small WAV: RIFF header, 11 kHz mono 16-bit, the chosen se
  const base64=excerptWav(samples,rate,10,40),bytes=Uint8Array.from(atob(base64),c=>c.charCodeAt(0)),view=new DataView(bytes.buffer);
  assert.ok(base64.startsWith('UklGR'),'the server sends it as wav');
  assert.equal(String.fromCharCode(...bytes.subarray(8,12)),'WAVE');
- assert.equal(view.getUint16(22,true),1);assert.equal(view.getUint32(24,true),11025);assert.equal(view.getUint16(34,true),16);
+ assert.equal(view.getUint16(22,true),1);
+ assert.equal(view.getUint32(24,true),11025);
+ assert.equal(view.getUint16(34,true),16);
  assert.equal(view.getUint32(40,true),30*11025*2);
  assert.ok(base64.length<1_200_000,`fits the server limit (${base64.length})`);
  assert.deepEqual(monoOf({numberOfChannels:2,length:2,getChannelData:c=>new Float32Array(c?[1,1]:[0,-1])}),new Float32Array([.5,0]));
@@ -35,7 +37,8 @@ test('the excerpt is a small WAV: RIFF header, 11 kHz mono 16-bit, the chosen se
 test('the request is the file name, the numbers and the candidates — a brief the server accepts',()=>{
  const brief=featuresBrief('  法国号  ',m,30);
  assert.ok(isTextbookFeaturesBrief(brief));
- assert.equal(brief.title,'法国号');assert.deepEqual(brief.fallbackCell,[.75,.25,1,1]);
+ assert.equal(brief.title,'法国号');
+ assert.deepEqual(brief.fallbackCell,[.75,.25,1,1]);
  assert.equal(featuresBrief('',m,30).title,'教学音乐');
 });
 
@@ -43,7 +46,10 @@ test('a checked reply makes the card; anything else gives the program\'s card, a
  const ai=cardFrom(music,m,reply);
  assert.ok(isTextbookTrack(ai.track));
  assert.deepEqual([ai.madeBy,ai.partly,ai.track.rhythmCell,ai.track.meter,ai.track.childLine,ai.track.extraction.words],['audio',false,[.75,.25,1,1],3,'像法国号走路，一摇一晃','ai']);
- assert.equal(ai.teacherNote,reply.teacherNote);assert.equal(ai.track.id,music.id);assert.equal(ai.track.source,null);assert.equal(ai.track.tonic,5);
+ assert.equal(ai.teacherNote,reply.teacherNote);
+ assert.equal(ai.track.id,music.id);
+ assert.equal(ai.track.source,null);
+ assert.equal(ai.track.tonic,5);
  assert.deepEqual([cardFrom(music,m,{...reply,checked:'partly',source:'language'}).madeBy,cardFrom(music,m,{...reply,checked:'partly'}).partly],['language',true]);
  for(const answer of [null,'不知道',{...reply,meter:5},{...reply,mood:'sleepy'},{...reply,source:'other'}]){
   const program=cardFrom(music,m,answer);
@@ -59,17 +65,27 @@ test('a checked reply makes the card; anything else gives the program\'s card, a
 test('the whole card: decoded and measured here, asked within the budget; no server, a slow one or a broken file each end honestly',async()=>{
  // 40 s of plucks at 96 BPM, louder every second beat.
  const rate=22050,beat=60/96,data=new Float32Array(rate*40);
- for(let b=0;b*beat<39;b++){const start=Math.round(b*beat*rate);for(let i=0;i<rate*.2;i++)data[start+i]=data[start+i]!+(b%2?.5:1)*Math.exp(-i/rate*20)*Math.sin(2*Math.PI*523*i/rate);}
+ for(let b=0;b*beat<39;b++){
+  const start=Math.round(b*beat*rate);
+  for(let i=0;i<rate*.2;i++)data[start+i]=data[start+i]!+(b%2?.5:1)*Math.exp(-i/rate*20)*Math.sin(2*Math.PI*523*i/rate);
+ }
  const decode=async()=>({sampleRate:rate,numberOfChannels:1,length:data.length,duration:40,getChannelData:()=>data}) as unknown as AudioBuffer;
- const stages:string[]=[];let asked:{brief:unknown;audio:string}|null=null;
- const card=await makeTeachingCard(music,new ArrayBuffer(8),decode,async request=>{asked=request;return {...reply,meter:2,rhythmCell:[.5,.5,1],tempoBpm:96};},stage=>stages.push(stage));
+ const stages:string[]=[];
+ let asked:{brief:unknown;audio:string}|null=null;
+ const card=await makeTeachingCard(music,new ArrayBuffer(8),decode,async request=>{
+  asked=request;
+  return {...reply,meter:2,rhythmCell:[.5,.5,1],tempoBpm:96};
+ },stage=>stages.push(stage));
  assert.deepEqual(stages,['reading','listening']);
- assert.ok(asked&&isTextbookFeaturesBrief((asked as {brief:unknown}).brief));assert.ok((asked as unknown as {audio:string}).audio.startsWith('UklGR'));
+ assert.ok(asked&&isTextbookFeaturesBrief((asked as {brief:unknown}).brief));
+ assert.ok((asked as unknown as {audio:string}).audio.startsWith('UklGR'));
  assert.deepEqual([card.madeBy,card.track.meter,card.track.tempoBpm],['audio',2,96]);
  const offline=await makeTeachingCard(music,new ArrayBuffer(8),decode,null);
- assert.equal(offline.madeBy,'program');assert.ok(Math.abs(offline.track.tempoBpm-96)<=3);
+ assert.equal(offline.madeBy,'program');
+ assert.ok(Math.abs(offline.track.tempoBpm-96)<=3);
  // The request is cut off at what is left of the budget: the program's card, not a wait.
- let clock=0;const slow=await makeTeachingCard(music,new ArrayBuffer(8),decode,(_request,signal)=>new Promise((_resolve,reject)=>signal.addEventListener('abort',()=>reject(new Error('aborted')))),()=>{},()=>clock+=CARD_BUDGET_MS/2);
+ let clock=0;
+ const slow=await makeTeachingCard(music,new ArrayBuffer(8),decode,(_request,signal)=>new Promise((_resolve,reject)=>signal.addEventListener('abort',()=>reject(new Error('aborted')))),()=>{},()=>clock+=CARD_BUDGET_MS/2);
  assert.equal(slow.madeBy,'program');
  await assert.rejects(makeTeachingCard(music,new ArrayBuffer(8),async()=>{throw new Error('decode');},null));
 });
@@ -77,7 +93,8 @@ test('the whole card: decoded and measured here, asked within the budget; no ser
 test('built-in recordings: only names and files in the folder, nothing without a manifest',()=>{
  assert.deepEqual(builtInEntries({items:[{name:'小鸟在唱歌',file:'小鸟在唱歌.mp3'},{name:'x',file:'../secret.mp3'},{name:'',file:'a.mp3'},{name:'y',file:'a.exe'}]},'/b/'),
   [{name:'小鸟在唱歌',url:`/b/${encodeURIComponent('小鸟在唱歌.mp3')}`}]);
- assert.deepEqual(builtInEntries(null),[]);assert.deepEqual(builtInEntries({items:'no'}),[]);
+ assert.deepEqual(builtInEntries(null),[]);
+ assert.deepEqual(builtInEntries({items:'no'}),[]);
 });
 
 test('with its card, teaching music is borrowed like a song; without it, nothing yet; 万物声场\'s dialog has two tabs',()=>{
@@ -88,7 +105,8 @@ test('with its card, teaching music is borrowed like a song; without it, nothing
   units:[{id:'u1',name:'鸟鸣',markerIndex:0,sourceId:'s1',input:'example-preset',shape:{},analysis:null}],
   events:[{id:'e1',unitId:'u1',at:.1,row:0,clip:{startMs:0,endMs:2000}}],createdAt:'2026-10-30T00:00:00.000Z',updatedAt:'2026-10-30T00:00:00.000Z'} as unknown as Arrangement;
  const withCard=backgroundBrief(work,inspiration,[card],[]),without=backgroundBrief(work,inspiration,[],[]);
- assert.equal(withCard?.textbook?.meter,3);assert.equal(withCard?.teachingMusic,null,'its features go like a song\'s');
+ assert.equal(withCard?.textbook?.meter,3);
+ assert.equal(withCard?.teachingMusic,null,'its features go like a song\'s');
  assert.deepEqual(without?.teachingMusic,{musicId:music.id});
  assert.equal(INSPIRATION_TABS.length,2);
 });
@@ -130,9 +148,16 @@ test('how the card may use its beat: free rhythm has none, a single line an even
  assert.deepEqual([brief?.textbook,brief?.teachingMusic],[null,null]);
  // A free-rhythm recording is not asked about (the model's task is a beat and a bar rhythm); non-music gets no card.
  const decode=(data:Float32Array)=>async()=>({sampleRate:22050,numberOfChannels:1,length:data.length,duration:data.length/22050,getChannelData:()=>data}) as unknown as AudioBuffer;
- let seed=3;const noise=()=>{seed=(seed*16807)%2147483647;return seed/2147483647*2-1;};
+ let seed=3;
+ const noise=()=>{
+  seed=(seed*16807)%2147483647;
+  return seed/2147483647*2-1;
+ };
  const hiss=new Float32Array(22050*20).map(()=>.3*noise());
  let asked=false;
- await assert.rejects(makeTeachingCard(music,new ArrayBuffer(8),decode(hiss),async()=>{asked=true;return null;}),NotMusicError);
+ await assert.rejects(makeTeachingCard(music,new ArrayBuffer(8),decode(hiss),async()=>{
+  asked=true;
+  return null;
+ }),NotMusicError);
  assert.equal(asked,false);
 });

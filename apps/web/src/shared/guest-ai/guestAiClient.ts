@@ -20,7 +20,8 @@ export function overrideHeader(config:ModelConfig):string|null{
  for(const kind of ['language','music'] as const)if(providerFilled(config[kind]))own[kind]={...config[kind]};
  if(!Object.keys(own).length)return null;
  const bytes=new TextEncoder().encode(JSON.stringify(own));
- let binary='';for(const byte of bytes)binary+=String.fromCharCode(byte);
+ let binary='';
+ for(const byte of bytes)binary+=String.fromCharCode(byte);
  return btoa(binary);
 }
 
@@ -29,8 +30,12 @@ export class GuestAiClient{
  private pendingStatus:Promise<GuestStatus>|null=null;
  private csrf:string|null=null;
  private pendingCsrf:Promise<string|null>|null=null;
- private readonly fetcher:Fetcher;private readonly models:()=>ModelConfig;
- constructor(models:()=>ModelConfig,fetcher:Fetcher=(input,init)=>fetch(input,init)){this.models=models;this.fetcher=fetcher;}
+ private readonly fetcher:Fetcher;
+ private readonly models:()=>ModelConfig;
+ constructor(models:()=>ModelConfig,fetcher:Fetcher=(input,init)=>fetch(input,init)){
+  this.models=models;
+  this.fetcher=fetcher;
+ }
 
  /**
   * Whether a kind can be asked for now: the visitor filled it, or the server has a built-in model for it. Until the
@@ -42,7 +47,9 @@ export class GuestAiClient{
   return this.status?this.status[kind]:kind==='language';
  }
  /** Whether the server can hear a teaching-music excerpt (its built-in audio model); unknown until the status arrives. */
- hears(){return this.status?.audio===true;}
+ hears(){
+  return this.status?.audio===true;
+ }
  loadStatus():Promise<GuestStatus>{
   if(this.status)return Promise.resolve(this.status);
   this.pendingStatus??=this.send('GET','/api/v1/guest/status').then(reply=>{
@@ -50,11 +57,15 @@ export class GuestAiClient{
    const status={language:data?.language===true,music:data?.music===true,audio:data?.audio===true};
    if(reply.ok)this.status=status;
    return status;
-  }).finally(()=>{this.pendingStatus=null;});
+  }).finally(()=>{
+   this.pendingStatus=null;
+  });
   return this.pendingStatus;
  }
 
- get(path:string,signal?:AbortSignal){return this.send('GET',path,undefined,signal);}
+ get(path:string,signal?:AbortSignal){
+  return this.send('GET',path,undefined,signal);
+ }
  /** POST with the session's CSRF token; a stale token (after login or logout) is fetched again once. */
  async post(path:string,body:unknown,signal?:AbortSignal):Promise<GuestReply>{
   for(let attempt=0;attempt<2;attempt++){
@@ -73,22 +84,47 @@ export class GuestAiClient{
    const token=reply.ok?(reply.data as {csrfToken?:unknown}|null)?.csrfToken:null;
    this.csrf=typeof token==='string'&&/^[A-Za-z0-9_-]{43}$/.test(token)?token:null;
    return this.csrf;
-  }).finally(()=>{this.pendingCsrf=null;});
+  }).finally(()=>{
+   this.pendingCsrf=null;
+  });
   return this.pendingCsrf;
  }
 
+ /** One request, at most REQUEST_TIMEOUT_MS; the visitor's own models go along in a header (POST only). */
  private async send(method:'GET'|'POST',path:string,body?:unknown,signal?:AbortSignal,csrf?:string):Promise<GuestReply>{
-  const abort=new AbortController(),stop=()=>abort.abort(),timer=setTimeout(stop,REQUEST_TIMEOUT_MS);
+  const abort=new AbortController();
+  const stop=()=>abort.abort();
+  const timer=setTimeout(stop,REQUEST_TIMEOUT_MS);
   signal?.addEventListener('abort',stop,{once:true});
   try{
    const own=method==='POST'?overrideHeader(this.models()):null;
-   const response=await this.fetcher(path,{method,credentials:'same-origin',cache:'no-store',redirect:'error',signal:abort.signal,
-    headers:{Accept:'application/json',...(csrf?{'X-CSRF-Token':csrf}:{}),...(own?{'X-Wanwu-Model-Config':own}:{}),...(body===undefined?{}:{'Content-Type':'application/json'})},
-    ...(body===undefined?{}:{body:JSON.stringify(body)})});
-   let data:unknown=null;try{data=await response.json();}catch{/* the status decides */}
+   const response=await this.fetcher(path,{
+    method,
+    credentials:'same-origin',
+    cache:'no-store',
+    redirect:'error',
+    signal:abort.signal,
+    headers:{
+     Accept:'application/json',
+     ...(csrf?{'X-CSRF-Token':csrf}:{}),
+     ...(own?{'X-Wanwu-Model-Config':own}:{}),
+     ...(body===undefined?{}:{'Content-Type':'application/json'}),
+    },
+    ...(body===undefined?{}:{body:JSON.stringify(body)}),
+   });
+   let data:unknown=null;
+   try{
+    data=await response.json();
+   }catch{/* the status decides */}
    if(response.ok)return {ok:true,data};
    return {ok:false,status:response.status,reason:parseApiFailure(data)?.reason??'bad-response'};
-  }catch{return {ok:false,status:0,reason:abort.signal.aborted&&!signal?.aborted?'timeout':'network'};}
-  finally{clearTimeout(timer);signal?.removeEventListener('abort',stop);}
+  }catch{
+   // Our own timeout, not the caller's cancel.
+   return {ok:false,status:0,reason:abort.signal.aborted&&!signal?.aborted?'timeout':'network'};
+  }
+  finally{
+   clearTimeout(timer);
+   signal?.removeEventListener('abort',stop);
+  }
  }
 }

@@ -19,10 +19,21 @@ import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import type {ComposeSettings,SavedWork,Visibility} from '@wanwu-v2/contracts/work';
 import type {SaveResult} from '../../../shared/creation/workSession';
 
-/** `shelved`: this work's version on the shelf, if any; `shelfCount`: how many works the shelf holds (for a default title). */
-export type CurrentWork={arrangement:Arrangement;settings:ComposeSettings;shelved:SavedWork|null;shelfCount:number};
+/**
+ * `shelved`: this work's version on the shelf, if any; `shelfCount`: how many works the shelf holds (for a default
+ * title).
+ */
+export type CurrentWork={
+ arrangement:Arrangement;
+ settings:ComposeSettings;
+ shelved:SavedWork|null;
+ shelfCount:number;
+};
 /** Sharing needs an account, a class space and review; none exist yet. Once they do, every share waits for review. */
-export type ShareResult={status:'unavailable';reason:'needs-account'}|{status:'confirmation-required'}|{status:'pending-review';visibility:Visibility};
+export type ShareResult=
+ |{status:'unavailable';reason:'needs-account'}
+ |{status:'confirmation-required'}
+ |{status:'pending-review';visibility:Visibility};
 
 export type ComposeRepository={
  load():Promise<CurrentWork>;

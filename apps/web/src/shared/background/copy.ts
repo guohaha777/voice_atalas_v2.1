@@ -13,8 +13,12 @@ export const backgroundCopy={
  /** Who plays what: “风琴弹和弦、低音，木琴弹旋律，小鼓打拍子”; `names` maps instrument ids to their names. */
  parts:(parts:Record<BackgroundPart,string[]>,names:Readonly<Record<string,string>>)=>{
   const byPlayer=new Map<string,BackgroundPart[]>();
-  for(const part of BACKGROUND_PARTS)for(const player of parts[part])byPlayer.set(player,[...byPlayer.get(player)??[],part]);
-  return [...byPlayer].map(([player,played])=>`${player===ORIGINAL_PLAYER?'原始背景':names[player]??player}${played.every(part=>part==='rhythm')?'打':'弹'}${played.map(part=>partNames[part]).join('、')}`).join('，');
+  for(const part of BACKGROUND_PARTS)for(const player of parts[part])
+   byPlayer.set(player,[...byPlayer.get(player)??[],part]);
+  // 「风琴弹和弦、低音」: the player's name, 打 for the drum part alone (else 弹), then its parts.
+  return [...byPlayer]
+   .map(([player,played])=>`${player===ORIGINAL_PLAYER?'原始背景':names[player]??player}${played.every(part=>part==='rhythm')?'打':'弹'}${played.map(part=>partNames[part]).join('、')}`)
+   .join('，');
  },
  /** “「悲伤」的心情，柔和的小调，借了「摇篮曲」的三拍子”. */
  describe:(plan:Pick<BackgroundPlan,'colour'|'mode'|'metre'>,trackTitle:string|null)=>[

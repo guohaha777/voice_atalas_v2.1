@@ -22,30 +22,76 @@ export function useRecording(player:SequencePlayer,playing:string|null,notify:No
   const timer=setInterval(()=>setMs(recorder.current?.elapsedMs()??0),200);
   return()=>clearInterval(timer);
  },[phase]);
- useEffect(()=>()=>{recorder.current?.cancel();recorder.current=null;},[]);
+ useEffect(()=>()=>{
+  recorder.current?.cancel();
+  recorder.current=null;
+ },[]);
 
- const open=()=>{player.stop();setTake(null);setPhase('idle');};
+ const open=()=>{
+  player.stop();
+  setTake(null);
+  setPhase('idle');
+ };
+ /** Records at most SOUND_SOURCE_MAX_MS (the recorder stops by itself there). */
  const start=async()=>{
-  player.stop();setTake(null);setMs(0);setPhase('starting');
-  const next=new LocalRecorder();recorder.current=next;
-  try{await next.start(SOUND_SOURCE_MAX_MS);if(recorder.current===next)setPhase('recording');}
+  player.stop();
+  setTake(null);
+  setMs(0);
+  setPhase('starting');
+  const next=new LocalRecorder();
+  recorder.current=next;
+  try{
+   await next.start(SOUND_SOURCE_MAX_MS);
+   if(recorder.current===next)setPhase('recording');
+  }
   catch(reason){
    if(recorder.current===next)recorder.current=null;
-   setPhase('idle');notify('bar',birthCopy.errors[reason instanceof RecorderError?reason.reason:'failed']);
+   setPhase('idle');
+   notify('bar',birthCopy.errors[reason instanceof RecorderError?reason.reason:'failed']);
   }
  };
  async function stop(){
-  const active=recorder.current;if(!active)return;
+  const active=recorder.current;
+  if(!active)return;
   recorder.current=null;
   try{
    const blob=await active.stop();
    const buffer=await decodeAudio(await blob.arrayBuffer());
-   setTake({buffer,mimeType:blob.type||'audio/webm',original:blob});setPhase('review');
-  }catch(reason){setPhase('idle');notify('bar',birthCopy.errors[reason instanceof RecorderError?reason.reason:'failed']);}
+   setTake({buffer,mimeType:blob.type||'audio/webm',original:blob});
+   setPhase('review');
+  }catch(reason){
+   setPhase('idle');
+   notify('bar',birthCopy.errors[reason instanceof RecorderError?reason.reason:'failed']);
+  }
  }
- const listen=()=>{if(!take)return;if(playing==='take')return player.stop();void player.playOne('take',take.buffer,originalGainOf(take.buffer));};
- const use=()=>{if(!take)return;onUse(take);setTake(null);setPhase('idle');};
+ const listen=()=>{
+  if(!take)return;
+  if(playing==='take')return player.stop();
+  void player.playOne('take',take.buffer,originalGainOf(take.buffer));
+ };
+ const use=()=>{
+  if(!take)return;
+  onUse(take);
+  setTake(null);
+  setPhase('idle');
+ };
  /** Closing the dialog drops a running recording and an unused take. */
- const cancel=()=>{recorder.current?.cancel();recorder.current=null;setTake(null);setPhase('idle');};
- return {phase,ms,take,open,start,stop,listen,use,cancel,active:()=>!!recorder.current};
+ const cancel=()=>{
+  recorder.current?.cancel();
+  recorder.current=null;
+  setTake(null);
+  setPhase('idle');
+ };
+ return {
+  phase,
+  ms,
+  take,
+  open,
+  start,
+  stop,
+  listen,
+  use,
+  cancel,
+  active:()=>!!recorder.current,
+ };
 }

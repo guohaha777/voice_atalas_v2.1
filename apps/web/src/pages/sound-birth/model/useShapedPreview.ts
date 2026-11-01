@@ -22,24 +22,43 @@ export function useShapedPreview(player:SequencePlayer,playing:string|null,notif
  const play=async(next:ChosenShape,key:string,show:boolean)=>{
   const {source,buffer}=current();
   if(!source||!buffer)return;
-  const token=++renderToken.current,cacheKey=`${source.id}|${shapeKey(next)}`;
+  const token=++renderToken.current;
+  const cacheKey=`${source.id}|${shapeKey(next)}`;
   let rendered=renders.current.get(cacheKey);
   try{
-   if(!rendered){rendered=await renderShaped(buffer,planCard(next,analysisOf(buffer),source.id));renders.current.set(cacheKey,rendered);}
+   if(!rendered){
+    rendered=await renderShaped(buffer,planCard(next,analysisOf(buffer),source.id));
+    renders.current.set(cacheKey,rendered);
+   }
    if(token!==renderToken.current)return;
-   if(show){setCurrentBuffer(rendered);setShown('current');}
+   if(show){
+    setCurrentBuffer(rendered);
+    setShown('current');
+   }
    await player.playOne(key,rendered);
-  }catch{if(token===renderToken.current)notify('editor',birthCopy.noAudio);}
+  }catch{
+   if(token===renderToken.current)notify('editor',birthCopy.noAudio);
+  }
  };
  const playCompare=(target:CompareTarget)=>{
-  if(playing===target){player.stop();return;}
+  if(playing===target){
+   player.stop();
+   return;
+  }
   if(!sourceBuffer)return;
-  if(target==='original'){renderToken.current++;setShown('original');void player.playOne('original',sourceBuffer,originalGainOf(sourceBuffer));}
+  if(target==='original'){
+   renderToken.current++;
+   setShown('original');
+   void player.playOne('original',sourceBuffer,originalGainOf(sourceBuffer));
+  }
   else void play(shape,'current',true);
  };
  /** The waveform's own play button plays whichever version it is showing. */
  const playShown=()=>playCompare(shown==='current'&&currentBuffer?'current':'original');
  /** A new source starts from its original. */
- const reset=()=>{setShown('original');setCurrentBuffer(null);};
+ const reset=()=>{
+  setShown('original');
+  setCurrentBuffer(null);
+ };
  return {shown,currentBuffer,play,playCompare,playShown,reset};
 }

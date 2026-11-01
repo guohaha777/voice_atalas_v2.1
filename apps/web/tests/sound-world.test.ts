@@ -31,7 +31,8 @@ test('example arrangement is valid, labelled as example and uses preset units',(
  assert.ok(example.units.every(item=>item.input==='example-preset'&&parseSoundUnitDraft(item)));
  assert.deepEqual(example.units.map(item=>item.markerIndex),[0,1,2]);
  const bird=example.events.filter(event=>event.unitId==='unit:example:bird');
- assert.equal(bird.length,2);assert.notEqual(bird[0]!.id,bird[1]!.id);
+ assert.equal(bird.length,2);
+ assert.notEqual(bird[0]!.id,bird[1]!.id);
 });
 
 test('arrangement parser checks references, rows, field length and excerpts',()=>{
@@ -62,7 +63,9 @@ test('the page never moves a sound in time: a taken row sends it to the nearest 
  let state=loaded(work({events:[ev('long',.3,1,9)]}));
  state=soundWorldReducer(state,{type:'place',unitId:'u2',eventId:'p',at:.45,row:1,clip:{startMs:0,endMs:1000},now});
  const placed=state.arrangement!.events.find(event=>event.id==='p')!;
- assert.equal(placed.at,.45,'time kept');assert.notEqual(placed.row,1);assert.equal(state.notice,null);
+ assert.equal(placed.at,.45,'time kept');
+ assert.notEqual(placed.row,1);
+ assert.equal(state.notice,null);
  // Fill every row at that moment: the next one overlaps and the child is told to add a row.
  state=loaded(work({events:[ev('a',.3,0,9),ev('b',.3,1,9),ev('c',.3,2,9)]}));
  state=soundWorldReducer(state,{type:'place',unitId:'u2',eventId:'p',at:.45,row:1,clip:{startMs:0,endMs:1000},now});
@@ -75,7 +78,9 @@ test('copy keeps sound and excerpt, goes right after the original; remove and mo
  let state=loaded(work({events:[{...ev('e1',.3,1,3),clip:{startMs:1000,endMs:4000}}]}));
  state=soundWorldReducer(state,{type:'copy',eventId:'e1',newId:'e2',now});
  const [first,second]=state.arrangement!.events;
- assert.equal(second!.unitId,first!.unitId);assert.deepEqual(second!.clip,first!.clip);assert.equal(second!.row,1);
+ assert.equal(second!.unitId,first!.unitId);
+ assert.deepEqual(second!.clip,first!.clip);
+ assert.equal(second!.row,1);
  assert.ok(second!.at>=first!.at+3/30,'starts after the 3-second original has finished');
  state=soundWorldReducer(state,{type:'move',eventId:'e1',at:.9,row:2,now});
  assert.equal(state.arrangement!.events.find(event=>event.id==='e1')!.row,2);
@@ -92,7 +97,8 @@ test('excerpts: a placed sound starts with the whole recording, fits it, editing
  let state=loaded(work({events:[ev('e1',.2,0,1)]}));
  state=soundWorldReducer(state,{type:'clip',eventId:'e1',clip:{startMs:2000,endMs:7500},now});
  const edited=state.arrangement!.events[0]!;
- assert.deepEqual(edited.clip,{startMs:2000,endMs:7500});assert.equal(edited.at,.2);
+ assert.deepEqual(edited.clip,{startMs:2000,endMs:7500});
+ assert.equal(edited.at,.2);
  assert.equal(heardSeconds(unit('u1',0),edited),5.5);
  // The real length arrives later and shortens an excerpt that reached past it, without counting as an edit.
  const fitted=soundWorldReducer(state,{type:'source-length',sourceId:'recording:u1',durationMs:6000});
@@ -130,12 +136,14 @@ test('field playback of an excerpt plays it as chosen: no 10-second cap; timing 
 test('rows: start with three, add up to the maximum, take back only an empty last row',()=>{
  let state=loaded(work());
  state=soundWorldReducer(state,{type:'add-row',now});
- assert.equal(state.arrangement!.rows,4);assert.ok(canRemoveRow(state.arrangement!));
+ assert.equal(state.arrangement!.rows,4);
+ assert.ok(canRemoveRow(state.arrangement!));
  state=soundWorldReducer(state,{type:'place',unitId:'u1',eventId:'e',at:.5,row:3,clip:{startMs:0,endMs:1000},now});
  assert.equal(canRemoveRow(state.arrangement!),false,'a row with a sound in it stays');
  state=soundWorldReducer(state,{type:'add-row',now});
  state=soundWorldReducer(state,{type:'add-row',now});
- assert.equal(state.arrangement!.rows,MAX_ROWS);assert.deepEqual(state.notice,{tone:'info',key:'rows-full'});
+ assert.equal(state.arrangement!.rows,MAX_ROWS);
+ assert.deepEqual(state.notice,{tone:'info',key:'rows-full'});
  state=soundWorldReducer(state,{type:'remove-row',now});
  assert.equal(state.arrangement!.rows,4);
  assert.ok(parseArrangement(state.arrangement));
@@ -154,7 +162,8 @@ test('added units get the next free marker number; mood never moves anything',()
  assert.equal(state.arrangement!.units.at(-1)!.markerIndex,2);
  const before=state.arrangement!.events;
  state=soundWorldReducer(state,{type:'mood',mood:{kind:'preset',id:'calm'},now});
- assert.deepEqual(state.arrangement!.mood,{kind:'preset',id:'calm'});assert.equal(state.arrangement!.events,before);
+ assert.deepEqual(state.arrangement!.mood,{kind:'preset',id:'calm'});
+ assert.equal(state.arrangement!.events,before);
 });
 
 test('row ends and keyboard nudges',()=>{
@@ -174,7 +183,8 @@ test('geometry maps pointer to business coordinates and back, independent of siz
   assert.equal(locateSpot(box,3,box.left-100,box.top),null);
  }
  const corner=spotPosition({at:0,row:0},3);
- assert.equal(corner.left,`${FIELD_INSET*100}%`);assert.ok(Math.abs(parseFloat(corner.top)-100/6)<1e-9);
+ assert.equal(corner.left,`${FIELD_INSET*100}%`);
+ assert.ok(Math.abs(parseFloat(corner.top)-100/6)<1e-9);
 });
 
 test('playback order, timing and excerpts come from the arrangement only',()=>{
@@ -193,7 +203,8 @@ test('work session: 声音诞生 hand-off numbers sounds and replaces an untouch
   provenance:{recordedBy:'小林',recordedOn:'2026-10-22',place:'后山',group:null,provenanceUrl:null}};
  const first=session.addUnit(unit('u1',0),source,now);
  assert.equal(first.status,'added');
- assert.equal(session.current()!.origin,'child');assert.deepEqual(session.current()!.units.map(item=>item.id),['u1']);
+ assert.equal(session.current()!.origin,'child');
+ assert.deepEqual(session.current()!.units.map(item=>item.id),['u1']);
  assert.equal(session.nextMarkerIndex(),1);
  const clash=session.addUnit(unit('u2',0),null,now);
  assert.equal(clash.status==='added'&&clash.unit.markerIndex,1,'a clashing number moves to the next free one');
@@ -249,14 +260,17 @@ test('one sound is never longer than the field: the field grows to hold it, shor
  let state=loaded(work({spanSeconds:20,events:[ev('e1',.1,0,5)]}));
  // Placing a 25 s sound in a 20 s field: the field becomes 30 s and the frog says why; positions stay.
  state=soundWorldReducer(state,{type:'place',unitId:'u2',eventId:'e2',at:.5,row:1,clip:{startMs:0,endMs:25_000},now});
- assert.equal(state.arrangement!.spanSeconds,30);assert.equal(state.lastAction,'span-fitted');
+ assert.equal(state.arrangement!.spanSeconds,30);
+ assert.equal(state.lastAction,'span-fitted');
  assert.deepEqual(state.arrangement!.events.map(event=>event.at),[.1,.5]);
  // A longer excerpt picked with 剪一剪 grows it again, to the shortest length that holds it.
  state=soundWorldReducer(state,{type:'clip',eventId:'e2',clip:{startMs:0,endMs:40_000},now});
- assert.equal(state.arrangement!.spanSeconds,45);assert.equal(state.lastAction,'span-fitted');
+ assert.equal(state.arrangement!.spanSeconds,45);
+ assert.equal(state.lastAction,'span-fitted');
  // Shorter lengths are refused while that sound is there; nothing else changes.
  const refused=soundWorldReducer(state,{type:'span',spanSeconds:30,now});
- assert.equal(refused.arrangement,state.arrangement);assert.equal(refused.lastAction,'span-blocked');
+ assert.equal(refused.arrangement,state.arrangement);
+ assert.equal(refused.lastAction,'span-blocked');
  // Only the sound's own length counts: a 15 s sound late in a 30 s field may still run past the end.
  const late=loaded(work({events:[ev('e1',.8,0,15)]}));
  assert.equal(late.arrangement!.spanSeconds,30);

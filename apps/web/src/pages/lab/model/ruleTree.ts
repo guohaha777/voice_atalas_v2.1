@@ -22,14 +22,22 @@ export function fieldsOf(limits:Limits,rules:unknown,path:string[]=[]):Field[]{
   const at=[...path,key];
   if(limit==='version')return [];
   if(Array.isArray(limit)&&typeof limit[0]==='string')return [{kind:'word',path:at,options:limit as string[]}];
-  if(Array.isArray(limit)&&limit.length===4){const [min,max,fewest,most]=limit as number[];return [{kind:'list',path:at,min:min!,max:max!,fewest:fewest!,most:most!}];}
-  if(Array.isArray(limit)){const [min,max]=limit as number[];return [{kind:'number',path:at,min:min!,max:max!,step:stepFor(min!,max!,Number(getAt(rules,at)))}];}
+  if(Array.isArray(limit)&&limit.length===4){
+   const [min,max,fewest,most]=limit as number[];
+   return [{kind:'list',path:at,min:min!,max:max!,fewest:fewest!,most:most!}];
+  }
+  if(Array.isArray(limit)){
+   const [min,max]=limit as number[];
+   return [{kind:'number',path:at,min:min!,max:max!,step:stepFor(min!,max!,Number(getAt(rules,at)))}];
+  }
   return fieldsOf(limit as Limits,rules,at);
  });
 }
 
 export function getAt(value:unknown,path:readonly string[]):unknown{
- return path.reduce<unknown>((current,key)=>current&&typeof current==='object'?(current as Record<string,unknown>)[key]:undefined,value);
+ return path.reduce<unknown>((current,key)=>current&&typeof current==='object'
+  ?(current as Record<string,unknown>)[key]
+  :undefined,value);
 }
 /** A copy of `value` with `next` at `path`. */
 export function setAt<T>(value:T,path:readonly string[],next:unknown):T{
@@ -43,7 +51,12 @@ export function setAt<T>(value:T,path:readonly string[],next:unknown):T{
 export type RuleSets={analysis:AnalysisRules;shaping:ShapingRules;background:BackgroundRules;mix:MixRules};
 export type RuleSetName=keyof RuleSets;
 export const RULE_SETS:readonly RuleSetName[]=['shaping','analysis','background','mix'];
-export const ruleLimits:Record<RuleSetName,Limits>={analysis:analysisLimits,shaping:shapingLimits,background:backgroundLimits,mix:mixLimits};
+export const ruleLimits:Record<RuleSetName,Limits>={
+ analysis:analysisLimits,
+ shaping:shapingLimits,
+ background:backgroundLimits,
+ mix:mixLimits,
+};
 export function ruleProblems(name:RuleSetName,rules:RuleSets[RuleSetName]){
  switch(name){
   case 'analysis':return analysisProblems(rules as AnalysisRules);

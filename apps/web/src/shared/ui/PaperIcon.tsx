@@ -1,24 +1,38 @@
-// Solid paper icons for 声音诞生 and the home page, from the approved page draft (万物声谱_视觉过程稿/声音诞生页草稿): solid paper cut-outs with a darker
-// paper edge underneath, coloured directly in a palette tone — no backing circle. Lines inside an icon stay white.
-// The small UI glyphs (play, arrow…) are solid too and take their colour from `currentColor`.
+// Solid paper icons for 声音诞生 and the home page, from the approved page draft (万物声谱_视觉过程稿/声音诞生页草稿):
+// solid paper cut-outs with a darker paper edge underneath, coloured directly in a palette tone — no backing circle.
+// Lines inside an icon stay white. The small UI glyphs (play, arrow…) are solid too and take their colour from
+// `currentColor`. The shape tables (`art`, `glyphs`) keep one icon per line: they are drawing data.
 import type {ReactNode} from 'react';
 
 const INK='#2f3b10';
 /** Palette tones (spring card + marker paper) with a darker edge and a lighter second face. */
 const tones={
- lime:{t:'#c0e64f',d:'#9cc42b',l:'#dcf58c'},yellow:{t:'#ffe576',d:'#e0bd3e',l:'#fff2b0'},
- sky:{t:'#9fe8ff',d:'#67c2e0',l:'#cdf3ff'},pink:{t:'#ffd4d9',d:'#f0a2ae',l:'#ffe8eb'},
- sage:{t:'#c4cebb',d:'#a0b290',l:'#dde5d6'},lilac:{t:'#d1b9da',d:'#b392c2',l:'#e6d8ec'},
+ lime:{t:'#c0e64f',d:'#9cc42b',l:'#dcf58c'},
+ yellow:{t:'#ffe576',d:'#e0bd3e',l:'#fff2b0'},
+ sky:{t:'#9fe8ff',d:'#67c2e0',l:'#cdf3ff'},
+ pink:{t:'#ffd4d9',d:'#f0a2ae',l:'#ffe8eb'},
+ sage:{t:'#c4cebb',d:'#a0b290',l:'#dde5d6'},
+ lilac:{t:'#d1b9da',d:'#b392c2',l:'#e6d8ec'},
 } as const;
 export type PaperTone=keyof typeof tones;
 type Tone=(typeof tones)[PaperTone];
 
+/** Two eyes and a smile, centred at (cx, cy), scaled by `s`. */
 const face=(cx:number,cy:number,s=1)=><>
- <circle cx={cx-2.3*s} cy={cy} r={1.05*s} fill={INK}/><circle cx={cx+2.3*s} cy={cy} r={1.05*s} fill={INK}/>
- <path d={`M${cx-1.4*s} ${cy+2*s}q${1.4*s} ${1.3*s} ${2.8*s} 0`} fill="none" stroke={INK} strokeWidth={1.2*s} strokeLinecap="round"/>
+ <circle cx={cx-2.3*s} cy={cy} r={1.05*s} fill={INK}/>
+ <circle cx={cx+2.3*s} cy={cy} r={1.05*s} fill={INK}/>
+ <path
+  d={`M${cx-1.4*s} ${cy+2*s}q${1.4*s} ${1.3*s} ${2.8*s} 0`}
+  fill="none"
+  stroke={INK}
+  strokeWidth={1.2*s}
+  strokeLinecap="round"/>
 </>;
 /** The paper edge: the same shape in the darker tone, half a unit lower, then the shape itself. */
-const paper=(tone:Tone,draw:(main:string,second:string)=>ReactNode)=><><g transform="translate(0 1.5)">{draw(tone.d,tone.d)}</g>{draw(tone.t,tone.l)}</>;
+const paper=(tone:Tone,draw:(main:string,second:string)=>ReactNode)=><>
+ <g transform="translate(0 1.5)">{draw(tone.d,tone.d)}</g>
+ {draw(tone.t,tone.l)}
+</>;
 
 const art={
  mic:(t:Tone)=><>{paper(t,c=><><rect x="11" y="3.5" width="10" height="16.5" rx="5" fill={c}/><path d="M7 15a9 9 0 0 0 18 0M16 24v4M12 28h8" fill="none" stroke={c} strokeWidth="2.6" strokeLinecap="round"/></>)}{face(16,11.2,.85)}</>,

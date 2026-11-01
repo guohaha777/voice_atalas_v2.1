@@ -12,43 +12,74 @@ import type {GuestAiClient,GuestReply} from './guestAiClient.ts';
 const POLL={'notes-ai':{first:400,every:600},'audio-ai':{first:3000,every:2000}} as const;
 
 const unavailableReason=(reply:Extract<GuestReply,{ok:false}>):BackgroundUnavailable=>
- reply.reason==='not-open'?'not-open':reply.status===429?'quota':reply.reason==='timeout'?'timeout':'failed';
+ reply.reason==='not-open'
+  ?'not-open'
+  :reply.status===429
+   ?'quota'
+   :reply.reason==='timeout'
+    ?'timeout'
+    :'failed';
+/** Waits `ms`, or rejects at once when `signal` aborts. */
 const wait=(ms:number,signal:AbortSignal)=>new Promise<void>((resolve,reject)=>{
  const timer=setTimeout(resolve,ms);
- signal.addEventListener('abort',()=>{clearTimeout(timer);reject(new Error('aborted'));},{once:true});
+ signal.addEventListener('abort',()=>{
+  clearTimeout(timer);
+  reject(new Error('aborted'));
+ },{once:true});
 });
 
 export function guestTalkPolisher(client:GuestAiClient):TalkPolisher{
  return {
-  get open(){return client.open('language');},
-  async workTalk(brief,signal){const reply=await client.post('/api/v1/talk/work',brief,signal);return reply.ok?reply.data:null;},
-  async textbookTalk(brief,signal){const reply=await client.post('/api/v1/talk/textbook',brief,signal);return reply.ok?reply.data:null;},
+  get open(){
+   return client.open('language');
+  },
+  async workTalk(brief,signal){
+   const reply=await client.post('/api/v1/talk/work',brief,signal);
+   return reply.ok?reply.data:null;
+  },
+  async textbookTalk(brief,signal){
+   const reply=await client.post('/api/v1/talk/textbook',brief,signal);
+   return reply.ok?reply.data:null;
+  },
  };
 }
 
 /** 教学音乐出卡: the audio model hears the excerpt, else the language model reads the numbers (the server decides). */
 export function guestTeachingMusicService(client:GuestAiClient):TeachingMusicService{
  return {
-  get analyseAvailable(){return client.hears()||client.open('language');},
-  async features(request,signal){const reply=await client.post('/api/v1/textbook/features',request,signal);return reply.ok?reply.data:null;},
+  get analyseAvailable(){
+   return client.hears()||client.open('language');
+  },
+  async features(request,signal){
+   const reply=await client.post('/api/v1/textbook/features',request,signal);
+   return reply.ok?reply.data:null;
+  },
  };
 }
 
 export function guestMoodInterpreter(client:GuestAiClient):MoodInterpreter{
  return {
-  get available(){return client.open('language');},
-  async interpret(text,signal){const reply=await client.post('/api/v1/moods/interpret',{text},signal);return reply.ok?reply.data as never:null;},
+  get available(){
+   return client.open('language');
+  },
+  async interpret(text,signal){
+   const reply=await client.post('/api/v1/moods/interpret',{text},signal);
+   return reply.ok?reply.data as never:null;
+  },
  };
 }
 
 export function guestBackgroundGenerator(client:GuestAiClient):BackgroundGenerator{
  return {
-  get open(){return AI_BACKGROUND_STEPS.filter(step=>client.open(step==='audio-ai'?'music':'language'));},
+  get open(){
+   return AI_BACKGROUND_STEPS.filter(step=>client.open(step==='audio-ai'?'music':'language'));
+  },
   async generate(brief,step:AiBackgroundStep,signal):Promise<unknown>{
    const started=await client.post('/api/v1/backgrounds',{step,brief},signal);
    if(!started.ok)return {status:'unavailable',reason:unavailableReason(started)} satisfies BackgroundResult;
    const jobId=(started.data as {jobId?:unknown}|null)?.jobId;
-   if(typeof jobId!=='string'||!/^[a-f0-9-]{36}$/.test(jobId))return {status:'unavailable',reason:'failed'} satisfies BackgroundResult;
+   if(typeof jobId!=='string'||!/^[a-f0-9-]{36}$/.test(jobId))
+    return {status:'unavailable',reason:'failed'} satisfies BackgroundResult;
    // runBackgroundChain aborts this at the step's timeout; until then look again now and then.
    await wait(POLL[step].first,signal);
    for(;;){

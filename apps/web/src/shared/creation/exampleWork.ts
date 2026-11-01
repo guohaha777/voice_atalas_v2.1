@@ -14,8 +14,18 @@ export const exampleUnitId=(sound:string)=>`unit:example:${sound}`;
 export function exampleUnit(sound:string,markerIndex:number):SoundUnitDraft{
  const example=exampleSound(sound);
  if(!example)throw new Error('Missing example sound '+sound);
- return {version:SOUND_CONTRACT_VERSION,id:exampleUnitId(sound),sourceId:exampleSourceId(sound),name:example.label,maker:null,markerIndex,
-  shape:{...example.preset},input:'example-preset',createdAt:PRESET_DATE,analysis:example.analysis};
+ return {
+  version:SOUND_CONTRACT_VERSION,
+  id:exampleUnitId(sound),
+  sourceId:exampleSourceId(sound),
+  name:example.label,
+  maker:null,
+  markerIndex,
+  shape:{...example.preset},
+  input:'example-preset',
+  createdAt:PRESET_DATE,
+  analysis:example.analysis,
+ };
 }
 
 /**
@@ -30,7 +40,21 @@ const examplePlan:readonly {sound:string;at:number;row:number;clip:SourceClip}[]
 ];
 export function exampleArrangement(id:string,now:Date):Arrangement{
  const sounds=[...new Set(examplePlan.map(item=>item.sound))];
- return {version:ARRANGEMENT_CONTRACT_VERSION,id,origin:'example',mood:null,rows:DEFAULT_ROWS,spanSeconds:DEFAULT_SPAN_SECONDS,updatedAt:now.toISOString(),
+ return {
+  version:ARRANGEMENT_CONTRACT_VERSION,
+  id,
+  origin:'example',
+  mood:null,
+  rows:DEFAULT_ROWS,
+  spanSeconds:DEFAULT_SPAN_SECONDS,
+  updatedAt:now.toISOString(),
   units:sounds.map((sound,index)=>exampleUnit(sound,index)),
-  events:examplePlan.map((item,index)=>({id:`event:example:${index+1}`,unitId:exampleUnitId(item.sound),at:item.at,row:item.row,clip:{...item.clip}}))};
+  events:examplePlan.map((item,index)=>({
+   id:`event:example:${index+1}`,
+   unitId:exampleUnitId(item.sound),
+   at:item.at,
+   row:item.row,
+   clip:{...item.clip},
+  })),
+ };
 }

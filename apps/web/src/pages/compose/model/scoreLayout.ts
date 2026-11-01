@@ -10,11 +10,20 @@ import {pieceSeconds,timedEvents} from '../../../shared/creation/arrangementTimi
 /** Time 0 and the end sit this far in from the score's edges, so a marker at either end stays fully visible. */
 export const SCORE_INSET=.05;
 
-export type ScoreItem={eventId:string;unit:SoundUnitDraft;row:number;start:number;seconds:number;end:number;
+export type ScoreItem={
+ eventId:string;
+ unit:SoundUnitDraft;
+ row:number;
+ start:number;
+ seconds:number;
+ end:number;
  /** Start and length as fractions of the whole piece (0–1). */
- left:number;length:number};
+ left:number;
+ length:number;
+};
 export type ScoreLayout={
- rows:number;spanSeconds:number;
+ rows:number;
+ spanSeconds:number;
  /** Real length of the piece: the chosen length, or longer when a sound outlasts it. */
  totalSeconds:number;
  items:ScoreItem[];
@@ -29,11 +38,25 @@ export type ScoreLayout={
 export const tickStep=(span:number)=>span<=20?5:span<=30?10:15;
 
 export function scoreLayout(arrangement:Arrangement):ScoreLayout{
- const total=pieceSeconds(arrangement),span=arrangement.spanSeconds,step=tickStep(span);
- const items=timedEvents(arrangement).map(({event,unit,start,seconds,end})=>({eventId:event.id,unit,row:event.row,start,seconds,end,left:start/total,length:seconds/total}));
+ const total=pieceSeconds(arrangement);
+ const span=arrangement.spanSeconds;
+ const step=tickStep(span);
+ const items=timedEvents(arrangement).map(({event,unit,start,seconds,end})=>({
+  eventId:event.id,
+  unit,
+  row:event.row,
+  start,
+  seconds,
+  end,
+  left:start/total,
+  length:seconds/total,
+ }));
  const used=new Set(items.map(item=>item.unit.id));
  return {
-  rows:arrangement.rows,spanSeconds:span,totalSeconds:total,items,
+  rows:arrangement.rows,
+  spanSeconds:span,
+  totalSeconds:total,
+  items,
   legend:arrangement.units.filter(unit=>used.has(unit.id)).sort((a,b)=>a.markerIndex-b.markerIndex),
   ticks:Array.from({length:Math.floor(span/step)+1},(_,i)=>({seconds:i*step,at:i*step/total})),
   spanMark:total>span+1e-6?span/total:null,
@@ -46,7 +69,9 @@ export function spanChoices(arrangement:Arrangement):{seconds:SpanSeconds;real:n
 }
 
 /** Percent position of a 0–1 time fraction inside the score. */
-export function scorePosition(fraction:number){return `${(SCORE_INSET+Math.min(1,Math.max(0,fraction))*(1-2*SCORE_INSET))*100}%`;}
+export function scorePosition(fraction:number){
+ return `${(SCORE_INSET+Math.min(1,Math.max(0,fraction))*(1-2*SCORE_INSET))*100}%`;
+}
 /** Seconds under a pointer on the score (clamped to the piece). */
 export function secondsAt(box:{left:number;width:number},x:number,totalSeconds:number){
  const fraction=((x-box.left)/box.width-SCORE_INSET)/(1-2*SCORE_INSET);

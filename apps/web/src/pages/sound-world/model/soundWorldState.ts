@@ -2,18 +2,26 @@
 // Positions are business coordinates (0–1 along time + a layout row); the layout turns them into pixels.
 // Only left → right changes what is heard. The page may move a sound to another row to keep it readable, but it never
 // moves a sound in time — when the child picks a moment, that moment stays.
-import {ARRANGEMENT_MAX_EVENTS,ARRANGEMENT_MAX_UNITS,DEFAULT_ROWS,MAX_ROWS,MIN_CLIP_MS,SPAN_CHOICES,isValidMood} from '@wanwu-v2/contracts/arrangement';
+import {
+ ARRANGEMENT_MAX_EVENTS,ARRANGEMENT_MAX_UNITS,DEFAULT_ROWS,MAX_ROWS,MIN_CLIP_MS,SPAN_CHOICES,isValidMood,
+} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement,MoodChoice,PlacedEvent,SourceClip,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
 import type {SoundAnalysis,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {defaultClipFor} from '@wanwu-v2/sound-rules/shaping';
-import {MARKER_HALF,coverageEnd,fitSpan,freeRow,rowIsFree,spanHolds,unitOf,withSpan} from '../../../shared/creation/arrangementTiming.ts';
+import {
+ MARKER_HALF,coverageEnd,fitSpan,freeRow,rowIsFree,spanHolds,unitOf,withSpan,
+} from '../../../shared/creation/arrangementTiming.ts';
 // Timing and row tidying live in shared/creation (万物成曲 reads the same); re-exported for this page's modules.
-export {MARKER_HALF,clipSeconds,freeRow,heardInPiece,heardSeconds,longestSound,minSpan,planPlayback,resettleRows,rowIsFree,spanHolds,unitOf} from '../../../shared/creation/arrangementTiming.ts';
+export {
+ MARKER_HALF,clipSeconds,freeRow,heardInPiece,heardSeconds,longestSound,minSpan,planPlayback,resettleRows,rowIsFree,
+ spanHolds,unitOf,
+} from '../../../shared/creation/arrangementTiming.ts';
 export type {PlannedEvent} from '../../../shared/creation/arrangementTiming.ts';
 
 export type Selection={kind:'unit';unitId:string}|{kind:'event';eventId:string}|null;
-export type NoticeKey='pick-first'|'mood-model-off'|'events-full'|'units-full'|'rows-full'|'row-crowded'|'need-event'|'compose-unavailable'|'load-failed'|'no-audio'|'missing-audio'|'background-failed';
+export type NoticeKey='pick-first'|'mood-model-off'|'events-full'|'units-full'|'rows-full'|'row-crowded'|'need-event'
+ |'compose-unavailable'|'load-failed'|'no-audio'|'missing-audio'|'background-failed';
 export type WorldNotice={tone:'info'|'error';key:NoticeKey}|null;
 /** `span-fitted`: a sound got longer than the field, so the field grew to hold it; `span-blocked`: a length too short
  *  for the longest sound was asked for and refused. */
@@ -55,7 +63,13 @@ export type SoundWorldAction=
 /** 复制 puts the copy right after the original ends, with this small breath. */
 export const COPY_GAP=.01;
 
-export const initialSoundWorld:SoundWorldState={arrangement:null,selection:null,notice:null,lastAction:null,blocked:false};
+export const initialSoundWorld:SoundWorldState={
+ arrangement:null,
+ selection:null,
+ notice:null,
+ lastAction:null,
+ blocked:false,
+};
 
 export function clampAt(at:number){return Math.round(Math.min(1,Math.max(0,at))*200)/200;}
 export function clampRow(row:number,rows:number){return Math.min(rows-1,Math.max(0,Math.round(row)));}
@@ -93,11 +107,16 @@ function settle(arrangement:Arrangement,event:PlacedEvent,exact=false):{event:Pl
  return row===null?{event,crowded:true}:{event:{...event,row},crowded:false};
 }
 const crowdedNotice=(crowded:boolean):WorldNotice=>crowded?{tone:'info',key:'row-crowded'}:null;
-export function placedCount(arrangement:Arrangement|null,unitId:string){return arrangement?.events.filter(event=>event.unitId===unitId).length??0;}
-export function eventOf(arrangement:Arrangement|null,eventId:string){return arrangement?.events.find(event=>event.id===eventId)??null;}
+export function placedCount(arrangement:Arrangement|null,unitId:string){
+ return arrangement?.events.filter(event=>event.unitId===unitId).length??0;
+}
+export function eventOf(arrangement:Arrangement|null,eventId:string){
+ return arrangement?.events.find(event=>event.id===eventId)??null;
+}
 export function nextMarkerIndex(arrangement:Arrangement){
  const used=new Set(arrangement.units.map(unit=>unit.markerIndex));
- let index=0;while(used.has(index))index++;
+ let index=0;
+ while(used.has(index))index++;
  return index;
 }
 /** An extra row can be taken away again only while it is the last one and empty. */
@@ -107,7 +126,13 @@ export function canRemoveRow(arrangement:Arrangement){
 
 /** Any change by the child makes the arrangement theirs. */
 const edit=(state:SoundWorldState,arrangement:Arrangement,now:Date,extra:Partial<SoundWorldState>={}):SoundWorldState=>
- ({...state,arrangement:{...arrangement,origin:'child',updatedAt:now.toISOString()},notice:null,blocked:false,...extra});
+ ({
+  ...state,
+  arrangement:{...arrangement,origin:'child',updatedAt:now.toISOString()},
+  notice:null,
+  blocked:false,
+  ...extra,
+ });
 const replace=(work:Arrangement,next:PlacedEvent)=>work.events.map(event=>event.id===next.id?next:event);
 /** One sound is never longer than the field: grow the field when an edit made a sound too long, and say so. */
 const fitted=(next:Arrangement,action:LastAction):{arrangement:Arrangement;lastAction:LastAction}=>{
@@ -134,38 +159,68 @@ export function soundWorldReducer(state:SoundWorldState,action:SoundWorldAction)
   case 'place':{
    if(!unitOf(work,action.unitId))return state;
    if(work.events.length>=ARRANGEMENT_MAX_EVENTS)return {...state,notice:{tone:'error',key:'events-full'}};
-   const {event,crowded}=settle(work,{id:action.eventId,unitId:action.unitId,at:clampAt(action.at),row:clampRow(action.row,work.rows),clip:fitClip(action.clip,null)});
+   const {event,crowded}=settle(work,{
+    id:action.eventId,
+    unitId:action.unitId,
+    at:clampAt(action.at),
+    row:clampRow(action.row,work.rows),
+    clip:fitClip(action.clip,null),
+   });
    // The new occurrence becomes the selection, so its toolbar (试听 / 剪一剪 / 再响一次 / 移除) is right there.
    const next=fitted({...work,events:[...work.events,event]},'placed');
-   return edit(state,next.arrangement,action.now,
-    {selection:{kind:'event',eventId:event.id},lastAction:next.lastAction,notice:next.lastAction==='span-fitted'?null:crowdedNotice(crowded)});
+   return edit(state,next.arrangement,action.now,{
+    selection:{kind:'event',eventId:event.id},
+    lastAction:next.lastAction,
+    // When the field grew, the frog says that instead.
+    notice:next.lastAction==='span-fitted'?null:crowdedNotice(crowded),
+   });
   }
   case 'move':{
-   const current=eventOf(work,action.eventId);if(!current)return state;
+   const current=eventOf(work,action.eventId);
+   if(!current)return state;
    const {event,crowded}=settle(work,{...current,at:clampAt(action.at),row:clampRow(action.row,work.rows)},action.exact);
-   if(event.at===current.at&&event.row===current.row)return {...state,selection:{kind:'event',eventId:current.id},notice:crowdedNotice(crowded)};
-   return edit(state,{...work,events:replace(work,event)},action.now,{selection:{kind:'event',eventId:current.id},lastAction:'moved',notice:crowdedNotice(crowded)});
+   // Nowhere to go: it stays where it was.
+   if(event.at===current.at&&event.row===current.row)
+    return {...state,selection:{kind:'event',eventId:current.id},notice:crowdedNotice(crowded)};
+   return edit(state,{...work,events:replace(work,event)},action.now,{
+    selection:{kind:'event',eventId:current.id},
+    lastAction:'moved',
+    notice:crowdedNotice(crowded),
+   });
   }
   case 'copy':{
-   const source=eventOf(work,action.eventId);if(!source)return state;
+   const source=eventOf(work,action.eventId);
+   if(!source)return state;
    if(work.events.length>=ARRANGEMENT_MAX_EVENTS)return {...state,notice:{tone:'error',key:'events-full'}};
    // Same sound identity (unitId) and excerpt, new event identity; it follows the original in the same row,
    // just far enough that the two markers and the original's tail stay apart.
    const after=clampAt(coverageEnd(work,source)+MARKER_HALF+COPY_GAP);
    const {event,crowded}=settle(work,{...source,id:action.newId,at:after});
-   return edit(state,{...work,events:[...work.events,event]},action.now,
-    {selection:{kind:'event',eventId:event.id},lastAction:'copied',notice:crowdedNotice(crowded)});
+   return edit(state,{...work,events:[...work.events,event]},action.now,{
+    selection:{kind:'event',eventId:event.id},
+    lastAction:'copied',
+    notice:crowdedNotice(crowded),
+   });
   }
   case 'remove':{
    if(!eventOf(work,action.eventId))return state;
-   return edit(state,{...work,events:work.events.filter(event=>event.id!==action.eventId)},action.now,{selection:null,lastAction:'removed'});
+   return edit(
+    state,
+    {...work,events:work.events.filter(event=>event.id!==action.eventId)},
+    action.now,
+    {selection:null,lastAction:'removed'});
   }
   case 'clip':{
-   const current=eventOf(work,action.eventId);if(!current)return state;
+   const current=eventOf(work,action.eventId);
+   if(!current)return state;
    // A longer excerpt may now reach the next sound in its row: the edited sound moves to a free row, never in time.
    const {event,crowded}=settle(work,{...current,clip:fitClip(action.clip,null)});
    const next=fitted({...work,events:replace(work,event)},'clipped');
-   return edit(state,next.arrangement,action.now,{selection:{kind:'event',eventId:event.id},lastAction:next.lastAction,notice:next.lastAction==='span-fitted'?null:crowdedNotice(crowded)});
+   return edit(state,next.arrangement,action.now,{
+    selection:{kind:'event',eventId:event.id},
+    lastAction:next.lastAction,
+    notice:next.lastAction==='span-fitted'?null:crowdedNotice(crowded),
+   });
   }
   case 'source-length':{
    const ids=new Set(work.units.filter(unit=>unit.sourceId===action.sourceId).map(unit=>unit.id));
@@ -174,15 +229,21 @@ export function soundWorldReducer(state:SoundWorldState,action:SoundWorldAction)
     if(!ids.has(event.unitId))return event;
     const clip=fitClip(event.clip,action.durationMs);
     if(clip.startMs===event.clip.startMs&&clip.endMs===event.clip.endMs)return event;
-    changed=true;return {...event,clip};
+    changed=true;
+    return {...event,clip};
    });
    return changed?{...state,arrangement:fitSpan({...work,events})}:state;
   }
   case 'add-unit':{
-   if(work.units.some(unit=>unit.id===action.unit.id))return {...state,selection:{kind:'unit',unitId:action.unit.id}};
+   // Already in the work: just pick it.
+   if(work.units.some(unit=>unit.id===action.unit.id))
+    return {...state,selection:{kind:'unit',unitId:action.unit.id}};
    if(work.units.length>=ARRANGEMENT_MAX_UNITS)return {...state,notice:{tone:'error',key:'units-full'}};
    const unit={...action.unit,markerIndex:nextMarkerIndex(work)};
-   return edit(state,{...work,units:[...work.units,unit]},action.now,{selection:{kind:'unit',unitId:unit.id},lastAction:null});
+   return edit(state,{...work,units:[...work.units,unit]},action.now,{
+    selection:{kind:'unit',unitId:unit.id},
+    lastAction:null,
+   });
   }
   case 'add-row':
    if(work.rows>=MAX_ROWS)return {...state,notice:{tone:'info',key:'rows-full'}};

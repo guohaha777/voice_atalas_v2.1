@@ -34,8 +34,15 @@ export function PromptInputs({lab}:{lab:PromptLab}){
   </label>}
   {task==='sound-hint'&&<>
    <label>{promptCopy.hint}
-    <select value={`${hint.dimension}:${hint.value}`} onChange={event=>{const [dimension,value]=event.target.value.split(':') as [SoundDimension,string];lab.setHint({...hint,dimension,value});}}>
-     {SOUND_DIMENSIONS.flatMap(dimension=>(SOUND_CHOICES[dimension] as readonly string[]).map(value=><option key={`${dimension}:${value}`} value={`${dimension}:${value}`}>
+    <select
+     value={`${hint.dimension}:${hint.value}`}
+     onChange={event=>{
+      const [dimension,value]=event.target.value.split(':') as [SoundDimension,string];
+      lab.setHint({...hint,dimension,value});
+     }}>
+     {SOUND_DIMENSIONS.flatMap(dimension=>(SOUND_CHOICES[dimension] as readonly string[]).map(value=><option
+      key={`${dimension}:${value}`}
+      value={`${dimension}:${value}`}>
       {dimensionCopy[dimension].label} · {(dimensionCopy[dimension].options as Record<string,string>)[value]}</option>))}
     </select>
    </label>
@@ -46,6 +53,9 @@ export function PromptInputs({lab}:{lab:PromptLab}){
     </select>
    </label>
   </>}
-  {task==='mood-words'&&<label>{promptCopy.moodText}<input type="text" value={lab.moodText} onChange={event=>lab.setMoodText(event.target.value)}/></label>}
+  {task==='mood-words'&&<label>
+   {promptCopy.moodText}
+   <input type="text" value={lab.moodText} onChange={event=>lab.setMoodText(event.target.value)}/>
+  </label>}
  </section>;
 }

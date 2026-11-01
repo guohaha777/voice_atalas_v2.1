@@ -44,17 +44,27 @@ export async function runBackgroundChain(generator:BackgroundGenerator,brief:Bac
  for(const step of generator.open){
   if(signal.aborted)return {status:'unavailable',reason:'failed'};
   if(typeof navigator!=='undefined'&&navigator.onLine===false)return {status:'unavailable',reason:'offline'};
-  const attempt=new AbortController(),stop=()=>attempt.abort();
+  const attempt=new AbortController();
+  const stop=()=>attempt.abort();
   signal.addEventListener('abort',stop);
   const timer=setTimeout(stop,timeouts[step]);
   // A step that ignores the abort still counts as too slow: the page never waits past the timeout.
-  const gaveUp=new Promise<never>((_,reject)=>attempt.signal.addEventListener('abort',()=>reject(new Error('aborted')),{once:true}));
+  const gaveUp=new Promise<never>((_,reject)=>
+   attempt.signal.addEventListener('abort',()=>reject(new Error('aborted')),{once:true}));
   try{
-   const result=parseBackgroundResult(await Promise.race([generator.generate(brief,step,attempt.signal),gaveUp]),brief.seconds);
+   const result=parseBackgroundResult(
+    await Promise.race([generator.generate(brief,step,attempt.signal),gaveUp]),
+    brief.seconds);
+   // Only a ready result from this very step counts.
    if(result?.status==='ready'&&result.source===step)return {status:'ready',result};
    reason=result?.status==='unavailable'?result.reason:'failed';
-  }catch{reason=attempt.signal.aborted&&!signal.aborted?'timeout':'failed';}
-  finally{clearTimeout(timer);signal.removeEventListener('abort',stop);}
+  }catch{
+   reason=attempt.signal.aborted&&!signal.aborted?'timeout':'failed';
+  }
+  finally{
+   clearTimeout(timer);
+   signal.removeEventListener('abort',stop);
+  }
  }
  return {status:'unavailable',reason};
 }

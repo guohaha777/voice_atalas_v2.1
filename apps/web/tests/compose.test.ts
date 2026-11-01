@@ -44,7 +44,8 @@ test('the score is derived from the field arrangement: same order, start times, 
  assert.deepEqual(layout.items.map(item=>item.row),[0,1,2],'rows come from the field (layout only)');
  assert.equal(layout.items.filter(item=>item.unit.id==='u1').length,2,'repeats stay repeats, with one identity');
  assert.deepEqual(layout.legend.map(item=>item.markerIndex),[0,1]);
- assert.equal(layout.totalSeconds,30);assert.equal(layout.spanMark,null);
+ assert.equal(layout.totalSeconds,30);
+ assert.equal(layout.spanMark,null);
  assert.deepEqual(layout.ticks.map(tick=>tick.seconds),[0,10,20,30]);
 });
 
@@ -53,7 +54,8 @@ test('a last sound may run a little past the chosen length: the piece grows by a
  assert.equal(MIX_RULES.ending.overrunSeconds,5);
  assert.equal(pieceSeconds(arrangement),33);
  const layout=scoreLayout(arrangement);
- assert.equal(layout.totalSeconds,33);assert.equal(layout.spanMark,30/33);
+ assert.equal(layout.totalSeconds,33);
+ assert.equal(layout.spanMark,30/33);
  assert.deepEqual(spanChoices(arrangement).map(choice=>[choice.seconds,choice.real]),[[20,24],[30,33],[45,46.5]]);
 });
 
@@ -61,7 +63,8 @@ test('what would sound past the overrun is cut — only what is heard; the clip 
  const arrangement=work({events:[ev('a',.9,0,12)]});
  assert.equal(pieceSeconds(arrangement),35,'30 s + 5 s at most');
  const [item]=scoreLayout(arrangement).items;
- assert.equal(item!.seconds,8);assert.equal(item!.end,35);
+ assert.equal(item!.seconds,8);
+ assert.equal(item!.end,35);
  assert.deepEqual(spanChoices(arrangement).map(choice=>[choice.seconds,choice.real]),[[20,25],[30,35],[45,50]]);
  assert.equal(arrangement.events[0]!.clip.endMs,12000,'the child\'s excerpt is not changed');
  assert.equal(backgroundInput(arrangement,{kind:'none'},[]).seconds,35,'the background is as long as the piece');
@@ -76,14 +79,16 @@ test('playhead, progress bar and highlights share one time: positions invert, so
  assert.deepEqual([...soundingAt(layout.items,1)],['a']);
  assert.deepEqual([...soundingAt(layout.items,3)],[],'an end is exclusive');
  assert.deepEqual([...soundingAt(layout.items,16)],['b']);
- assert.equal(clockText(15.9),'00:15');assert.equal(clockText(75),'01:15');
+ assert.equal(clockText(15.9),'00:15');
+ assert.equal(clockText(75),'01:15');
 });
 
 test('switching length in 万物成曲 is the field’s switch: every sound keeps its position, only rows re-tidy',()=>{
  const crowded=work({events:[ev('a',0,0,8),ev('b',.3,0,2,'u2')],spanSeconds:45});
  const state=composeReducer(loaded({...crowded,origin:'example'}),{type:'span',spanSeconds:20,now});
  const next=state.arrangement!;
- assert.equal(next.spanSeconds,20);assert.equal(next.origin,'child');
+ assert.equal(next.spanSeconds,20);
+ assert.equal(next.origin,'child');
  assert.deepEqual(next.events.map(event=>event.at),[0,.3]);
  assert.deepEqual(next,{...withSpan(crowded,20),origin:'child',updatedAt:now.toISOString()});
  assert.notEqual(next.events[0]!.row,next.events[1]!.row,'a longer tail moves the later sound to a free row');
@@ -106,7 +111,9 @@ test('saving puts an exact snapshot on the shelf; any later change shows as not 
  let state=loaded(work());
  assert.equal(shelfEntry(state,'   ',now,rendering),null);
  const entry=shelfEntry(state,'  青蛙  下雨歌 ',now,rendering)!;
- assert.equal(entry.title,'青蛙 下雨歌');assert.equal(entry.visibility,'private');assert.equal(entry.arrangement,state.arrangement);
+ assert.equal(entry.title,'青蛙 下雨歌');
+ assert.equal(entry.visibility,'private');
+ assert.equal(entry.arrangement,state.arrangement);
  assert.ok(parseSavedWork(entry));
  assert.equal(parseSavedWork({...entry,visibility:'everyone'}),null);
  assert.equal(parseSavedWork({...entry,id:'other'}),null,'the work id is the arrangement id');
@@ -125,17 +132,20 @@ test('saving puts an exact snapshot on the shelf; any later change shows as not 
 
 test('the shelf keeps this visit’s works newest first and replaces a re-saved one; the session reopens and resets',()=>{
  const shelf=new WorkShelf(),first=shelfEntry(loaded(work()),'一',now,rendering)!,second=shelfEntry(loaded(work({id:'work:2'})),'二',now,rendering)!;
- assert.equal(shelf.put(first),true);assert.equal(shelf.put(second),true);
+ assert.equal(shelf.put(first),true);
+ assert.equal(shelf.put(second),true);
  assert.deepEqual(shelf.list().map(item=>item.title),['二','一']);
  shelf.put({...first,title:'一改'});
  assert.deepEqual(shelf.list().map(item=>item.title),['一改','二']);
  assert.equal(shelf.put({...first,title:''}),false);
  const session=new WorkSession();
  session.open({...second,settings:{...DEFAULT_COMPOSE_SETTINGS,inspiration:{kind:'textbook',entryId:'tb:mock:train'}}});
- assert.equal(session.current()!.id,'work:2');assert.equal(session.settings().inspiration.kind,'textbook');
+ assert.equal(session.current()!.id,'work:2');
+ assert.equal(session.settings().inspiration.kind,'textbook');
  assert.equal(session.saveSettings({...DEFAULT_COMPOSE_SETTINGS,background:{enabled:true,instruments:[''],volume:.5}}),false);
  session.reset();
- assert.equal(session.current(),null);assert.deepEqual(session.settings(),DEFAULT_COMPOSE_SETTINGS);
+ assert.equal(session.current(),null);
+ assert.deepEqual(session.settings(),DEFAULT_COMPOSE_SETTINGS);
 });
 
 test('音乐小发现 states only facts counted from the arrangement',()=>{
@@ -177,7 +187,8 @@ test('万物成曲 refuses a length too short for the longest sound',()=>{
  const state=loaded(work({events:[ev('a',0,0,25)]}));
  assert.equal(state.arrangement!.spanSeconds,30);
  const refused=composeReducer(state,{type:'span',spanSeconds:20,now});
- assert.equal(refused.arrangement,state.arrangement);assert.equal(refused.lastAction,'span-blocked');
+ assert.equal(refused.arrangement,state.arrangement);
+ assert.equal(refused.lastAction,'span-blocked');
  assert.equal(composeReducer(state,{type:'span',spanSeconds:45,now}).arrangement!.spanSeconds,45);
 });
 
@@ -191,7 +202,8 @@ test('课本: a chosen song is played as it is; the background, the AI brief and
  assert.equal(input.textbook?.id,'tb:mock:lullaby');
  assert.equal(backgroundBrief(state.arrangement!,state.settings.inspiration,exampleTracks,[])!.textbook?.id,'tb:mock:lullaby');
  const track=exampleTracks.find(item=>item.id==='tb:mock:lullaby')!;
- assert.equal(rhythmWords([2,1]),'嗒— 嗒');assert.equal(rhythmWords([.5,.5,1]),'嘀 嘀 嗒');
+ assert.equal(rhythmWords([2,1]),'嗒— 嗒');
+ assert.equal(rhythmWords([.5,.5,1]),'嘀 嘀 嗒');
  assert.equal(songFeature(track),'「摇篮曲」是三拍子，节奏是「嗒— 嗒」，像摇篮轻轻晃。');
  const talk=textbookTalk(track,{kind:'together',example:0},'蛙鸣');
  assert.deepEqual(Object.keys(talk),['feature','meeting','task']);
@@ -200,12 +212,15 @@ test('课本: a chosen song is played as it is; the background, the AI brief and
 
 test('the shelf can rename a work and take one off; empty names are refused',()=>{
  const shelf=new WorkShelf(),first=shelfEntry(loaded(work()),'一',now,rendering)!,second=shelfEntry(loaded(work({id:'work:2'})),'二',now,rendering)!;
- shelf.put(first);shelf.put(second);
+ shelf.put(first);
+ shelf.put(second);
  assert.equal(shelf.rename('work:1','   '),null);
  const renamed=shelf.rename('work:1','  下雨的歌  ')!;
- assert.equal(renamed.title,'下雨的歌');assert.equal(renamed.savedAt,first.savedAt);
+ assert.equal(renamed.title,'下雨的歌');
+ assert.equal(renamed.savedAt,first.savedAt);
  assert.deepEqual(shelf.list().map(item=>item.title),['二','下雨的歌'],'its place stays');
- assert.equal(shelf.remove('work:2'),true);assert.equal(shelf.remove('work:2'),false);
+ assert.equal(shelf.remove('work:2'),true);
+ assert.equal(shelf.remove('work:2'),false);
  assert.deepEqual(shelf.list().map(item=>item.id),['work:1']);
 });
 
@@ -243,9 +258,14 @@ test('the AI background chain: closed sends nothing; steps are tried in order, e
  const asked:string[]=[];
  const notes=[{at:0,length:2,midi:60,part:'chord',accent:0}];
  const fake=(answers:Record<string,unknown|'hang'>):BackgroundGenerator=>({open:['audio-ai','notes-ai'],
-  generate:(_,step)=>{asked.push(step);const answer=answers[step];return answer==='hang'?new Promise(()=>{}):Promise.resolve(answer);}});
+  generate:(_,step)=>{
+   asked.push(step);
+   const answer=answers[step];
+   return answer==='hang'?new Promise(()=>{}):Promise.resolve(answer);
+  }});
  const ready=await runBackgroundChain(fake({'audio-ai':{status:'unavailable',reason:'quota'},'notes-ai':{status:'ready',source:'notes-ai',notes,model:'qwen',promptVersion:'p1'}}),brief,never);
- assert.equal(ready.status,'ready');assert.deepEqual(asked,['audio-ai','notes-ai'],'audio first, then notes');
+ assert.equal(ready.status,'ready');
+ assert.deepEqual(asked,['audio-ai','notes-ai'],'audio first, then notes');
  const slow=await runBackgroundChain(fake({'audio-ai':'hang','notes-ai':'hang'}),brief,never,{'audio-ai':20,'notes-ai':20});
  assert.deepEqual(slow,{status:'unavailable',reason:'timeout'},'too slow: keep the local background');
  const tooLong=await runBackgroundChain(fake({'audio-ai':{status:'ready',source:'audio-ai',audioUrl:'https://x/a.mp3',durationMs:99_000,model:'fun',promptVersion:'p'},'notes-ai':{status:'ready',source:'notes-ai',notes:[{...notes[0],length:99}],model:'q',promptVersion:'p'}}),brief,never);
@@ -256,7 +276,8 @@ test('the AI background chain: closed sends nothing; steps are tried in order, e
 test('routes /compose and /works',()=>{
  assert.deepEqual(parseRoute('/compose'),{page:'compose'});
  assert.deepEqual(parseRoute('/works/'),{page:'works'});
- assert.equal(routeHref({page:'compose'}),'/compose');assert.equal(routeHref({page:'works'}),'/works');
+ assert.equal(routeHref({page:'compose'}),'/compose');
+ assert.equal(routeHref({page:'works'}),'/works');
  assert.equal(WORK_CONTRACT_VERSION,'work-v1');
 });
 
@@ -264,9 +285,11 @@ test('instruments: tap to add, tap again to remove, none = the original backgrou
  let state=loaded(work());
  assert.deepEqual(state.settings.background,{enabled:true,instruments:[],volume:.5},'starts with the background as generated, switched on');
  const tap=(id:string)=>{state=composeReducer(state,{type:'instrument',id});};
- tap('inst:local:drum');tap('inst:local:xylophone');
+ tap('inst:local:drum');
+ tap('inst:local:xylophone');
  assert.deepEqual(state.settings.background.instruments,['inst:local:drum','inst:local:xylophone']);
- tap('inst:local:drum');tap('inst:local:xylophone');
+ tap('inst:local:drum');
+ tap('inst:local:xylophone');
  assert.deepEqual(state.settings.background.instruments,[]);
  assert.equal(state.settings.background.enabled,true,'taking every instrument away does not switch the background off');
  state=composeReducer(state,{type:'background-enabled',enabled:false});
@@ -316,7 +339,8 @@ test('the squirrel has something to say after every card control: no textbook, t
  state=composeReducer(state,{type:'inspiration',inspiration:{kind:'none'}});
  assert.equal(state.lastAction,'inspiration-none');
  state=composeReducer(state,{type:'background-volume',volume:.2});
- assert.equal(state.lastAction,'background-volume');assert.equal(state.settings.background.volume,.2);
+ assert.equal(state.lastAction,'background-volume');
+ assert.equal(state.settings.background.volume,.2);
  assert.equal(composeReducer(state,{type:'background-volume',volume:.2}),state,'the same volume changes nothing');
 });
 

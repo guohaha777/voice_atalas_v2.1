@@ -9,11 +9,29 @@ export function HomeInteractionHint({feedback}:{feedback:{message:string;visible
  const [fading,setFading]=useState(false);
  const reduced=readPerformanceHints().reduced;
  useEffect(()=>{
-  if(target===displayed){setFading(false);return;}
-  if(reduced){setDisplayed(target);setFading(false);return;}
+  if(target===displayed){
+   setFading(false);
+   return;
+  }
+  if(reduced){
+   setDisplayed(target);
+   setFading(false);
+   return;
+  }
+  // Fade out, swap the text, fade in.
   setFading(true);
-  const timer=setTimeout(()=>{setDisplayed(target);setFading(false);},160);
+  const timer=setTimeout(()=>{
+   setDisplayed(target);
+   setFading(false);
+  },160);
   return()=>clearTimeout(timer);
  },[target,displayed,reduced]);
- return <p id="home-sticker-hint" className={`${styles.stickerHint} ${fading?styles['hint-fading']:''}`} role="status" aria-live="polite" aria-atomic="true">{displayed}</p>;
+ return <p
+  id="home-sticker-hint"
+  className={`${styles.stickerHint} ${fading?styles['hint-fading']:''}`}
+  role="status"
+  aria-live="polite"
+  aria-atomic="true">
+  {displayed}
+ </p>;
 }

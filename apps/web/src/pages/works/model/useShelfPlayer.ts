@@ -1,9 +1,9 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {SavedWork} from '@wanwu-v2/contracts/work';
-import {assignParts,backgroundPlan} from '@wanwu-v2/sound-rules/background';
+import {backgroundPlan} from '@wanwu-v2/sound-rules/background';
 import {MIX_RULES} from '@wanwu-v2/sound-rules/mix';
 import {audioSupported} from '../../../shared/audio/audioContext.ts';
-import {renderBackground} from '../../../shared/audio/renderBackground.ts';
+import {renderArrangedBackground} from '@wanwu-v2/audio-engine/orchestration';
 import {SequencePlayer} from '../../../shared/audio/SequencePlayer.ts';
 import type {SequenceVoice} from '../../../shared/audio/SequencePlayer.ts';
 import {backgroundInput} from '../../../shared/background/backgroundLayer.ts';
@@ -83,10 +83,8 @@ export function useShelfPlayer(
    if(background.enabled){
     const chosen=background.instruments.flatMap(id=>instruments.filter(item=>item.id===id));
     // A background that cannot be made is left out: the child's sounds still play.
-    const under=await renderBackground(
-     backgroundPlan(backgroundInput(arrangement,settings.inspiration,tracks)),
-     assignParts(chosen),
-     Object.fromEntries(chosen.map(item=>[item.id,item.recipe]))).catch(()=>null);
+    const input=backgroundInput(arrangement,settings.inspiration,tracks);
+    const under=await renderArrangedBackground(backgroundPlan(input),chosen,input.sounding).catch(()=>null);
     if(under)voices.push({at:0,buffer:under,layer:'background'});
    }
    if(mine!==token.current)return;

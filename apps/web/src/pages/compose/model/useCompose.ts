@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useMemo,useReducer,useRef,useState} from 'react';
 import type {Arrangement,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
-import {spanHolds} from '../../../shared/creation/arrangementTiming.ts';
+import {timedEvents,spanHolds} from '../../../shared/creation/arrangementTiming.ts';
 import type {InspirationCatalog} from '../../../shared/inspiration/catalog.ts';
 import type {TeachingMusicService} from '../../../shared/inspiration/teachingMusic.ts';
 import {useInspirationCatalog} from '../../../shared/inspiration/useInspirationCatalog.ts';
@@ -10,6 +10,8 @@ import type {BackgroundLibrary} from '../../../shared/background/library.ts';
 import {useBackgroundLayer} from '../../../shared/background/useBackgroundLayer.ts';
 import type {BackgroundGenerator} from '../../../shared/background/generator.ts';
 import {RULE_VERSIONS} from '@wanwu-v2/sound-rules/rules';
+import {instrumentUnavailable} from './instrumentAvailability.ts';
+import {guideLines} from '../config/guideLines.ts';
 import {useAiBackground} from './useAiBackground.ts';
 import {textbookSwitch} from '../../../shared/inspiration/textbookSwitch.ts';
 import {services} from '../../../app/services.ts';
@@ -38,6 +40,7 @@ export function useCompose(
  const [state,dispatch]=useReducer(composeReducer,initialCompose);
  const [shelfCount,setShelfCount]=useState(0);
  const [instruments,setInstruments]=useState<readonly Instrument[]>([]);
+ const [hoveredInstrument,setHoveredInstrument]=useState<string|null>(null);
  const [comingInstruments,setComing]=useState<readonly string[]>([]);
  /** The 课本灵感 switch, shared with 万物声场 (there it plays the song's beat): on = the chosen song's background plays. */
  const [songSwitch,setSwitchState]=useState(textbookSwitch.get);
@@ -83,7 +86,7 @@ export function useCompose(
  const songOn=choice.songInUse(songSwitch,state.settings.inspiration);
  const heard=useMemo(()=>choice.heardSettings(state.settings,songOn),[songOn,state.settings]);
  // Teaching music is borrowed like a song once its card is made.
- const music=useBackgroundLayer(heard,instruments,tracks);
+ const music=useBackgroundLayer(heard,instruments,tracks,true);
  /** What the background is made of right now (mood colour, borrowed rhythm), for the card. */
  const backgroundPlan=useMemo(()=>state.arrangement?music.plan(state.arrangement):null,
  // The plan only changes with the arrangement and what the background borrows.
@@ -95,10 +98,22 @@ export function useCompose(
  const ai=useAiBackground(state.arrangement,choice.aiBriefSettings(state.settings),music,generator);
  /** 规则 5: song or AI, one or the other. */
  const songPlays=choice.songPlays(songOn,ai.using);
+ const instrumentPlan=useMemo(
+  ()=>state.arrangement?(ai.using?ai.notePlan(state.arrangement):backgroundPlan):null,
+  [state.arrangement,ai.using,ai.renderKey,backgroundPlan]);
+ const soundingSpans=useMemo(()=>state.arrangement?timedEvents(state.arrangement):[],[state.arrangement]);
+ const unavailableInstruments=useMemo(()=>new Map(instruments.map(item=>[
+  item.id,instrumentUnavailable(instrumentPlan,ai.fixedAudio,music.chosen,item,soundingSpans),
+ ])),[instruments,instrumentPlan,ai.fixedAudio,music.chosen,soundingSpans]);
+ const unavailable=hoveredInstrument?unavailableInstruments.get(hoveredInstrument):null;
+ const instrumentHint=hoveredInstrument==='coming'
+  ?guideLines.instrumentsComing(comingInstruments.join('、'))
+  :unavailable?guideLines.instrumentUnavailable[unavailable]:null;
+
  const played={
   // 规则 22: the volume slider (under 想听多久) sets the whole layer — song, AI or plain — up to 成曲's own maximum.
   gain:choice.backgroundGain(state.settings.background),
-  key:`${music.key}|${ai.source}`,
+  key:`${music.key}|${ai.renderKey}`,
   // 规则 4: the AI background while it is used, else the local one.
   buffer:(arrangement:Arrangement)=>choice.playedBackground(ai.using)==='ai'
    ?ai.buffer(arrangement)??music.buffer(arrangement)
@@ -158,18 +173,18 @@ export function useCompose(
    }
   });
  };
- // 规则 12: opening the page, once the piece and what this device kept are there.
- const opened=useRef(false);
+ // 规则 12: each composition opens once its data and device cache are ready.
+ const opened=useRef<string|null>(null);
  useEffect(()=>{
-  if(opened.current||!state.arrangement?.events.length||!ai.kept)return;
-  opened.current=true;
+  if(opened.current===ai.key||!state.arrangement?.events.length||!ai.kept)return;
+  opened.current=ai.key;
   apply(choice.openPage({
    inUse:songOn,
    backgroundEnabled:state.settings.background.enabled,
    aiStatus:ai.state.status,
   }));
- // Once, when the piece and the kept cache are there.
- },[state.arrangement,ai.kept]);
+ // Each changed composition gets its own result; an unchanged composition reuses what was kept.
+ },[ai.key,ai.kept]);
 
  // ----- shelf and sharing -----
  /** Whether this piece can go on the shelf; says why not (empty, or the untouched example). */
@@ -224,6 +239,9 @@ export function useCompose(
   layout,
   instruments,
   comingInstruments,
+  unavailableInstruments,
+  instrumentHint,
+  hoverInstrument:setHoveredInstrument,
   chosen:music.chosen,
   parts:music.parts,
   entries,
@@ -273,7 +291,15 @@ export function useCompose(
    dispatch({type:'said',lastAction:move.background?'background-on':'background-off'});
   },
   setBackgroundVolume:(volume:number)=>dispatch({type:'background-volume',volume}),
-  toggleInstrument:(id:string)=>dispatch({type:'instrument',id}),
+  toggleInstrument:(id:string)=>{
+   const selected=latest.current.settings.background.instruments.includes(id);
+   if(!selected&&unavailableInstruments.get(id)){
+    setHoveredInstrument(id);
+    return;
+   }
+   setHoveredInstrument(null);
+   dispatch({type:'instrument',id});
+  },
   showComing:()=>dispatch({type:'said',lastAction:'instrument-coming'}),
   /** 规则 10: the AI chip (making one first when this piece has none; the squirrel then says how it went). */
   tapAi:()=>{

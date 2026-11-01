@@ -1,3 +1,4 @@
+import {renderArrangedBackground} from '@wanwu-v2/audio-engine/orchestration';
 import {useMemo,useRef} from 'react';
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
@@ -20,6 +21,7 @@ export function useBackgroundLayer(
  settings:ComposeSettings,
  instruments:readonly Instrument[],
  tracks:readonly TextbookTrack[],
+ arranged=false,
 ){
  const {background,inspiration}=settings;
  const renders=useRef(new Map<string,Promise<AudioBuffer>>());
@@ -35,6 +37,9 @@ export function useBackgroundLayer(
  /** Changes when who plays it or what it borrows changes (the arrangement is read at play time). */
  const key=`${chosen.map(item=>item.id).join('+')||'original'}|${track?.id??'-'}`;
  const plan=(arrangement:Arrangement)=>backgroundPlan(backgroundInput(arrangement,inspiration,tracks));
+ const render=(background:ReturnType<typeof backgroundPlan>,arrangement:Arrangement)=>arranged
+  ?renderArrangedBackground(background,chosen,backgroundInput(arrangement,inspiration,tracks).sounding)
+  :renderBackground(background,parts,voices);
  const buffer=(arrangement:Arrangement)=>{
   const input=backgroundInput(arrangement,inspiration,tracks);
   const cacheKey=`${key}|${JSON.stringify(input)}`;
@@ -42,13 +47,15 @@ export function useBackgroundLayer(
   let render=cache.get(cacheKey);
   // Rendered once per input; a failed render is forgotten; only the last KEEP are kept.
   if(!render){
-   render=renderBackground(backgroundPlan(input),parts,voices);
+   render=arranged
+    ?renderArrangedBackground(backgroundPlan(input),chosen,input.sounding)
+    :renderBackground(backgroundPlan(input),parts,voices);
    cache.set(cacheKey,render);
    render.catch(()=>cache.delete(cacheKey));
    while(cache.size>KEEP)cache.delete(cache.keys().next().value!);
   }
   return render;
  };
- return {enabled:background.enabled,chosen,parts,voices,track,gain,key,plan,buffer};
+ return {enabled:background.enabled,chosen,parts,voices,track,gain,key,plan,buffer,render};
 }
 export type BackgroundLayer=ReturnType<typeof useBackgroundLayer>;

@@ -49,6 +49,7 @@ function spokenBackground(compose:Compose){
 /** The squirrel speaks for the page: a notice (if any) first, otherwise what to do next. One voice, no repeated hints. */
 function guideText(compose:Compose){
  const {arrangement,lastAction,notice}=compose.state;
+ if(compose.instrumentHint)return compose.instrumentHint;
  if(notice)return composeCopy.notices[notice.key];
  if(!arrangement)return guideLines.loading;
  if(compose.playing)return guideLines.playing;

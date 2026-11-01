@@ -123,3 +123,8 @@
 /* While a song's background plays, the background card is greyed too (switch, instruments); the title stays. */
 .card[data-song]>:not(.cardTop),.card[data-song] .cardTop>:not(h3){opacity:.45;filter:grayscale(1);transition:opacity .2s,filter .2s}
 .card[data-song]>:not(.cardTop):hover,.card[data-song] .cardTop>:not(h3):hover{opacity:.8}
+
+/* Keep unavailable controls focusable so the squirrel can explain on hover, focus or touch. */
+.trackRow button[data-unavailable]{background:var(--wk-soft);color:#a0a796;box-shadow:none;cursor:not-allowed}
+.trackRow button[data-unavailable]:hover{transform:none}
+.trackRow button[data-unavailable] svg{color:inherit}

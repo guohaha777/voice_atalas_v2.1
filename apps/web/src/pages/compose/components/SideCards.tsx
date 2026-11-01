@@ -221,6 +221,12 @@ export function BackgroundCard({compose}:{compose:Compose}){
     key={item.id}
     type="button"
     aria-pressed={chosen.has(item.id)}
+    aria-disabled={!!compose.unavailableInstruments.get(item.id)&&!chosen.has(item.id)}
+    data-unavailable={!!compose.unavailableInstruments.get(item.id)||undefined}
+    onPointerEnter={()=>compose.hoverInstrument(item.id)}
+    onPointerLeave={()=>compose.hoverInstrument(null)}
+    onFocus={()=>compose.hoverInstrument(item.id)}
+    onBlur={()=>compose.hoverInstrument(null)}
     onClick={()=>compose.toggleInstrument(item.id)}>
     {chosen.has(item.id)&&<Glyph name="check"/>}
     {item.name}
@@ -230,6 +236,10 @@ export function BackgroundCard({compose}:{compose:Compose}){
     type="button"
     className={styles.coming}
     aria-label={composeCopy.instrumentComing(compose.comingInstruments.join('、'))}
+    onPointerEnter={()=>compose.hoverInstrument('coming')}
+    onPointerLeave={()=>compose.hoverInstrument(null)}
+    onFocus={()=>compose.hoverInstrument('coming')}
+    onBlur={()=>compose.hoverInstrument(null)}
     onClick={compose.showComing}>
     <Glyph name="plus"/>
     {composeCopy.instrumentMore}

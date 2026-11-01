@@ -2,15 +2,16 @@ import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import type {AiBackgroundStep,BackgroundBrief,BackgroundSource,BackgroundUnavailable,ComposePlan} from '@wanwu-v2/contracts/background';
 import type {ComposeSettings} from '@wanwu-v2/contracts/work';
-import {programBackground} from '@wanwu-v2/sound-rules/ai-compose';
+import {composeNotes,programBackground} from '@wanwu-v2/sound-rules/ai-compose';
 import type {BackgroundNote} from '@wanwu-v2/sound-rules/background';
 import {loadAudio} from '../../../shared/audio/loadAudio.ts';
-import {renderBackground} from '../../../shared/audio/renderBackground.ts';
 import {backgroundBrief} from '../../../shared/background/backgroundLayer.ts';
+import {backgroundCacheKey} from '../../../shared/background/compositionIdentity.ts';
 import {runBackgroundChain} from '../../../shared/background/generator.ts';
 import type {BackgroundGenerator,ChainOutcome} from '../../../shared/background/generator.ts';
 import type {BackgroundLayer} from '../../../shared/background/useBackgroundLayer.ts';
 import {keptCache} from '../../../shared/storage/keptCache.ts';
+import {backgroundRenderCache} from './backgroundRenderCache.ts';
 import {AI_USED_AT_START,aiStatus,usedSource} from './backgroundChoice.ts';
 import type {AiBackgroundState} from './backgroundChoice.ts';
 
@@ -18,14 +19,15 @@ import type {AiBackgroundState} from './backgroundChoice.ts';
 export type {AiBackgroundState} from './backgroundChoice.ts';
 type Ready=Extract<ChainOutcome,{status:'ready'}>['result'];
 /** 降级：程序自编 — what the program composed when no AI step gave a background, and why. */
-type ProgramMade={key:string;plan:ComposePlan;notes:BackgroundNote[];reason:BackgroundUnavailable};
+type ProgramResult={source:'program';plan:ComposePlan;notes:BackgroundNote[];reason:BackgroundUnavailable};
+type ProgramMade=ProgramResult&{key:string};
 /** The AI step running now and how long the page waits for it (the progress bar). */
 export type AiProgress={step:AiBackgroundStep;timeoutMs:number;startedAt:number};
 
 const AUDIO_TIMEOUT_MS=20_000;
 
 /** One AI background per piece (its sounds and mood), kept on this device: asked again only by 换一首. */
-const made=keptCache<Ready>('ai-background');
+const made=keptCache<Ready|ProgramResult>('ai-background');
 
 /**
  * 万物成曲's AI background, on top of the local layer: made once when the page opens (unless this piece already has
@@ -40,7 +42,7 @@ export function useAiBackground(
  layer:BackgroundLayer,
  generator:BackgroundGenerator,
 ){
- const [, setMade]=useState(0);
+ const [revision,setMade]=useState(0);
  const [asking,setAsking]=useState<
   |{key:string;status:'working'}
   |{key:string;status:'unavailable';reason:BackgroundUnavailable}
@@ -53,9 +55,8 @@ export function useAiBackground(
  const brief=useMemo(
   ()=>arrangement&&arrangement.events.length?backgroundBrief(arrangement,instruments):null,
   [arrangement,instruments]);
- // The cache knows a piece by its sounds and mood, not by its id (the untouched example gets a new id on every visit),
- // who plays them (instruments only change the voices) or which try it is.
- const briefKey=brief?JSON.stringify({seconds:brief.seconds,mood:brief.mood,sounds:brief.sounds}):'';
+ // Sources, excerpts, timing, choices and mood identify the music; volume / instruments only change its playback.
+ const briefKey=brief?backgroundCacheKey(brief):'';
  const [kept,setKept]=useState(false);
  useEffect(()=>{
   let live=true;
@@ -66,17 +67,25 @@ export function useAiBackground(
    live=false;
   };
  },[]);
- const programHere=program?.key===briefKey?program:null;
- // A try that fell back to the program comes after whatever AI background this piece had: the program's plays (the
- // kept AI one comes back after a reload, or with the next AI success).
- const result=briefKey&&!programHere?made.get(briefKey):null;
+ const stored=briefKey?made.get(briefKey):null;
+ const programHere=useMemo(
+  ()=>program?.key===briefKey?program:stored?.source==='program'?{...stored,key:briefKey}:null,
+  [program,stored,briefKey]);
+ // Keep the latest result, including program fallback, when this unchanged arrangement is opened again.
+ const result=!programHere&&stored?.source!=='program'?stored:null;
  /** How many backgrounds this piece has had in this visit (the next try's number). */
  const tries=useRef(new Map<string,number>());
  const controller=useRef<AbortController|null>(null);
- // Leaving the page stops an ask on its way; a changed piece only stops showing it (the ask still lands in `made`).
- useEffect(()=>()=>controller.current?.abort(),[]);
+ // An obsolete composition must not switch the new arrangement back to its result.
+ useEffect(()=>{
+  setProgress(null);
+  return()=>controller.current?.abort();
+ },[briefKey]);
  const open=generator.open.length>0;
- const state:AiBackgroundState=aiStatus({open,kept,asking,briefKey,made:result});
+ const state:AiBackgroundState=aiStatus({
+  open,kept,briefKey,made:result,
+  asking:asking?.key===briefKey?asking:programHere?{key:briefKey,status:'unavailable',reason:programHere.reason}:null,
+ });
 
  /**
   * AI 做一首 / 换一首: tries the AI steps once for this piece (replacing what was made); when none gives one, the
@@ -107,9 +116,12 @@ export function useAiBackground(
    }
    // 降级：程序自编, in the AI's place, with the reason the AI did not make one.
    const composed=programBackground(request);
-   setProgram({key,plan:composed.plan,notes:composed.notes,reason:outcome.reason});
+   const fallback:ProgramResult={source:'program',plan:composed.plan,notes:composed.notes,reason:outcome.reason};
+   made.set(key,fallback);
+   setProgram({...fallback,key});
    setAsking({key,status:'unavailable',reason:outcome.reason});
    setUsing(true);
+   setMade(count=>count+1);
    done('program');
   };
   if(!open){
@@ -121,27 +133,33 @@ export function useAiBackground(
   }).then(finish);
  },[open,brief,briefKey,asking,generator,result,programHere]);
 
- const renders=useRef(new Map<object,Promise<AudioBuffer>>());
+ const renders=useMemo(()=>backgroundRenderCache<object>(),[]);
+ /** The actual AI / program note plan, also used to decide whether an instrument can join. */
+ const notePlan=(piece:Arrangement)=>{
+  const playing=using?result??programHere:null;
+  if(!playing||!brief||'audioUrl' in playing)return null;
+  return {...layer.plan(piece),...composeNotes(brief,playing.plan),mode:playing.plan.mode,notes:playing.notes};
+ };
  /** The background in the AI's place for this piece (AI or 程序自编), or null to play the local one. */
  const buffer=(piece:Arrangement):Promise<AudioBuffer>|null=>{
   const playing=using?result??programHere:null;
-  if(!playing)return null;
-  let render=renders.current.get(playing);
-  if(!render){
-   render='audioUrl' in playing
+  if(!playing||!brief)return null;
+  // Generated audio has fixed instrumentation; composed notes use the currently selected voices.
+  const renderKey='audioUrl' in playing?'audio':JSON.stringify({key:layer.key,parts:layer.parts,voices:layer.voices});
+  return renders.get(playing,renderKey,()=>
+   'audioUrl' in playing
     ?loadAudio(playing.audioUrl,{timeoutMs:AUDIO_TIMEOUT_MS})
-    // Composed notes are played like the local ones: same instruments, fades and room under the child's sounds.
-    :renderBackground({...layer.plan(piece),notes:playing.notes as BackgroundNote[]},layer.parts,layer.voices);
-   renders.current.set(playing,render);
-   render.catch(()=>renders.current.delete(playing));
-  }
-  return render;
+    :layer.render(notePlan(piece)!,piece));
  };
  const source:BackgroundSource=usedSource(using,result,!!programHere);
  /** The prompt version behind the background playing now (null when no model made it), kept with a saved piece. */
  const prompt=using&&result?result.promptVersion:null;
  return {
   state,
+  key:briefKey,
+  notePlan,
+  fixedAudio:using&&result?.source==='audio-ai',
+  renderKey:`${briefKey}|${source}|${revision}`,
   using:using&&(!!result||!!programHere),
   source,
   prompt,

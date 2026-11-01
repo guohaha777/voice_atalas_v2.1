@@ -22,8 +22,13 @@ export const guideLines={
  backgroundOff:'背景关啦，现在只听自己的声音。',
  volume:(level:'soft'|'medium'|'loud')=>({soft:'背景轻轻的，你的声音更清楚啦。',medium:'背景音量刚刚好，你的声音和背景都听得见。',loud:'背景大声一点，更热闹啦；你的声音还在最前面。'})[level],
  instruments:(who:string)=>`${who}。再点一下就请它下来。`,
+ instrumentUnavailable:{
+  audio:'这段背景是一整段声音，暂时不能换乐器哦～',
+  empty:'这里还没有背景呢，有了背景就能请乐器来玩啦～',
+  'no-part':'这件乐器还没找到合适的位置，先请别的乐器来玩吧～',
+ },
  instrumentsNone:'不选乐器，背景用原来柔柔的声音。',
- instrumentsComing:(names:string)=>`${names}还在路上，暂时不能选。`,
+ instrumentsComing:(names:string)=>`${names}还在准备呢，等它们来一起玩呀～`,
  // One AI background is made when the page opens (换一首 makes another); the AI chip switches back to the song's / the
  // first one: one or the other.
  aiOn:'换上了 AI 做的背景，不喜欢再点一下换回来。',

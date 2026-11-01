@@ -10,6 +10,7 @@ import type {BackgroundInput} from '@wanwu-v2/sound-rules/background';
 import {RULE_VERSIONS} from '@wanwu-v2/sound-rules/rules';
 import {pieceSeconds,timedEvents} from '../creation/arrangementTiming.ts';
 import {presetMood} from '../creation/moodCopy.ts';
+import {arrangementIdentity} from './compositionIdentity.ts';
 
 /** The card an inspiration points to: a textbook song, or teaching music once its card is made (null until then). */
 export function inspirationTrack(inspiration:Inspiration,tracks:readonly TextbookTrack[]){
@@ -58,14 +59,14 @@ export function backgroundBrief(
  const events=timedEvents(arrangement);
  if(!events.length)return null;
  const numbers=new Map<string,number>();
- const tenth=(value:number)=>Math.round(value*10)/10;
  const sounds=events.map(({start,end,unit})=>{
   if(!numbers.has(unit.id))numbers.set(unit.id,numbers.size+1);
-  return briefSound(numbers.get(unit.id)!,tenth(start),tenth(end),unit.shape,unit.analysis);
+  return briefSound(numbers.get(unit.id)!,start,end,unit.shape,unit.analysis);
  });
  return {
   version:BACKGROUND_REQUEST_VERSION,
   workId:arrangement.id,
+  identity:arrangementIdentity(arrangement),
   seconds:pieceSeconds(arrangement),
   mood:presetMood(arrangement.mood),
   sounds,

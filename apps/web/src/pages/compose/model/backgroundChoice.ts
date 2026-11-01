@@ -95,7 +95,7 @@ export const aiMade=(outcome:'ai'|'program'):Move=>{
  return {song:false};
 };
 
-// ----- 规则 12：打开页面（只一次，作品和本机缓存都读到以后） -----
+// ----- 规则 12：打开编排（每份编排一次，作品和本机缓存都读到以后） -----
 /**
  * 课本歌在用：放课本歌（背景层打开），什么都不问模型。背景关着：什么都不做。否则：这首作品还没有 AI 背景就做
  * 一首；已经有了（本机记着的）就只补一次讲解。
@@ -171,8 +171,7 @@ export const shownBackgroundSwitch=(enabled:boolean,playingSong:boolean)=>enable
 
 // ----- 规则 24：点背景音乐开关 -----
 /**
- * 显示为开：关上背景层（什么背景都不放）。显示为关：打开背景层，课本开关关上，换成 AI 背景——这首作品（按选中的
- * 歌）还没有 AI 背景、或上次没做成，就马上去做一首（不用再点 AI 标签）；有了或正在做，就用它；没接 AI 就放普通背景。
+ * 显示为开：关上背景层（什么背景都不放）。显示为关：打开背景层，课本开关关上，换成 AI 背景——这份孩子编排还没有 AI 背景、或上次没做成，就马上去做一首（不用再点 AI 标签）；有了或正在做，就用它；没接 AI 就放普通背景。
  */
 export function tapBackgroundSwitch(shownOn:boolean,aiStatus:AiBackgroundState['status']):Move{
  if(shownOn)return {background:false};

@@ -37,6 +37,9 @@ export type ScoreLayout={
 /** Tick spacing per chosen length, the same steps as the field ruler. */
 export const tickStep=(span:number)=>span<=20?5:span<=30?10:15;
 
+/** How close (share of the ruler) a tick may come to the end label before it steps aside. */
+const END_LABEL_ROOM=.08;
+
 export function scoreLayout(arrangement:Arrangement):ScoreLayout{
  const total=pieceSeconds(arrangement);
  const span=arrangement.spanSeconds;
@@ -58,7 +61,10 @@ export function scoreLayout(arrangement:Arrangement):ScoreLayout{
   totalSeconds:total,
   items,
   legend:arrangement.units.filter(unit=>used.has(unit.id)).sort((a,b)=>a.markerIndex-b.markerIndex),
-  ticks:Array.from({length:Math.floor(span/step)+1},(_,i)=>({seconds:i*step,at:i*step/total})),
+  // A tick right next to the real end (a last sound running a second or two past the chosen length) would print over the
+  // end label; the hatch's own 「选的 N 秒」 and its dashed edge still mark that length.
+  ticks:Array.from({length:Math.floor(span/step)+1},(_,i)=>({seconds:i*step,at:i*step/total}))
+   .filter(tick=>total<=span+1e-6||1-tick.at>=END_LABEL_ROOM),
   spanMark:total>span+1e-6?span/total:null,
  };
 }

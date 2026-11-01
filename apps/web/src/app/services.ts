@@ -24,7 +24,8 @@ import type {AccountClient} from '../shared/account/accountClient.ts';
 import {CloudWorkspace} from '../shared/cloud/cloudWorkspace.ts';
 import {cloudAdapters} from '../shared/cloud/adapters.ts';
 import {GuestAiClient} from '../shared/guest-ai/guestAiClient.ts';
-import {guestBackgroundGenerator,guestMoodInterpreter,guestTalkPolisher,guestTeachingMusicService} from '../shared/guest-ai/adapters.ts';
+import {guestBackgroundGenerator,guestDiscoveryService,guestMoodInterpreter,guestTalkPolisher,guestTeachingMusicService} from '../shared/guest-ai/adapters.ts';
+import type {DiscoveryService} from '../shared/discovery/service.ts';
 import {visitorModels} from '../shared/model-config/visitorModels.ts';
 import {indexedDbStore,keepGuestWork,restoreGuestWork} from '../shared/storage/guestStore.ts';
 import {decodeKept} from '../shared/storage/decodeKept.ts';
@@ -43,6 +44,7 @@ export type Services={
  inspirationCatalog:InspirationCatalog;
  teachingMusic:TeachingMusicService;
  talkPolisher:TalkPolisher;
+ discovery:DiscoveryService;
 };
 
 const account=new CookieAccountClient(),cloud=new CloudWorkspace(account);
@@ -79,6 +81,8 @@ export const services:Services={
  moodInterpreter:guestMoodInterpreter(guestAi),
  backgroundGenerator:guestBackgroundGenerator(guestAi),
  talkPolisher:guestTalkPolisher(guestAi),
+ // 音乐小发现: AI teaching cards from the server's language model (data mode); local cards whenever it cannot.
+ discovery:guestDiscoveryService(guestAi),
  // 教学音乐出卡: the server's audio model hears a 30 s excerpt (else its language model reads the numbers); without the
  // server the program makes the card alone.
  teachingMusic:guestTeachingMusicService(guestAi),

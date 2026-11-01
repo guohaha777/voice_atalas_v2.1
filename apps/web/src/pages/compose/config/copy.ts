@@ -92,10 +92,25 @@ export const composeCopy={
  talkTitle:'课本讲解',
  tryThisTitle:'试一试',tryThisLead:'回声场里',
  talkParts:{feature:'特点',meeting:'碰一碰',task:'试一试'},
- teachTitle:'这首音乐有什么特征',
+ teachTitle:'音乐小发现',
  teachLead:'边放边讲，问问孩子听出了什么。',
  polishing:'AI 正在换个说法…',
  teachIdea:'音乐知识',teachAsk:'可以问孩子',
+ /** 音乐小发现: the child's side of each point, the teacher's side, and the summaries; who it is for (给孩子 / 给老师). */
+ pointFind:'小发现',pointWhere:'听哪里',pointAsk:'可以问孩子',pointTry:'小尝试',
+ pointConcept:'音乐知识',pointBasis:'依据',pointHow:'怎么带',pointListen:'改完再听',
+ summaryChild:'这首小曲的特征',summaryTeacher:'给老师的小结',
+ readers:{label:'讲给谁听',child:'给孩子',teacher:'给老师'},
+ aiSetTitle:'含 AI 整理的小发现，依据见“给老师”',
+ discoveryAsking:'AI 正在整理小发现…',
+ discoveryAudioNote:'会把这首作品的混音交给 AI 听一听，帮助整理发现。',
+ /** Why this piece has no AI cards (said once in the panel; the local cards stay). */
+ discoveryFailed:{
+  quota:'今天的 AI 次数用完啦，先看看这些小发现吧～',
+  offline:'网络断开了，先看看这些小发现吧～',
+  timeout:'AI 这次有点慢，先看看这些小发现吧～',
+  failed:'AI 这次没整理好，先看看这些小发现吧～',
+ },
  teachPlay:'从头放给大家听',
  moodLabel:'心情',
  // Actions

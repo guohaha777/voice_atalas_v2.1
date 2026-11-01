@@ -4,6 +4,7 @@ import {composeCopy} from '../config/copy.ts';
 import type {Compose} from '../model/useCompose.ts';
 import styles from './FooterBar.module.css';
 import {TalkProgress} from './TalkProgress.tsx';
+import {DISCOVERY_TIMEOUT_MS} from '../../../shared/discovery/service.ts';
 import {ui} from '../../../shared/ui/controls.ts';
 
 /**
@@ -19,10 +20,22 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{
 }){
  const [index,setIndex]=useState(0);
  const [teaching,setTeaching]=useState(false);
- const {discoveries,tryThis,textbook}=compose.talk;
- const discovery=discoveries.length?discoveries[index%discoveries.length]!:null;
+ /** Who the panel speaks to: the child (discovery, question, try) or the teacher (idea, evidence, how to lead). */
+ const [reader,setReader]=useState<'child'|'teacher'>('child');
+ const {textbook}=compose.talk;
+ const {set,asking,failure}=compose.discovery;
+ const points=set?.points??[];
+ const point=points.length?points[index%points.length]!:null;
+ /** The AI bubble after 音乐小发现: the whole set was written by a model and passed the checks. */
+ const aiBubble=set?.origin==='ai'
+  ?<em className={styles.aiBubble} title={composeCopy.aiSetTitle}>{composeCopy.aiTag}</em>
+  :null;
  /** How many entries the bulb's panel holds: shown on the bulb as a hint to open it. */
- const entries=discoveries.length?(textbook?1:0)+discoveries.length+(tryThis?1:0):0;
+ const entries=points.length?(textbook?1:0)+points.length:0;
+ const polishing=compose.talk.polishing||asking;
+ const progressLabel=asking?composeCopy.discoveryAsking:composeCopy.polishing;
+ const progressMs=asking?DISCOVERY_TIMEOUT_MS:undefined;
+ const failed=failure&&failure!=='not-open'?composeCopy.discoveryFailed[failure]:null;
  // Esc closes the panel (dialogs handle their own Esc).
  useEffect(()=>{
   if(!teaching)return;
@@ -39,31 +52,48 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{
     className={styles.bulb}
     aria-expanded={teaching}
     aria-controls="teach-panel"
-    disabled={!discoveries.length}
+    disabled={!points.length}
     aria-label={teaching?composeCopy.bulbClose:composeCopy.bulbOpen}
     title={teaching?composeCopy.bulbClose:composeCopy.bulbOpen}
     onClick={()=>setTeaching(open=>!open)}>
     <PaperIcon name="bulb" tone="yellow"/>
     {entries>0&&!teaching&&<span className={styles.bulbCount} aria-hidden="true">{entries}</span>}
    </button>
-   <div>
-    <h3 id="discovery-title">{composeCopy.discoveryTitle}</h3>
-    <p aria-live="polite">{discovery?discovery.line:composeCopy.notices['need-event']}</p>
-    <TalkProgress active={compose.talk.polishing}/>
+   <div className={styles.discoveryText}>
+    <h3 id="discovery-title">
+     {composeCopy.discoveryTitle}
+     {aiBubble}
+    </h3>
+    <p className={styles.preview} aria-live="polite" title={point?.knowledge}>{point?point.knowledge:composeCopy.notices['need-event']}</p>
+    <div className={styles.discoveryProgress}><TalkProgress active={polishing} label={progressLabel} timeoutMs={progressMs}/></div>
    </div>
-   {discoveries.length>1&&<button type="button" className={styles.discoveryNext} onClick={()=>setIndex(value=>value+1)}>
+
+   {points.length>1&&<button type="button" className={styles.discoveryNext} onClick={()=>setIndex(value=>value+1)}>
     {composeCopy.discoveryNext}
    </button>}
   </section>
   <div className={styles.footerActions}>
-   <button
-    type="button"
-    className={`${ui.pill} ${ui.go} ${styles.saveButton}`}
-    data-saved={compose.shelved||undefined}
-    onClick={onSave}>
-    <Glyph name={compose.shelved?'check':'save'}/>
-    {compose.shelved?composeCopy.saved:composeCopy.save}
-   </button>
+   <div className={styles.saveGroup}>
+    <button
+     type="button"
+     className={`${ui.pill} ${ui.go} ${styles.saveButton}`}
+     data-saved={compose.shelved||undefined}
+     onClick={onSave}>
+     <Glyph name={compose.shelved?'check':'save'}/>
+     {compose.shelved?composeCopy.saved:composeCopy.save}
+    </button>
+    <p className={styles.saveMeta}>
+     <button type="button" onClick={onSave}>
+      {composeCopy.saveSettings}
+      <span aria-hidden="true">▾</span>
+     </button>
+     <i aria-hidden="true"/>
+     <span>
+      <Glyph name="lock"/>
+      {composeCopy.saveVisibility}
+     </span>
+    </p>
+   </div>
    <button type="button" className={`${ui.pill} ${ui.back} ${styles.backButton}`} onClick={onBack}>
     <Glyph name="back"/>
     {composeCopy.back}
@@ -72,24 +102,20 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{
     <Glyph name="plus"/>
     {composeCopy.again}
    </button>
-   <p className={styles.saveMeta}>
-    <button type="button" onClick={onSave}>
-     {composeCopy.saveSettings}
-     <span aria-hidden="true">▾</span>
-    </button>
-    <i aria-hidden="true"/>
-    <span>
-     <Glyph name="lock"/>
-     {composeCopy.saveVisibility}
-    </span>
-   </p>
+
   </div>
-  {teaching&&discoveries.length>0&&<section id="teach-panel" className={styles.teach} aria-labelledby="teach-title">
+  {teaching&&set&&<section id="teach-panel" className={styles.teach} aria-labelledby="teach-title">
    <header>
     <h3 id="teach-title">
      <PaperIcon name="bulb" tone="yellow"/>
      {composeCopy.teachTitle}
+     {aiBubble}
     </h3>
+    <div className={styles.readers} role="group" aria-label={composeCopy.readers.label}>
+     {(['child','teacher'] as const).map(id=><button key={id} type="button" aria-pressed={reader===id} onClick={()=>setReader(id)}>
+      {composeCopy.readers[id]}
+     </button>)}
+    </div>
     <button type="button" className={styles.teachPlay} onClick={compose.restart}>
      <Glyph name="play"/>
      {composeCopy.teachPlay}
@@ -99,7 +125,9 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{
     </button>
    </header>
    <p className={styles.teachLead}>{composeCopy.teachLead}</p>
-   <TalkProgress active={compose.talk.polishing}/>
+   {asking&&compose.discovery.hears&&<p className={styles.teachLead}>{composeCopy.discoveryAudioNote}</p>}
+   {failed&&<p className={styles.teachLead} aria-live="polite">{failed}</p>}
+   <TalkProgress active={polishing} label={progressLabel} timeoutMs={progressMs}/>
    {/* Only this list scrolls (wheel, touch, or arrow keys once focused); the title row above stays in place. */}
    <ol tabIndex={0} aria-label={composeCopy.teachTitle}>
     {/* 课本讲解 first when a textbook song is chosen: feature → this shape → what happened → one thing to try. */}
@@ -110,15 +138,30 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{
       {textbook[part]}
      </p>)}
     </li>}
-    {discoveries.map((text,i)=><li key={`${text.idea}-${i}`}>
-     <b>{text.line}</b>
-     <p><em>{composeCopy.teachIdea} · {text.idea}</em>{text.explain}</p>
-     <p className={styles.teachAsk}><em>{composeCopy.teachAsk}</em>{text.ask}</p>
+    {/* Each point: the music-making idea in this piece, then for the child how it shows, a question and one try;
+        for the teacher the idea in plain words, the program's evidence, how to lead it and what to listen for. */}
+    {points.map((item,i)=><li key={`${item.point}-${i}`}>
+     <b>{item.knowledge}</b>
+     {reader==='child'?<>
+      <p><em>{composeCopy.pointFind}</em>{item.discovery}</p>
+      <p><em>{composeCopy.pointWhere}</em>{item.where||item.teacher.how}</p>
+      <p><em>{composeCopy.pointTry}</em>{item.try}</p>
+      <p className={styles.teachAsk}><em>{composeCopy.pointAsk}</em>{item.ask}</p>
+     </>:<>
+      <p><em>{composeCopy.pointConcept}</em>{item.teacher.concept}</p>
+      <p><em>{composeCopy.pointFind}</em>{item.discovery}</p>
+      <p><em>{composeCopy.pointWhere}</em>{item.where||item.teacher.how}</p>
+      <p><em>{composeCopy.pointAsk}</em>{item.ask}</p>
+      <p><em>{composeCopy.pointTry}</em>{item.try}</p>
+      {item.basis.length>0&&<p><em>{composeCopy.pointBasis}</em>{item.basis.join('；')}</p>}
+      <p><em>{composeCopy.pointListen}</em>{item.teacher.listen}</p>
+      <p className={styles.teachAsk}><em>{composeCopy.pointHow}</em>{item.teacher.how}</p>
+     </>}
     </li>)}
-    {/* One thing the class can do right away in 万物声场, then listen again. */}
-    {tryThis&&<li className={styles.talk}>
-     <b>{composeCopy.tryThisTitle}</b>
-     <p><em>{composeCopy.tryThisLead}</em>{tryThis}</p>
+    {/* One short summary of the piece's features, after every point. */}
+    {set.summary.child&&<li className={styles.summary}>
+     <b>{reader==='child'?composeCopy.summaryChild:composeCopy.summaryTeacher}</b>
+     <p>{reader==='child'?set.summary.child:set.summary.teacher}</p>
     </li>}
    </ol>
   </section>}

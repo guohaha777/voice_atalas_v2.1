@@ -5,6 +5,8 @@ import type {AiBackgroundStep,BackgroundResult,BackgroundUnavailable} from '@wan
 import type {BackgroundGenerator} from '../background/generator.ts';
 import type {TeachingMusicService} from '../inspiration/teachingMusic.ts';
 import type {TalkPolisher} from '../talk/polisher.ts';
+import {DISCOVERY_TIMEOUT_MS} from '../discovery/service.ts';
+import type {DiscoveryFailure,DiscoveryService} from '../discovery/service.ts';
 import type {MoodInterpreter} from '../ports/moodInterpreter.ts';
 import type {GuestAiClient,GuestReply} from './guestAiClient.ts';
 
@@ -27,6 +29,24 @@ const wait=(ms:number,signal:AbortSignal)=>new Promise<void>((resolve,reject)=>{
   reject(new Error('aborted'));
  },{once:true});
 });
+
+export function guestDiscoveryService(client:GuestAiClient):DiscoveryService{
+ const reason=(reply:Extract<GuestReply,{ok:false}>):DiscoveryFailure=>reply.status===0&&reply.reason==='network'
+  ?'offline'
+  :unavailableReason(reply)==='quota'
+   ?'quota'
+   :unavailableReason(reply) as DiscoveryFailure;
+ return {
+  get open(){
+   return client.open('language');
+  },
+  get hears(){return client.hears();},
+  async discover(brief,signal){
+   const reply=await client.post('/api/v1/discovery/work',brief,signal,DISCOVERY_TIMEOUT_MS);
+   return reply.ok?{ok:true,value:reply.data}:{ok:false,reason:reason(reply)};
+  },
+ };
+}
 
 export function guestTalkPolisher(client:GuestAiClient):TalkPolisher{
  return {

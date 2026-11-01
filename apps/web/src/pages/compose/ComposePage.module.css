@@ -11,7 +11,7 @@
    高/中/低). Desktop fills one screen; phones stack and scroll. */
 .shell{min-height:100vh;min-height:100dvh;color:var(--wk-ink);
  background:var(--wk-page-bg)}
-.page{position:relative;z-index:1;display:flex;flex-direction:column;max-width:1320px;min-height:calc(100dvh - 64px);margin:0 auto;padding:0 32px 18px}
+.page{position:relative;z-index:1;display:flex;flex-direction:column;max-width:1320px;height:calc(100dvh - 64px);margin:0 auto;padding:0 32px 20px}
 .side{animation:global(wk-rise) .5s var(--wk-ease) both}
 .side{animation-delay:.05s}
 .intro{--art:66px;--art-fit:50px;--art-phone:46px;--intro-margin-fit:10px 0 8px}
@@ -31,7 +31,7 @@
  .workspace{grid-template-columns:minmax(0,1fr) 316px}
 }
 @media(--one-column){
- .page{min-height:0;padding:0 20px 32px}
+ .page{height:auto;min-height:0;padding:0 20px 32px}
  .workspace{grid-template-columns:minmax(0,1fr);gap:16px}
  .side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
  .side>:last-child{grid-column:1/-1}

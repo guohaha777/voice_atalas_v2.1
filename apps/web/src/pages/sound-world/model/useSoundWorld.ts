@@ -96,6 +96,8 @@ export function useSoundWorld(
   stopAll();
   switchTo(enabled);
   dispatch({type:'said',lastAction:enabled?'background-on':'background-off'});
+  // Opening an empty textbook selection asks the page to show the song picker.
+  return enabled&&settings.inspiration.kind==='none';
  };
 
  // The child's arrangement is kept through the repository on every change; an untouched example is not stored.

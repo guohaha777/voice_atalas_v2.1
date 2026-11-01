@@ -30,6 +30,8 @@
 | `rules/background.v1.json` | 本地背景：心情配色表、调式、旋律只在空档、结尾、课本歌曲的几种样子（压短、慢一倍…）、碰一碰的判定 |
 | `rules/mix.v3.json` | 混音：孩子声音和背景的音量、背景让位、总线限幅 |
 | `rules/textbook-match.v1.json` | 帮我找找：课本歌曲怎么匹配 |
+| `rules/orchestration.v1.json` | 成曲乐器编配：单选领奏、合奏分工、补轻节奏 |
+| `rules/discovery.v1.json` | 音乐小发现：休止多长算安静、长短对比倍数、背景比声音响多少算盖住、几张卡、哪类发现优先 |
 
 ### 算法（纯函数，研发维护）
 
@@ -42,6 +44,23 @@
 | `src/textbookVariation.ts` | 课本歌曲换样子（`shapeOf`）和系统挑哪两个样子 |
 | `src/textbookMatch.ts` | 帮我找找的相似度 |
 | `src/mix.ts` | 背景让一让（避让曲线）、限幅 |
+| `src/keptBackground.ts` | 作品留住的背景：保存 AI / 程序自编音符，书架和服务器按它放 |
+| `src/discovery.ts` | 读取并检查音乐小发现的门槛 |
+
+### 音乐小发现（成曲，11-01）
+
+| 文件 | 做什么 |
+| --- | --- |
+| `packages/contracts/src/discovery.ts` | 证据、可执行操作、教学条目、当前混音与声音观察、两阶段请求契约 |
+| `apps/web/src/shared/discovery/evidence.ts` | 从编排、孩子的选择、录音测量、背景和两层实际音量找证据（程序听感证据） |
+| `apps/web/src/shared/discovery/sets.ts` | AI 卡在前、证据不成立就换本地卡、补足条数、名字放回去 |
+| `apps/web/src/pages/compose/model/discoveryActions.ts` | 页面现在能做的操作清单（小小尝试只能用这些） |
+| `apps/web/src/pages/compose/model/useDiscovery.ts` | 什么时候问 AI（按实际混音版本请求；配器 / 音量变化后更新）、缓存、过时回复丢弃、失败原因 |
+| `packages/prompts/corpus/discovery-cards.v1.json` | 本地教学卡语料（每类证据一张完整卡、每张都有“从头再听”）、操作说法、孩子不用的词 |
+| `packages/prompts/src/discovery/` | 本地卡挑选、逐卡检查（前后端共用） |
+| `packages/prompts/prompts/music-discovery-system.v1.json`、`music-discovery.v1.json` | 独立教学 system prompt、教学任务模板（只在服务器拼装）；music-observation.v1.json 单独管理声音观察要求 |
+
+补充：`shared/discovery/mix.ts` 用播放的实际片段与背景 buffer 渲染完整混音（含音量、限幅、淡出），再编码为 16 kHz 双声道 WAV，不单独归一化声部。后端 `apps/api/src/guest/discovery.ts` 校验音频、调用声音模型并检查观察；`routes.ts` 继续调用文本模型并逐条验收、有限修复。AI 气泡放在“音乐小发现”标题旁，表示含合格 AI 条目，不表示所有条目均由 AI 生成。
 
 ### 网页里执行声音的地方（没有任何数值，只执行规则给的计划）
 

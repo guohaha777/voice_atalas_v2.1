@@ -12,8 +12,8 @@ import {keptCache} from '../../../shared/storage/keptCache.ts';
 const made=keptCache<Polished>('ai-talk');
 
 /**
- * 音乐小发现 and 课本讲解 for 万物成曲 (rules in shared/talk/talkView.ts). The corpus sentences show at once. The AI
- * wording goes with the AI music: asked when an AI background is made for this piece and the talk has none yet
+ * 课本讲解 for 万物成曲 (rules in shared/talk/talkView.ts), and the counted facts the score's listening prompt reads
+ * (音乐小发现's cards are useDiscovery's). The corpus sentences show at once. The AI wording goes with the AI music: asked when an AI background is made for this piece and the talk has none yet
  * (`ensure`), and again after every 换一首 that made one (`renew`) — never because something on the page changed.
  * What came back is kept and shows again whenever the same talk does; only the lines that pass the checks replace the
  * corpus ones.
@@ -28,13 +28,15 @@ export function useTalk(
  const local=useMemo(
   ()=>localTalk(arrangement,track,inspiration,plan),
   [arrangement,track,inspiration,plan]);
- const key=talkKey(local);
+ // 音乐小发现 now has its own AI cards (useDiscovery); only 课本讲解 is still reworded here.
+ const textbookOnly=useMemo(()=>({...local,work:null}),[local]);
+ const key=talkKey(textbookOnly);
  const [, setMade]=useState(0);
  /** The talk an AI rewording is on its way for (the page shows a progress bar; the corpus lines stay meanwhile). */
  const [asking,setAsking]=useState<string|null>(null);
  const controller=useRef<AbortController|null>(null);
  useEffect(()=>()=>controller.current?.abort(),[]);
- const canAsk=polisher.open&&!!(local.work||local.textbook);
+ const canAsk=polisher.open&&!!local.textbook;
  const ask=useCallback((force:boolean)=>{
   if(!canAsk||asking===key)return;
   const current=new AbortController();
@@ -49,7 +51,7 @@ export function useTalk(
     setMade(count=>count+1);
     return;
    }
-   void polishTalk(local,polisher,current.signal).then(value=>{
+   void polishTalk(textbookOnly,polisher,current.signal).then(value=>{
     if(value&&!current.signal.aborted){
      made.set(asked,value);
      setMade(count=>count+1);
@@ -59,7 +61,7 @@ export function useTalk(
      if(!current.signal.aborted)setAsking(null);
     });
   });
- },[canAsk,asking,key,local,polisher]);
+ },[canAsk,asking,key,textbookOnly,polisher]);
  const polished=made.get(key);
  const view=useMemo(()=>mergeTalk(local,polished,polisher.open),[local,polished,polisher.open]);
  return useMemo(()=>({

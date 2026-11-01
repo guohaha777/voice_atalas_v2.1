@@ -13,6 +13,9 @@ import {RULE_VERSIONS} from '@wanwu-v2/sound-rules/rules';
 import {instrumentUnavailable} from './instrumentAvailability.ts';
 import {guideLines} from '../config/guideLines.ts';
 import {useAiBackground} from './useAiBackground.ts';
+import {useDiscovery} from './useDiscovery.ts';
+import type {DiscoveryBackground} from '@wanwu-v2/contracts/discovery';
+import type {DiscoveryService} from '../../../shared/discovery/service.ts';
 import {textbookSwitch} from '../../../shared/inspiration/textbookSwitch.ts';
 import {services} from '../../../app/services.ts';
 import type {TalkPolisher} from '../../../shared/talk/polisher.ts';
@@ -36,6 +39,7 @@ export function useCompose(
  generator:BackgroundGenerator=services.backgroundGenerator,
  polisher:TalkPolisher=services.talkPolisher,
  teaching:TeachingMusicService=services.teachingMusic,
+ discoveryService:DiscoveryService=services.discovery,
 ){
  const [state,dispatch]=useReducer(composeReducer,initialCompose);
  const [shelfCount,setShelfCount]=useState(0);
@@ -120,6 +124,33 @@ export function useCompose(
    :music.buffer(arrangement),
  };
  const playback=usePiecePlayback(latest,notify,played,layout);
+
+ // ----- 音乐小发现: evidence and teaching cards, asked once per piece as it sounds -----
+ const discoveryBackground=useMemo<DiscoveryBackground>(()=>({
+  kind:!heard.background.enabled?'off':songPlays?'textbook':ai.using?(ai.source==='program'?'program':'ai'):'plain',
+  instruments:music.chosen.map(item=>item.name),
+  level:heard.background.enabled?choice.volumeLevel(heard.background.volume):null,
+  gain:choice.backgroundGain(heard.background),
+ }),[heard.background.enabled,heard.background.volume,songPlays,ai.using,ai.source,music.chosen]);
+ const discovery=useDiscovery({
+  arrangement:state.arrangement,
+  background:discoveryBackground,
+  // What the background plays, by content: the AI / program result, the song, or the plain one.
+  content:discoveryBackground.kind==='textbook'
+   ?`song:${music.track?.id??'-'}`
+   :discoveryBackground.kind==='ai'||discoveryBackground.kind==='program'
+    ?ai.renderKey
+    :`plain:${music.track?.id??'-'}`,
+  backgroundMusic:discoveryBackground.kind==='off'||ai.fixedAudio||!instrumentPlan?null:{
+   tempo:instrumentPlan.tempo,metre:instrumentPlan.metre,notes:instrumentPlan.notes,
+  },
+  busy:ai.state.status==='working',
+  instrumentChoice:[...unavailableInstruments.values()].some(reason=>reason===null),
+  instrumentOptions:instruments.filter(item=>unavailableInstruments.get(item.id)===null).map(item=>item.name),
+  layers:playback.layers,
+  audio:playback.analysisAudio,
+  service:discoveryService,
+ });
 
  // ----- settings -----
  /** A new length restarts the piece; a length too short for the longest sound is only explained (playback goes on). */
@@ -281,6 +312,7 @@ export function useCompose(
   setSpan,
   setInspiration,
   talk,
+  discovery,
   /** 规则 23: the 背景音乐 switch as shown (off while the song plays). */
   backgroundSwitch:choice.shownBackgroundSwitch(state.settings.background.enabled,songPlays),
   /** 规则 24: tapping the 背景音乐 switch (making an AI background when there is none); the squirrel says what happened. */

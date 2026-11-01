@@ -66,12 +66,15 @@ export class GuestAiClient{
  get(path:string,signal?:AbortSignal){
   return this.send('GET',path,undefined,signal);
  }
- /** POST with the session's CSRF token; a stale token (after login or logout) is fetched again once. */
- async post(path:string,body:unknown,signal?:AbortSignal):Promise<GuestReply>{
+ /**
+  * POST with the session's CSRF token; a stale token (after login or logout) is fetched again once. `timeoutMs` is for
+  * the one caller whose server round may run past the usual cap (音乐小发现: model call + one repair, under 20 s).
+  */
+ async post(path:string,body:unknown,signal?:AbortSignal,timeoutMs=REQUEST_TIMEOUT_MS):Promise<GuestReply>{
   for(let attempt=0;attempt<2;attempt++){
    const token=await this.token(signal);
    if(!token)return {ok:false,status:0,reason:'network'};
-   const reply=await this.send('POST',path,body,signal,token);
+   const reply=await this.send('POST',path,body,signal,token,timeoutMs);
    if(reply.ok||reply.reason!=='csrf-failed')return reply;
    this.csrf=null;
   }
@@ -91,10 +94,17 @@ export class GuestAiClient{
  }
 
  /** One request, at most REQUEST_TIMEOUT_MS; the visitor's own models go along in a header (POST only). */
- private async send(method:'GET'|'POST',path:string,body?:unknown,signal?:AbortSignal,csrf?:string):Promise<GuestReply>{
+ private async send(
+  method:'GET'|'POST',
+  path:string,
+  body?:unknown,
+  signal?:AbortSignal,
+  csrf?:string,
+  timeoutMs=REQUEST_TIMEOUT_MS,
+ ):Promise<GuestReply>{
   const abort=new AbortController();
   const stop=()=>abort.abort();
-  const timer=setTimeout(stop,REQUEST_TIMEOUT_MS);
+  const timer=setTimeout(stop,timeoutMs);
   signal?.addEventListener('abort',stop,{once:true});
   try{
    const own=method==='POST'?overrideHeader(this.models()):null;

@@ -9,6 +9,7 @@ import {useClassroom} from '../../shared/ui/classroom.ts';
 import {WorkIntro} from '../../shared/ui/WorkIntro.tsx';
 import {composeCopy} from './config/copy.ts';
 import {composeGuide,guideLines} from './config/guide.ts';
+import {volumeLevel} from './model/backgroundChoice.ts';
 import {useCompose} from './model/useCompose.ts';
 import type {Compose} from './model/useCompose.ts';
 import {InspirationDialog} from '../../shared/inspiration/InspirationDialog.tsx';
@@ -29,7 +30,7 @@ function spokenBackground(compose:Compose){
    ?guideLines.backgroundOn(backgroundCopy.describe(plan,compose.entry&&compose.entry.pulse!=='none'?compose.entry.title:null))
    :null;
   case 'background-off':return guideLines.backgroundOff;
-  case 'background-volume':return guideLines.volume(volume<.3?'soft':volume>.7?'loud':'medium');
+  case 'background-volume':return guideLines.volume(volumeLevel(volume));
   case 'instrument':
    return compose.chosen.length
     ?guideLines.instruments(backgroundCopy.parts(

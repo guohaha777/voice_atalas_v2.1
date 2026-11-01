@@ -73,7 +73,9 @@ export function SoundPalette({world,bind,onMore,onInspiration}:{
      aria-checked={world.backgroundEnabled}
      aria-label={worldCopy.backgroundToggle}
      className={styles.switch}
-     onClick={()=>world.setBackgroundEnabled(!world.backgroundEnabled)}>
+     onClick={()=>{
+      if(world.setBackgroundEnabled(!world.backgroundEnabled))onInspiration();
+     }}>
      <i><Glyph name={world.backgroundEnabled?'sound':'muted'}/></i>
     </button>
    </div>

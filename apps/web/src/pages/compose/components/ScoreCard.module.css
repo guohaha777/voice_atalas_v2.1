@@ -15,9 +15,13 @@
 /* A listening question that changes with the piece (not a layout note). */
 .scoreHint{min-width:0;overflow-wrap:anywhere;display:flex;align-items:center;gap:8px;align-self:flex-start;max-width:100%;margin:4px 0 8px;padding:6px 16px 6px 8px;border-radius:999px;background:#fff;box-shadow:0 2px 0 var(--wk-line-strong),0 6px 12px #26301a0d;font-size:var(--font-body);font-weight:700;color:var(--wk-ink-soft)}
 .scoreHint svg{flex-shrink:0;width:22px;height:22px;color:var(--wk-sun-deep)}
-.score{--mk:clamp(52px,8.4vh,76px);flex:1;min-height:calc(var(--rows,3) * (var(--mk) + 20px) + 28px);display:grid;grid-template-rows:minmax(0,1fr) auto;gap:6px}
-.score[data-rows="4"]{--mk:clamp(46px,7vh,64px)}
-.score[data-rows="5"]{--mk:clamp(40px,5.8vh,54px)}
+/* The score takes whatever height the card leaves (it never sets the page height): more field rows mean thinner lanes,
+   and each marker shrinks to fit its lane (--fit: one lane's height minus 20px for the name, never below 30px). */
+/* The bottom row's names hang a little below their lane, so the ruler keeps 10px clear of them. */
+.score>.scoreRuler{margin-top:10px}
+.score{--fit:max(30px,calc((100cqh - 38px - (var(--rows,3) - 1) * 6px) / var(--rows,3) - 20px));--mk:min(clamp(52px,8.4vh,76px),var(--fit));container-type:size;flex:1;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:6px}
+.score[data-rows="4"]{--mk:min(clamp(46px,7vh,64px),var(--fit))}
+.score[data-rows="5"]{--mk:min(clamp(40px,5.8vh,54px),var(--fit))}
 /* The score area: the field's rows as soft paper bands. Tapping empty space plays from that moment. */
 .scoreField{position:relative;display:grid;grid-template-rows:repeat(var(--rows),1fr);gap:6px;min-height:0;cursor:pointer}
 .scoreLane{border-radius:30px 46px 36px 52px/24px 30px 28px 36px;background:linear-gradient(100deg,#f3f8e0,#f8fbea 55%,#f1f7da);box-shadow:var(--wk-inset),inset 0 0 0 1px #e8f0cc}
@@ -40,7 +44,7 @@
 .itemName small{margin-left:5px;font-size:.92em;font-weight:600;color:var(--wk-muted)}
 .item[data-sounding] .itemName{background:var(--wk-sun)}
 /* 课堂大屏: bigger markers, and the sounding one grows and glows so the back row can follow. */
-:global(:root[data-classroom]) .score{--mk:clamp(64px,10.5vh,100px)}
+:global(:root[data-classroom]) .score{--mk:min(clamp(64px,10.5vh,100px),var(--fit))}
 :global(:root[data-classroom]) .item[data-sounding] .itemMarker{scale:1.18;filter:drop-shadow(0 0 18px #ffd84a) drop-shadow(0 0 6px #ffd84a) drop-shadow(0 6px 8px #26301a1f)}
 /* Length tail: from the marker centre to the right, as long as the sound is heard (same scale as the ruler). */
 .itemTail{position:absolute;z-index:0;display:flex;align-items:center;justify-content:flex-end;height:14px;border-radius:0 999px 999px 0;background:var(--tail);box-shadow:inset 0 2px 0 #ffffff80,inset 0 -2px 0 var(--tail-line),0 2px 4px #26301a14;transform:translateY(-50%);pointer-events:none;transition:filter .2s}
@@ -70,8 +74,6 @@
 }
 /* Shorter laptop screens (1366 × 768, 1280 × 720): same layout, tighter rhythm, still one screen. */
 @media(--short){
- /* One screen first: the score may shrink to its original minimum here (markers scale with the screen height). */
- .score{min-height:220px}
  .scoreCard{padding:12px 16px 10px}
  .scoreHint{margin-bottom:4px}
 }

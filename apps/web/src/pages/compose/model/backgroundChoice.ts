@@ -164,6 +164,8 @@ export const usedSource=(using:boolean,made:{source:AiSource}|null,programMade=f
  */
 export const backgroundGain=(background:Pick<BackgroundLayer,'enabled'|'volume'>,maxGain=MIX_RULES.composeBackgroundMaxGain)=>
  background.enabled?background.volume*maxGain:0;
+/** How loud the slider is, in the three words the squirrel and 音乐小发现 use. */
+export const volumeLevel=(volume:number)=>volume<.3?'soft' as const:volume>.7?'loud' as const:'medium' as const;
 
 // ----- 规则 23：页面上的背景音乐开关 -----
 /** 二选一：课本歌在放时，背景音乐卡（AI / 普通背景）的开关显示为关，卡片变灰（背景层其实开着，歌从这一层放）。 */

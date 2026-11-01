@@ -3,6 +3,7 @@ import type {RefObject} from 'react';
 import {audioSupported} from '../../../shared/audio/audioContext.ts';
 import {SequencePlayer} from '../../../shared/audio/SequencePlayer.ts';
 import type {SequenceVoice} from '../../../shared/audio/SequencePlayer.ts';
+import {discoveryMix} from '../../../shared/discovery/mix.ts';
 import {MIX_RULES} from '@wanwu-v2/sound-rules/mix';
 import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import {pieceSeconds,planPlayback} from '../../../shared/creation/arrangementTiming.ts';
@@ -130,6 +131,22 @@ export function usePiecePlayback(
    if(mine===token.current)setPreparing(false);
   }
  };
+ /**
+  * The two layers as playback would play them now — each placement's shaped clip and the background buffer with its
+  * layer gain — for 音乐小发现's listening measures. Nothing is played; null when there is nothing to measure.
+  */
+ const layers=useCallback(async()=>{
+  const work=latest.current.arrangement;
+  if(!work?.events.length||!audioSupported())return null;
+  const plan=planPlayback(work);
+  const sounds=await Promise.all(plan.map(item=>bank.clip(item.sourceId,item.shape,item.clip,item.analysis)));
+  const gain=latestGain.current;
+  const under=gain>0?await music.buffer(work).catch(()=>null):null;
+  return {
+   sounds:plan.map((item,index)=>({unitId:item.unitId,start:item.startSeconds,buffer:sounds[index]!})),
+   background:under?{buffer:under,gain}:null,
+  };
+ },[latest,bank,music]);
  /** Pause where the clock is (or cancel a play that is still preparing). */
  const pause=()=>{
   token.current++;
@@ -211,5 +228,12 @@ export function usePiecePlayback(
   endScrub,
   pause,
   reset,
+  layers,
+  analysisAudio:async()=>{
+   const work=latest.current.arrangement;
+   const current=await layers();
+   if(!work||!current)return undefined;
+   return discoveryMix(current,pieceSeconds(work));
+  },
  };
 }

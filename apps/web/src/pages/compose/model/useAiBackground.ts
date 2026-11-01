@@ -181,7 +181,10 @@ export function useAiBackground(
   /** Whether what this device kept has been read (before that the page does not know whether to make one). */
   kept,
   /** Back to the local background (a song was chosen: one or the other). */
-  useLocal:()=>setUsing(false),
+  useLocal:()=>{
+   // Choosing textbook music is the latest intent: an older free-AI response must not switch it off.
+   controller.current?.abort();controller.current=null;setAsking(null);setProgress(null);setUsing(false);
+  },
   /** The background in the AI's place again when this piece has one (the song was let go); otherwise the local one. */
   preferAi:()=>setUsing(true),
   /** Switch between the background in the AI's place (when there is one) and the local one. */

@@ -6,6 +6,8 @@ export const media={
  phone:'(max-width:700px)',
  /** The smallest phones (320–360px): tighter labels and trays. */
  tiny:'(max-width:360px)',
+ /** Narrow desktop compose column: keep its source tooltip inside the screen. */
+ 'compose-narrow-desktop':'(min-width:901px) and (max-width:1240px)',
  /** Below this the work pages stack into one scrolling column. */
  'one-column':'(max-width:900px)',
  /** Narrower desktops and landscape tablets: options stack, side columns narrow. */

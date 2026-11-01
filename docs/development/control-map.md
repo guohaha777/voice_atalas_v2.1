@@ -218,3 +218,5 @@ npm run build     # 类型检查 + 构建（正式构建里没有提示词和提
 ```
 
 详细说明：[`packages/prompts/README.md`](../../packages/prompts/README.md)、[`packages/sound-rules/README.md`](../../packages/sound-rules/README.md)、[`packages/contracts/README.md`](../../packages/contracts/README.md)。
+
+课本音乐当前实现、参数、模型分工及降级路径：[textbook-compose.md](textbook-compose.md)。

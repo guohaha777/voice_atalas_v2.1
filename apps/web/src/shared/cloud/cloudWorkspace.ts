@@ -10,6 +10,7 @@ import type {SoundSource} from '@wanwu-v2/contracts/sound';
 import {CONFIRMATION_VERSION} from '@wanwu-v2/contracts/cloud';
 import {CookieAccountClient,AccountError} from '../account/accountClient.ts';
 import type {ApiResult} from '../account/accountClient.ts';
+import {arrangementIdentity} from '../background/compositionIdentity.ts';
 import {workSession} from '../creation/workSession.ts';
 import {sessionArchive} from '../creation/sourceArchive.ts';
 import {CloudMedia} from './cloudMedia.ts';
@@ -237,7 +238,10 @@ export class CloudWorkspace{
    this.update({title:work.title});
    if(!this.record||this.record.id!==work.id)await attachCurrent(this,guard);
    await flushCurrent(this,guard);
-   const content=localContent(work.title);
+   const latest=localContent(work.title);
+   if(work.rendering.textbook&&arrangementIdentity(latest.arrangement)!==arrangementIdentity(work.arrangement))
+    throw new Error('声音资料已更新，请再保存一次以保留最新编曲。');
+   const content={...latest,rendering:work.rendering};
    const record=this.record!;
    const result=await this.api.business<{work:unknown;render:unknown}>(
     `/api/v1/works/${encodeURIComponent(record.id)}`,

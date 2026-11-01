@@ -1,25 +1,8 @@
-// Teaching music for 课本灵感: a teacher picks the class's textbook / teaching recording on this device (or one of the
-// built-in recordings). The file stays on this device (kept in IndexedDB, so it is still there after a refresh); within
-// about 15 s it gets a feature card (./teachingCard.ts) — only a 30 s excerpt and the file name go to the server, for
-// the audio model to hear. With the card, 万物声场 plays its beat and 万物成曲 borrows it like a textbook song.
-//
-// Later, with teacher accounts, the flow below is the plan (protocol v0.4; not implemented; teacher sign-in; the server
-// owns accounts, licence checks and review):
-//   1. POST /api/v1/teaching-music                     ← {mimeType, bytes, durationMs, licenseConfirmed:true,
-//                                                         licenseVersion} → {musicId, uploadUrl, expiresAt}
-//      The server records which teacher confirmed which licence text, and when. Limits as below (10 MB, any length).
-//   2. The file goes straight to object storage at `uploadUrl` (in parts, resumable on a weak network), not through the
-//      API.
-//   3. POST /api/v1/teaching-music/{musicId}/complete  → {musicId, status:'analysing'}
-//   4. GET  /api/v1/teaching-music/{musicId}           → {status:'analysing'} | {status:'ready',features:{tempo,metre,key,
-//      mood,phrases}}. Once analysed the server deletes the audio and keeps only the features — like textbook songs,
-//      whose audio never goes to the cloud.
-//   5. POST /api/v1/backgrounds ← BackgroundBrief with teachingMusic:{musicId} (+ step) → {jobId}, then
-//      GET /api/v1/backgrounds/{jobId} → BackgroundResult: the same AI background entry as without teaching music
-//      (shared/background/generator.ts). The server combines the music's features with how the child arranged the
-//      sounds (where they cluster, rests, length, mood) and generates a matching background layer. It never alters the
-//      child's sounds or placement and never copies the teaching music's melody into the piece.
+// Teaching recordings stay on this device. Feature cards use the existing optional 30 s model request;
+// melody transcription runs locally with bundled weights and is kept with the card. Composition quotes source
+// phrases together with the child's arrangement; the sound field still plays only the beat.
 import {MEASURE_RATE} from '@wanwu-v2/music-features';
+import {audioFingerprint} from '../audio/audioFingerprint.ts';
 import {decodeAudio} from '../audio/loadAudio.ts';
 import {newId} from '../creation/ids.ts';
 import type {KeyValue} from '../storage/guestStore.ts';
@@ -33,7 +16,7 @@ const KEEP=4;
 const KEY='teaching:';
 
 /** Picked on this device; `url` is a local object URL for listening. */
-export type LocalTeachingMusic={id:string;name:string;durationMs:number;bytes:number;url:string};
+export type LocalTeachingMusic={id:string;name:string;durationMs:number;bytes:number;url:string;audioToken?:string};
 /** `already`: the same file is in 教学音乐 already (confirmed before). */
 export type PickResult={status:'picked'|'already';music:LocalTeachingMusic}
  |{status:'not-audio'|'too-large'|'unreadable'};
@@ -75,6 +58,7 @@ export class TeachingMusicStore{
  private listeners=new Set<()=>void>();
  private snapshot:readonly TeachingItem[]=[];
  private kept:KeyValue|null=null;
+ private melodyAttempts=new Set<string>();
  get(id:string):TeachingItem|null{
   return this.items.get(id)??null;
  }
@@ -127,9 +111,16 @@ export class TeachingMusicStore{
  async pick(file:Blob&{name?:string}):Promise<PickResult>{
   if(!file.type.startsWith('audio/'))return {status:'not-audio'};
   if(file.size>TEACHING_MUSIC_MAX_BYTES)return {status:'too-large'};
-  // The same file again (same name and size) is the piece already here, with its card: no second analysis.
+  // Content identity, not a matching name/size: another recording must receive its own analysis.
   const name=(file.name??'').replace(/\.[^.]+$/,'').slice(0,24)||'教学音乐';
-  const known=[...this.items.values()].find(item=>item.name===name&&item.bytes===file.size);
+  let audioToken:string;
+  try{audioToken=await audioFingerprint(await file.arrayBuffer());}catch{return {status:'unreadable'};}
+  let known:(TeachingItem&{blob:Blob;at:number})|undefined;
+  for(const item of this.items.values()){
+   if(item.bytes!==file.size)continue;
+   const token=item.audioToken??await audioFingerprint(await item.blob.arrayBuffer());
+   if(token===audioToken){known=item;break;}
+  }
   if(known){
    if(!known.confirmed){
     this.dropPending(known.id);
@@ -147,7 +138,7 @@ export class TeachingMusicStore{
     URL.revokeObjectURL(url);
     return {status:'unreadable'};
    }
-   const music={id:newId('teaching'),name,durationMs,bytes:file.size,url};
+   const music={id:newId('teaching'),name,durationMs,bytes:file.size,url,audioToken};
    // One upload waits for confirming at a time: a new one replaces the one before.
    this.dropPending();
    this.items.set(music.id,{
@@ -222,6 +213,21 @@ export class TeachingMusicStore{
  /** Lets go of every upload not yet confirmed (but `keep`). */
  private dropPending(keep?:string){
   for(const item of [...this.items.values()])if(!item.confirmed&&item.id!==keep)this.forget(item.id);
+ }
+
+ /** Upgrade older, already-confirmed cards from their kept recording; no new text/audio API request. */
+ async ensureMelody(id:string){
+  const item=this.items.get(id);
+  if(!item?.card||item.card.track.melody||item.analysing||this.melodyAttempts.has(id)||item.card.track.pulse==='none')return;
+  this.melodyAttempts.add(id);this.items.set(id,{...item,analysing:'melody'});this.changed();
+  try{
+   const bytes=await item.blob.arrayBuffer(),buffer=await decodeAudio(bytes.slice(0),MEASURE_RATE);
+   const {transcribeMelody}=await import('./melody/transcribe.ts');
+   const melody=await transcribeMelody(buffer,bytes,item.card.track.tempoBpm,item.card.track.meter);
+   const current=this.items.get(id);
+   if(current?.card)this.items.set(id,{...current,analysing:null,card:{...current.card,track:{...current.card.track,melody}}});
+  }catch{const current=this.items.get(id);if(current)this.items.set(id,{...current,analysing:null});}
+  this.persist(id);this.changed();
  }
 
  /** Makes the piece's card once (again only after a failure); `ask` reaches the server, null = the program alone. */

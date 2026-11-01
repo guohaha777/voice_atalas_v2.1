@@ -98,7 +98,10 @@ export function InspirationCard({compose,onOpen}:{compose:Compose;onOpen:(tab:In
    {composeCopy.inspirationTitle}
    <small>{composeCopy.inspirationOptional}</small>
   </h3>
-  <p className={styles.cardLead}>{lead}</p>
+  <p className={styles.cardLead}>{lead}{compose.songPlays&&(compose.melodyState?.status==='working'
+   ?composeCopy.textbookWorking(compose.melodyState.progress)
+   :compose.textbookIssue?composeCopy.textbookUnavailable
+   :compose.melodyAvailable?composeCopy.textbookExtracted:composeCopy.textbookFallback)}</p>
   <div className={styles.songRow}>
    {/* Shows the chosen song (or that none is chosen yet); a tap opens 课本灵感 to choose or change it. */}
    <button

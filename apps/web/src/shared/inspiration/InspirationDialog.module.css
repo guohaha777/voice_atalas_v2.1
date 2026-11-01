@@ -82,3 +82,8 @@ button.playDot{padding:0;border:0;cursor:pointer}
 /* The small AI bubble beside a song whose card the model helped write (a speech-bubble tail on its lower left). */
 .entryText em.ai{position:relative;padding:0 7px;border-radius:8px 8px 8px 2px;background:var(--wk-sky);color:#1f5566;letter-spacing:.02em}
 .entries li[data-using] .entryText em.ai{background:var(--wk-sky);color:#1f5566}
+
+/* Transcription progress is indeterminate rather than a fictitious 15-second completion bar. */
+.analysing[data-stage=melody] .analysingTrack i{width:35%;animation:melody-scan 1.4s ease-in-out infinite alternate}
+@keyframes melody-scan{from{transform:translateX(0)}to{transform:translateX(180%)}}
+@media(--reduced-motion){.analysing[data-stage=melody] .analysingTrack i{animation:none;transform:translateX(90%)}}

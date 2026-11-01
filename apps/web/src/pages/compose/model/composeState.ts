@@ -8,7 +8,7 @@ import type {ComposeSettings,Inspiration,Rendering,SavedWork} from '@wanwu-v2/co
 import {fitSpan,spanHolds,withSpan} from '../../../shared/creation/arrangementTiming.ts';
 
 export type ComposeNoticeKey='need-event'|'example-save'|'share-off'|'save-failed'|'load-failed'|'no-audio'
- |'missing-audio'|'background-failed';
+ |'missing-audio'|'background-failed'|'save-wait';
 export type ComposeNotice={tone:'info'|'error';key:ComposeNoticeKey}|null;
 /** `span-blocked`: a length too short for the longest sound was asked for and refused. */
 export type ComposeLastAction='span'|'span-blocked'|'inspiration'|'inspiration-none'|'saved'

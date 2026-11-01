@@ -84,20 +84,19 @@ export function useCompose(
  // ----- derived: score, background, talk -----
  const layout=useMemo(()=>state.arrangement?scoreLayout(state.arrangement):null,[state.arrangement]);
  // 课本灵感: the same songs as 万物声场 (shared/inspiration).
- const {entries,tracks,teachingItems,analyseTeaching,teachingOpen}=useInspirationCatalog(inspirations,teaching);
+ const {entries,tracks,teachingItems,analyseTeaching,teachingOpen,melodyState}=useInspirationCatalog(inspirations,teaching,state.settings.inspiration);
  // 背景放谁: every rule is in ./backgroundChoice.ts (numbered as in 成曲规则清单); this hook only carries them out.
  /** 规则 1–2: the chosen song is used only while the 课本 switch is on; what is heard (and kept) follows that. */
  const songOn=choice.songInUse(songSwitch,state.settings.inspiration);
  const heard=useMemo(()=>choice.heardSettings(state.settings,songOn),[songOn,state.settings]);
  // Teaching music is borrowed like a song once its card is made.
- const music=useBackgroundLayer(heard,instruments,tracks,true);
+ const music=useBackgroundLayer(heard,instruments,tracks,true,state.shelved?.rendering.textbook);
  /** What the background is made of right now (mood colour, borrowed rhythm), for the card. */
  const backgroundPlan=useMemo(()=>state.arrangement?music.plan(state.arrangement):null,
  // The plan only changes with the arrangement and what the background borrows.
  [state.arrangement,music.key]);
  /** 音乐小发现 and 课本讲解: corpus sentences at once, an AI rewording only where it passes the checks. */
  const talk=useTalk(state.arrangement,music.track,heard.inspiration,backgroundPlan,polisher);
- /** 规则 3: the AI background, made from the chosen song (switch on or not). */
  // 规则 3: the AI background follows the child's piece only, never the song.
  const ai=useAiBackground(state.arrangement,choice.aiBriefSettings(state.settings),music,generator);
  /** 规则 5: song or AI, one or the other. */
@@ -126,25 +125,26 @@ export function useCompose(
  const playback=usePiecePlayback(latest,notify,played,layout);
 
  // ----- 音乐小发现: evidence and teaching cards, asked once per piece as it sounds -----
+ const textbookSilent=songPlays&&!backgroundPlan?.notes.length;
  const discoveryBackground=useMemo<DiscoveryBackground>(()=>({
-  kind:!heard.background.enabled?'off':songPlays?'textbook':ai.using?(ai.source==='program'?'program':'ai'):'plain',
+  kind:!heard.background.enabled||textbookSilent?'off':songPlays?'textbook':ai.using?(ai.source==='program'?'program':'ai'):'plain',
   instruments:music.chosen.map(item=>item.name),
-  level:heard.background.enabled?choice.volumeLevel(heard.background.volume):null,
-  gain:choice.backgroundGain(heard.background),
- }),[heard.background.enabled,heard.background.volume,songPlays,ai.using,ai.source,music.chosen]);
+  level:heard.background.enabled&&!textbookSilent?choice.volumeLevel(heard.background.volume):null,
+  gain:textbookSilent?0:choice.backgroundGain(heard.background),
+ }),[heard.background.enabled,heard.background.volume,songPlays,textbookSilent,ai.using,ai.source,music.chosen]);
  const discovery=useDiscovery({
   arrangement:state.arrangement,
   background:discoveryBackground,
   // What the background plays, by content: the AI / program result, the song, or the plain one.
   content:discoveryBackground.kind==='textbook'
-   ?`song:${music.track?.id??'-'}`
+   ?`song:${music.key}`
    :discoveryBackground.kind==='ai'||discoveryBackground.kind==='program'
     ?ai.renderKey
     :`plain:${music.track?.id??'-'}`,
-  backgroundMusic:discoveryBackground.kind==='off'||ai.fixedAudio||!instrumentPlan?null:{
+  backgroundMusic:discoveryBackground.kind==='off'||ai.fixedAudio||!instrumentPlan?.notes.length?null:{
    tempo:instrumentPlan.tempo,metre:instrumentPlan.metre,notes:instrumentPlan.notes,
   },
-  busy:ai.state.status==='working',
+  busy:ai.state.status==='working'||(songPlays&&melodyState?.status==='working'),
   instrumentChoice:[...unavailableInstruments.values()].some(reason=>reason===null),
   instrumentOptions:instruments.filter(item=>unavailableInstruments.get(item.id)===null).map(item=>item.name),
   layers:playback.layers,
@@ -236,12 +236,15 @@ export function useCompose(
   if(!canSave())return false;
   // What is kept is what is heard: a song with the 课本 switch off is not part of it, and composed notes (AI 作曲 /
   // 程序自编) go with the piece so the shelf plays the same music.
+  if(songPlays&&melodyState?.status==='working'){notify('save-wait','info');return false;}
+  const textbook=heard.background.enabled&&!ai.using&&current.arrangement?music.resolve(current.arrangement).snapshot:null;
+  if(songPlays&&!textbook){notify('background-failed');return false;}
   const composed=heard.background.enabled&&choice.playedBackground(ai.using)==='ai'?ai.composed():null;
   const work=shelfEntry(
    {...current,settings:heard},
    title,
    new Date(),
-   {background:ai.source,prompt:ai.prompt,rules:{...RULE_VERSIONS},...(composed?{composed}:{})});
+   {background:ai.source,prompt:ai.prompt,rules:{...RULE_VERSIONS},...(composed?{composed}:{}),...(textbook?{textbook}:{})});
   if(!work)return false;
   const result=await repository.saveWork(work);
   if(result.status==='failed'){
@@ -302,6 +305,9 @@ export function useCompose(
   /** The 课本 switch (shared with 万物声场), and whether the chosen song's background is what plays now. */
   songSwitch:choice.shownSongSwitch(songSwitch,ai.using),
   songPlays,
+  melodyState,
+  melodyAvailable:!!state.arrangement&&!!music.resolve(state.arrangement).snapshot?.references.length,
+  textbookIssue:state.arrangement?music.resolve(state.arrangement).error:null,
   setSongSwitch,
   applyChosenSong,
   togglePlay:playback.togglePlay,

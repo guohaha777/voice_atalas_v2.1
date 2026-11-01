@@ -3,7 +3,7 @@
 // with the page, so the list works without a network.
 // Today's catalogue is textbookTracks.ts (real songs with their textbook source; numbers measured by code, words drafted
 // by the model, ear check pending).
-// An inspiration only lends rhythm and feel to the background layer — never a melody, never the child's sounds.
+// Composition can add locally transcribed melody phrases; the sound field continues to use only the beat.
 //
 // A server list may replace it later:
 //   GET  /api/v1/textbook-tracks?edition=…&grade=…      → TextbookTrack[] (validated with isTextbookTrack)

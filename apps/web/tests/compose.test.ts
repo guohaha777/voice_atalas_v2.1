@@ -313,13 +313,15 @@ test('课本灵感: example rhythm or teaching music; chosen in 万物声场 it 
  assert.deepEqual(session.settings().inspiration,{kind:'none'});
 });
 
-test('textbook preview: the song\'s own background (its rhythm and key) in whole bars, the drum playing its rhythm',()=>{
+test('textbook preview: the song\'s own background (its rhythm and key) in whole bars, pulse separated from the characteristic rhythm',()=>{
  const bird=textbookTracks[0]!,horn=textbookTracks[1]!;
  const plan=previewPlan(bird),beat=60/bird.tempoBpm;
  assert.ok(plan.seconds<=PREVIEW_MAX_SECONDS+1e-9&&plan.seconds>=2*beat*bird.meter);
  assert.ok(Math.abs(plan.seconds/(beat*bird.meter)-Math.round(plan.seconds/(beat*bird.meter)))<1e-9,'whole bars');
  const drums=plan.notes.filter(note=>note.part==='rhythm'&&note.at<plan.cadenceAt-1e-9).map(note=>Math.round(note.at/beat*4)/4%bird.meter);
- assert.deepEqual([...new Set(drums)].sort(),[0,.5,1,1.5,1.75],'its rhythm cell: notes at 0, ½, 1, 1½ and 1¾ of every bar');
+ assert.deepEqual([...new Set(drums)].sort(),[0,1],'the drum preserves the pulse while pitched parts carry the characteristic rhythm');
+ const chords=plan.notes.filter(note=>note.part==='chord'&&note.at<plan.cadenceAt-1e-9).map(note=>Math.round(note.at/beat*4)/4%bird.meter);
+ assert.ok(chords.some(at=>at===.5||at===1.5||at===1.75),'the song rhythm remains in the pitched accompaniment');
  assert.notEqual(((previewPlan(horn).tonic%12)+12)%12,((plan.tonic%12)+12)%12,'two songs, two keys');
 });
 

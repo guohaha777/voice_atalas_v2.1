@@ -87,9 +87,9 @@ export function useShelfPlayer(
     // A background that cannot be made is left out: the child's sounds still play.
     const input=backgroundInput(arrangement,settings.inspiration,tracks);
     // The composed notes the piece kept (AI 作曲 / 程序自编) play as they did in 万物成曲; older pieces rebuild it.
-    const {composed}=work.rendering;
+    const {composed,textbook}=work.rendering;
     const local=backgroundPlan(input);
-    const under=await renderArrangedBackground(composed?keptPlan(local,composed):local,chosen,input.sounding)
+    const under=await renderArrangedBackground(textbook?textbook.music:composed?keptPlan(local,composed):local,chosen,input.sounding)
      .catch(()=>null);
     if(under)voices.push({at:0,buffer:under,layer:'background'});
    }

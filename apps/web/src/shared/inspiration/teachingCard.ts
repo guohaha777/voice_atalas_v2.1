@@ -74,7 +74,7 @@ export type FeaturesBrief={
 export type FeaturesRequest={brief:FeaturesBrief;audio:string};
 /** The server's answer, or null when there is none (offline, not open, failed, too slow). */
 export type AskFeatures=(request:FeaturesRequest,signal:AbortSignal)=>Promise<unknown>;
-export type CardStage='reading'|'listening';
+export type CardStage='reading'|'listening'|'melody';
 
 /** The recording is not music (the precheck found almost no steady pitch): no card is made. */
 export class NotMusicError extends Error{
@@ -275,7 +275,7 @@ export function cardFrom(music:{id:string;name:string},m:Measurement,answer:unkn
  * task is about a beat and a bar rhythm, which it does not have.
  * `decode` should give MEASURE_RATE (@wanwu-v2/music-features), the rate the measurement was set for.
  */
-export async function makeTeachingCard(
+async function makeFeatureCard(
  music:{id:string;name:string},
  bytes:ArrayBuffer,
  decode:(bytes:ArrayBuffer)=>Promise<AudioBuffer>,
@@ -307,4 +307,21 @@ export async function makeTeachingCard(
  finally{
   clearTimeout(timer);
  }
+}
+
+/** Features and real note transcription are separate stages; failed transcription keeps an honest feature-only card. */
+export async function makeTeachingCard(
+ music:{id:string;name:string},bytes:ArrayBuffer,decode:(bytes:ArrayBuffer)=>Promise<AudioBuffer>,ask:AskFeatures|null,
+ onStage:(stage:CardStage)=>void=()=>{},now:()=>number=()=>performance.now(),otherLines:readonly string[]=[],
+):Promise<TeachingCard>{
+ let decoded:AudioBuffer|undefined;
+ const card=await makeFeatureCard(music,bytes.slice(0),async b=>{decoded=await decode(b);return decoded;},ask,onStage,now,otherLines);
+ // Unit tests and unavailable Web Audio still exercise the original numeric-card path.
+ if(typeof window==='undefined'||!decoded||card.track.pulse==='none')return card;
+ onStage('melody');
+ try{
+  const {transcribeMelody}=await import('./melody/transcribe.ts');
+  const melody=await transcribeMelody(decoded,bytes,card.track.tempoBpm,card.track.meter);
+  return {...card,track:{...card.track,melody}};
+ }catch{return card;}
 }

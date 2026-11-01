@@ -69,6 +69,10 @@
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
  .aiTip{background:#fffffff2}
 }
+/* On the narrow desktop column the tooltip must end at its chip, inside the viewport. */
+@media(--compose-narrow-desktop){
+ .aiTip{left:auto;right:0}
+}
 /* Phones: centred under the chip and never wider than the screen allows, so it stays inside the page. */
 @media(--phone){
  .aiTip{left:50%;max-width:min(240px,calc(100vw - 48px));transform:translate(-50%,-4px)}

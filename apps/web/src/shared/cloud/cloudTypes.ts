@@ -9,7 +9,7 @@ export type CloudState={accountId:string|null;workId:string|null;title:string;ph
 export const initialCloudState:CloudState={accountId:null,workId:null,title:'未命名草稿',phase:'local',message:'访客创作仅保留在本次页面中。',busy:false,epoch:0,conflictId:null,drafts:[],render:null,share:null,recoverable:false,dialog:null};
 export function toSavedWork(record:WorkRecord,title=record.title):SavedWork{
  return {version:'work-v1',id:record.id,title,arrangement:record.arrangement,settings:record.settings,
-  rendering:{background:'local-rules',prompt:null,rules:{...RULE_VERSIONS}},visibility:'private',share:null,savedAt:record.updatedAt};
+  rendering:record.rendering??{background:'local-rules',prompt:null,rules:{...RULE_VERSIONS}},visibility:'private',share:null,savedAt:record.updatedAt};
 }
 export function cloudError(error:unknown){
  if(error instanceof AccountError){

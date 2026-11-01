@@ -2,6 +2,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import type {ReactNode} from 'react';
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
+import {trackWithMelody} from './melody/library.ts';
 import {audioSupported} from '../audio/audioContext.ts';
 import {SequencePlayer} from '../audio/SequencePlayer.ts';
 import {Glyph} from '../ui/PaperIcon.tsx';
@@ -46,7 +47,8 @@ function useListening(variant:InspirationVariant){
   if(!audioSupported())return;
   let render=previews.current.get(item.id);
   if(!render){
-   render=renderRhythmPreview(item,variant);
+   render=(variant==='full'?trackWithMelody(item).catch(()=>item):Promise.resolve(item))
+    .then(track=>renderRhythmPreview(track,variant));
    previews.current.set(item.id,render);
   }
   setPlaying(key);
@@ -309,7 +311,7 @@ function TeachingMusicPanel({open,items,listening,onAnalyse,onAdded}:{
     event.target.value='';
    }}/>
   {!item&&<p className={styles.hint}>{already?copy.upload.already(already):copy.upload.hint}</p>}
-  {item?.analysing&&<div className={styles.analysing} role="status">
+  {item?.analysing&&<div className={styles.analysing} data-stage={item.analysing} role="status">
    <span>{copy.upload.analysing[item.analysing]}</span>
    <span className={styles.analysingTrack} aria-hidden="true">
     <i style={{animationDuration:`${CARD_BUDGET_MS}ms`}}/>

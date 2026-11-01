@@ -42,6 +42,10 @@ export const composeCopy={
  spanNote:'和声场的长度是同一个；最多多唱 5 秒，再长就剪掉。',
  // Inspiration
  inspirationTitle:'课本灵感',inspirationOptional:'（可跳过）',
+ textbookWorking:(progress:number)=>`正在提取歌曲旋律${progress>0?` ${Math.round(progress*100)}%`:''}，先保留节拍。`,
+ textbookExtracted:'已自动提取旋律，和你的声音一起创作。',
+ textbookUnavailable:'这首歌暂不能生成可靠背景，先听你的声音。',
+ textbookFallback:'旋律暂未可靠提取，当前只参考节拍和音乐特征。',
  inspirationLead:'让背景跟着课本歌曲的节奏走。',
  /** Choose / change the song (opens 课本灵感), and the 课本 switch shared with 万物声场. */
  inspirationPick:'选课本歌曲',inspirationChange:'换课本歌曲',
@@ -139,6 +143,7 @@ export const composeCopy={
   'example-save':'这是示例摆放。回声场自己摆一摆，再来保存吧。',
   'share-off':'请先用受邀老师账号登录，正式保存并试听确认后，才可发布免登录作品链接。',
   'save-failed':'没能放进书架，再试一次吧。',
+  'save-wait':'正在提取歌曲旋律，准备好后再保存吧。',
   'load-failed':'网络有点慢，声音没加载出来，再点一次试试。',
   'no-audio':'这个浏览器不能播放声音。',
   'missing-audio':'这首里有的录音找不到了，可能清除过浏览器数据。',

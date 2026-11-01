@@ -32,7 +32,7 @@ export const inspirationCopy={
   hint:'请老师选一段课堂上唱的歌。',
   off:'AI 没接通，卡片由程序听出来。',
   /** While the card is made: reading = decoding and measuring on this device, listening = the AI hears the excerpt. */
-  analysing:{reading:'正在读这段音乐…',listening:'AI 正在听这段音乐…'},
+  analysing:{reading:'正在读这段音乐…',listening:'AI 正在听这段音乐…',melody:'正在提取歌曲旋律…'},
 
   errors:{'not-audio':'这不是音频文件，换一个试试。','too-large':'文件太大了（最大 10MB）。','unreadable':'这段音频读不出来，换一个试试。'},
   /** The precheck found almost no steady pitch: no teaching card. */

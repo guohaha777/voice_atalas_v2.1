@@ -1,10 +1,8 @@
-// 听一听 a textbook song in the 课本灵感 dialog. In 万物成曲 (`full`): a few bars of exactly the background the song would
-// lend — made by the same rules (@wanwu-v2/sound-rules backgroundPlan: its tempo, metre, characteristic rhythm and key),
-// with the drum playing that rhythm so it is clear — not the song itself (no melody, no recording). Two songs therefore
-// sound as different here as they will under the child's sounds. In 万物声场 (`beat`): the same bars of only its beat,
-// as the field plays it (./beat.ts), so the dialog never promises more than the field gives.
+// Composition preview uses the same textbook core and optional extracted source phrases as the finished piece.
+// The sound-field preview stays beat-only. The original-recording button remains separate.
 import type {TextbookTrack} from '@wanwu-v2/contracts/textbook';
 import {LOCAL_INSTRUMENTS} from '@wanwu-v2/audio-engine/instruments';
+import {composeTextbook} from '@wanwu-v2/sound-rules/textbook-compose';
 import {assignParts,backgroundPlan} from '@wanwu-v2/sound-rules/background';
 import type {BackgroundPlan,BeatPlan} from '@wanwu-v2/sound-rules/background';
 import {renderBackground} from '../audio/renderBackground.ts';
@@ -21,7 +19,9 @@ const previewSeconds=(track:TextbookTrack)=>{const bar=60/track.tempoBpm*track.m
 
 /** Pure: whole bars, nothing else playing, the song's own colour. */
 export function previewPlan(track:TextbookTrack):BackgroundPlan{
- const plan=backgroundPlan({seconds:previewSeconds(track),sounding:[],mood:null,textbook:track,seed:track.id});
+ const made=composeTextbook({version:'textbook-compose-v1',seconds:previewSeconds(track),sounds:[],mood:null,textbook:track});
+ const fallback=backgroundPlan({seconds:previewSeconds(track),sounding:[],mood:null,textbook:track,seed:track.id});
+ const plan=made.status==='ready'?made.music:{...fallback,notes:[]};
  // A few seconds heard on purpose: start at once (the first strong beat matters) and end with a short fade.
  return {...plan,fadeInSeconds:.03,fadeOutSeconds:Math.min(plan.fadeOutSeconds,.8)};
 }

@@ -92,7 +92,8 @@ export function useShelfPlayer(
    if(mine!==token.current)return;
    await player.play(work.id,voices,MIX_RULES.childGain,{
     length:total,
-    layers:{background:background.volume*MIX_RULES.backgroundMaxGain},
+    // A shelved piece sounds as it did in 万物成曲 (its own background maximum).
+    layers:{background:background.volume*MIX_RULES.composeBackgroundMaxGain},
     limiter:MIX_RULES.limiter,
     fadeOut:MIX_RULES.ending.fadeSeconds,
    });

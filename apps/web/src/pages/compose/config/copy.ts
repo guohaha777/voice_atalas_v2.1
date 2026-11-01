@@ -45,6 +45,8 @@ export const composeCopy={
  inspirationLead:'让背景跟着课本歌曲的节奏走。',
  /** Choose / change the song (opens 课本灵感), and the 课本 switch shared with 万物声场. */
  inspirationPick:'选课本歌曲',inspirationChange:'换课本歌曲',
+ // The song button shows the chosen song (or that none is chosen yet); the words above stay as its spoken label.
+ inspirationNoSong:'还没选歌哦',inspirationSong:(name:string)=>`「${name}」`,
  inspirationToggle:'课本开关：打开就用选好的课本歌曲做背景',
  inspirationSwitchOff:'课本开关关着，打开就用它做背景。',
  inspirationAiPlays:'现在播的是 AI 配曲，打开课本开关就换回它。',

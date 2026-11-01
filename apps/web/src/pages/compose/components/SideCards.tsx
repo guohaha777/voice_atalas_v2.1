@@ -15,9 +15,11 @@ const Badge=({icon,tone}:{icon:PaperIconName;tone:PaperTone})=>
  <span className={styles.badge}><PaperIcon name={icon} tone={tone}/></span>;
 
 /** 想听多久？ The same 20 / 30 / 45 s as the field. A last sound may run a little past the length (mix rules `ending`);
- *  that is room for the piece, not a length of its own, so the card does not show it. */
+ *  that is room for the piece, not a length of its own, so the card does not show it. Under the lengths: the
+ *  background volume (规则 22), for whatever background plays — the song's, AI or plain. */
 export function SpanCard({compose}:{compose:Compose}){
  const arrangement=compose.state.arrangement;
+ const {background}=compose.state.settings;
  const choices=useMemo(()=>arrangement?spanChoices(arrangement):[],[arrangement]);
  const needed=useMemo(()=>arrangement?minSpan(arrangement):0,[arrangement]);
  return <section className={styles.card} aria-labelledby="span-title">
@@ -42,6 +44,19 @@ export function SpanCard({compose}:{compose:Compose}){
     </button>;
    })}
   </div>
+  <label className={styles.volume}>
+   <Glyph name="volume"/>
+   <span className={styles.srOnly}>{composeCopy.volumeLabel}</span>
+   <input
+    type="range"
+    min={0}
+    max={1}
+    step={.05}
+    value={background.volume}
+    disabled={!background.enabled}
+    style={{'--fill':`${background.volume*100}%`} as CSSProperties}
+    onChange={event=>compose.setBackgroundVolume(Number(event.target.value))}/>
+  </label>
  </section>;
 }
 
@@ -51,6 +66,12 @@ export function SpanCard({compose}:{compose:Compose}){
  */
 export function InspirationCard({compose,onOpen}:{compose:Compose;onOpen:(tab:InspirationTab)=>void}){
  const {inspiration,background}=compose.state.settings;
+ /** The chosen song's name (a textbook song's title, or the teaching music's own name); null when none is chosen. */
+ const songName=inspiration.kind==='textbook'
+  ?compose.entries.find(item=>item.id===inspiration.entryId)?.title??null
+  :inspiration.kind==='teaching-music'
+   ?inspiration.name
+   :null;
  // The song's name, then why it is not what plays (AI, switch off, card still being made, background off) if so.
  const lead=inspiration.kind==='none'
   ?composeCopy.inspirationLead
@@ -79,8 +100,13 @@ export function InspirationCard({compose,onOpen}:{compose:Compose;onOpen:(tab:In
   </h3>
   <p className={styles.cardLead}>{lead}</p>
   <div className={styles.songRow}>
-   <button type="button" className={styles.songPick} onClick={()=>onOpen('examples')}>
-    {inspiration.kind==='none'?composeCopy.inspirationPick:composeCopy.inspirationChange}
+   {/* Shows the chosen song (or that none is chosen yet); a tap opens 课本灵感 to choose or change it. */}
+   <button
+    type="button"
+    className={styles.songPick}
+    aria-label={songName?`${composeCopy.inspirationSong(songName)}，${composeCopy.inspirationChange}`:composeCopy.inspirationPick}
+    onClick={()=>onOpen('examples')}>
+    {songName?composeCopy.inspirationSong(songName):composeCopy.inspirationNoSong}
    </button>
    <button
     type="button"
@@ -98,7 +124,8 @@ export function InspirationCard({compose,onOpen}:{compose:Compose;onOpen:(tab:In
 
 /**
  * 背景音乐: its own layer under the child's sounds — on / off, who plays it (any instruments, or none = as generated),
- * how loud, and an AI chip once an AI background is ready. Only controls here: the squirrel says what each one did.
+ * and an AI chip once an AI background is ready (the volume is under 想听多久). Only controls here: the squirrel says
+ * what each one did. The song or this card, one or the other: while the song plays the switch shows 关 (规则 23).
  */
 export function BackgroundCard({compose}:{compose:Compose}){
  const {background}=compose.state.settings;
@@ -132,11 +159,11 @@ export function BackgroundCard({compose}:{compose:Compose}){
    <button
     type="button"
     role="switch"
-    aria-checked={background.enabled}
+    aria-checked={compose.backgroundSwitch}
     aria-label={composeCopy.backgroundToggle}
     className={styles.switch}
-    onClick={()=>compose.setBackgroundEnabled(!background.enabled)}>
-    <span>{background.enabled?composeCopy.backgroundOn:composeCopy.backgroundOff}</span>
+    onClick={compose.tapBackgroundSwitch}>
+    <span>{compose.backgroundSwitch?composeCopy.backgroundOn:composeCopy.backgroundOff}</span>
     <i/>
    </button>
   </div>
@@ -159,18 +186,5 @@ export function BackgroundCard({compose}:{compose:Compose}){
     {composeCopy.instrumentMore}
    </button>}
   </div>
-  <label className={styles.volume}>
-   <Glyph name="volume"/>
-   <span className={styles.srOnly}>{composeCopy.volumeLabel}</span>
-   <input
-    type="range"
-    min={0}
-    max={1}
-    step={.05}
-    value={background.volume}
-    disabled={!background.enabled}
-    style={{'--fill':`${background.volume*100}%`} as CSSProperties}
-    onChange={event=>compose.setBackgroundVolume(Number(event.target.value))}/>
-  </label>
  </section>;
 }

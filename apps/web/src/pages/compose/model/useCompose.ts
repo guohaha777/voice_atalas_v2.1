@@ -95,7 +95,8 @@ export function useCompose(
  /** 规则 5: song or AI, one or the other. */
  const songPlays=choice.songPlays(songOn,ai.using);
  const played={
-  gain:music.gain,
+  // 规则 22: the volume slider (under 想听多久) sets the whole layer — song, AI or plain — up to 成曲's own maximum.
+  gain:choice.backgroundGain(state.settings.background),
   key:`${music.key}|${ai.source}`,
   // 规则 4: the AI background while it is used, else the local one.
   buffer:(arrangement:Arrangement)=>choice.playedBackground(ai.using)==='ai'
@@ -111,9 +112,11 @@ export function useCompose(
   if(work&&spanHolds(work,spanSeconds))playback.reset();
   dispatch({type:'span',spanSeconds,now:new Date()});
  };
- /** Carries out one step of the rules: the 课本 switch first, then the AI background, then the talk. */
+ /** Carries out one step of the rules: the 课本 switch and the background layer first, then the AI background, then the talk. */
  const apply=(move:Move)=>{
   if(move.song!==undefined)switchSong(move.song);
+  if(move.background!==undefined&&move.background!==latest.current.settings.background.enabled)
+   dispatch({type:'background-enabled',enabled:move.background});
   if(move.ai==='local')ai.useLocal();
   else if(move.ai==='prefer-ai')ai.preferAi();
   else if(move.ai==='toggle')ai.toggle();
@@ -254,8 +257,17 @@ export function useCompose(
   setSpan,
   setInspiration,
   talk,
-  /** A shape: the squirrel invites the child to press 播放 and find what changed. */
-  setBackgroundEnabled:(enabled:boolean)=>dispatch({type:'background-enabled',enabled}),
+  /** 规则 23: the 背景音乐 switch as shown (off while the song plays). */
+  backgroundSwitch:choice.shownBackgroundSwitch(state.settings.background.enabled,songPlays),
+  /** 规则 24: tapping the 背景音乐 switch (making an AI background when there is none); the squirrel says what happened. */
+  tapBackgroundSwitch:()=>{
+   const shown=choice.shownBackgroundSwitch(latest.current.settings.background.enabled,songPlays);
+   const move=choice.tapBackgroundSwitch(shown,ai.state.status);
+   apply(move);
+   // While one is being made, the squirrel says so (makeAi already did); otherwise whether the background is on.
+   if(move.ai==='make')return;
+   dispatch({type:'said',lastAction:move.background?'background-on':'background-off'});
+  },
   setBackgroundVolume:(volume:number)=>dispatch({type:'background-volume',volume}),
   toggleInstrument:(id:string)=>dispatch({type:'instrument',id}),
   showComing:()=>dispatch({type:'said',lastAction:'instrument-coming'}),

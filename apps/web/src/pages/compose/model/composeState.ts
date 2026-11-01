@@ -38,7 +38,8 @@ export type ComposeAction=
  |{type:'saved';work:SavedWork}
  |{type:'notice';notice:ComposeNotice}
  /** Nothing changes but what the squirrel says (tapping the instruments that are not open yet, the 课本 switch). */
- |{type:'said';lastAction:'instrument-coming'|'ai-background'|'ai-making'|'ai-failed'|'inspiration'|'inspiration-none'};
+ |{type:'said';lastAction:'instrument-coming'|'ai-background'|'ai-making'|'ai-failed'|'inspiration'|'inspiration-none'
+  |'background-on'|'background-off'};
 
 export const initialCompose:ComposeState={
  arrangement:null,

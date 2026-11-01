@@ -1,14 +1,17 @@
 // 万物成曲 · 背景放谁（课本歌 / AI 背景 / 普通背景）：所有规则集中在这一个文件，全是纯函数。
 // useCompose 和 useAiBackground 只按这里的结果去做（开关、AI 让开 / 回来、要不要做 AI、讲解要不要问）。
 // 每条规则一段，编号和《成曲规则清单》、tests/compose-background-choice.test.ts 一一对应。
-// 这里照搬 2026-10-31 的行为，没有改任何规则（包括可能不对的）；要改规则先改清单，再改这里和对应测试。
+// 2026-10-31 整理时照搬当时的行为；之后按用户的纠正改（改规则先改清单，再改这里和对应测试）。
+// 10-31 用户纠正：音量条移到「想听多久」下面、对课本歌和 AI 都管用、拉满更响（规则 22）；课本和背景音乐两张卡
+// 二选一，放课本歌时背景音乐卡的开关也显示关（规则 23、24），放课本歌会把背景层打开（PLAY_SONG、规则 12）。
 //
 // 用到的几样状态：
 // - 课本开关 songSwitch：和万物声场共用的那个开关（shared/inspiration/textbookSwitch.ts，存本机）。
 // - 选中的歌 inspiration：作品设置里的课本灵感（none = 没选；textbook = 课本歌；teaching-music = 教学音乐）。
 // - AI 背景：这首作品有没有做好的 AI 背景（ready），以及现在用不用它（aiUsing）。
 import type {BackgroundSource,BackgroundUnavailable} from '@wanwu-v2/contracts/background';
-import type {ComposeSettings,Inspiration} from '@wanwu-v2/contracts/work';
+import type {BackgroundLayer,ComposeSettings,Inspiration} from '@wanwu-v2/contracts/work';
+import {MIX_RULES} from '@wanwu-v2/sound-rules/mix';
 
 /** 没选歌（课本歌不在用时，背景当作没选歌）。 */
 export const NO_SONG:Inspiration={kind:'none'};
@@ -44,13 +47,13 @@ export const shownSongSwitch=(songSwitch:boolean,aiUsing:boolean)=>songSwitch&&!
 
 // ----- 动作：每个动作之后开关和 AI 怎么变 -----
 /**
- * 一步要做的事：`song` = 把课本开关设成开 / 关（不写 = 不动）；`ai`：`local` = AI 让开（放普通背景），
- * `prefer-ai` = 有 AI 背景就用回 AI，`toggle` = AI / 普通来回换，`make` = 去做一首 AI 背景；`talk: 'ensure'` =
- * 讲解还没有 AI 措辞就问一次。
+ * 一步要做的事：`song` = 把课本开关设成开 / 关（不写 = 不动）；`background` = 把背景层设成开 / 关（不写 = 不动；
+ * 课本歌也从这一层放，关着就什么背景都没有）；`ai`：`local` = AI 让开（放普通背景），`prefer-ai` = 有 AI 背景就
+ * 用回 AI，`toggle` = AI / 普通来回换，`make` = 去做一首 AI 背景；`talk: 'ensure'` = 讲解还没有 AI 措辞就问一次。
  */
-export type Move={song?:boolean;ai?:'local'|'prefer-ai'|'toggle'|'make';talk?:'ensure'};
-/** 放课本歌：开关打开，AI 让开。 */
-const PLAY_SONG:Move={song:true,ai:'local'};
+export type Move={song?:boolean;background?:boolean;ai?:'local'|'prefer-ai'|'toggle'|'make';talk?:'ensure'};
+/** 放课本歌：开关打开，背景层打开（歌从这一层放），AI 让开。 */
+const PLAY_SONG:Move={song:true,background:true,ai:'local'};
 /** 不放课本歌：开关关上，有 AI 背景就用回 AI。 */
 const DROP_SONG:Move={song:false,ai:'prefer-ai'};
 
@@ -86,15 +89,15 @@ export const aiMade=(ok:boolean):Move=>ok?{song:false}:{};
 
 // ----- 规则 12：打开页面（只一次，作品和本机缓存都读到以后） -----
 /**
- * 课本歌在用：放课本歌，什么都不问模型。背景关着：什么都不做。否则：这首作品还没有 AI 背景就做一首；已经有了
- * （本机记着的）就只补一次讲解。
+ * 课本歌在用：放课本歌（背景层打开），什么都不问模型。背景关着：什么都不做。否则：这首作品还没有 AI 背景就做
+ * 一首；已经有了（本机记着的）就只补一次讲解。
  */
 export function openPage({inUse,backgroundEnabled,aiStatus}:{
  inUse:boolean;
  backgroundEnabled:boolean;
  aiStatus:AiBackgroundState['status'];
 }):Move{
- if(inUse)return {ai:'local'};
+ if(inUse)return {background:true,ai:'local'};
  if(!backgroundEnabled)return {};
  if(aiStatus==='idle')return {ai:'make'};
  if(aiStatus==='ready')return {talk:'ensure'};
@@ -140,3 +143,26 @@ export const AI_USED_AT_START=true;
 /** 用着 AI 且有做好的：AI 的来源（audio-ai / notes-ai）；否则是本地规则（local-rules）。存书架时记的就是它。 */
 export const usedSource=(using:boolean,made:{source:Exclude<BackgroundSource,'local-rules'>}|null):BackgroundSource=>
  using&&made?made.source:'local-rules';
+
+// ----- 规则 22：背景音量 -----
+/**
+ * 成曲的音量条（在「想听多久」下面）管放出来的整层背景——课本歌的、AI 的、普通的都一样；拉满是
+ * `composeBackgroundMaxGain`（比万物声场用的 `backgroundMaxGain` 响）。背景层关着就没有声音。
+ */
+export const backgroundGain=(background:Pick<BackgroundLayer,'enabled'|'volume'>,maxGain=MIX_RULES.composeBackgroundMaxGain)=>
+ background.enabled?background.volume*maxGain:0;
+
+// ----- 规则 23：页面上的背景音乐开关 -----
+/** 二选一：课本歌在放时，背景音乐卡（AI / 普通背景）的开关显示为关，卡片变灰（背景层其实开着，歌从这一层放）。 */
+export const shownBackgroundSwitch=(enabled:boolean,playingSong:boolean)=>enabled&&!playingSong;
+
+// ----- 规则 24：点背景音乐开关 -----
+/**
+ * 显示为开：关上背景层（什么背景都不放）。显示为关：打开背景层，课本开关关上，换成 AI 背景——这首作品（按选中的
+ * 歌）还没有 AI 背景、或上次没做成，就马上去做一首（不用再点 AI 标签）；有了或正在做，就用它；没接 AI 就放普通背景。
+ */
+export function tapBackgroundSwitch(shownOn:boolean,aiStatus:AiBackgroundState['status']):Move{
+ if(shownOn)return {background:false};
+ const make=aiStatus==='idle'||aiStatus==='unavailable';
+ return {...DROP_SONG,background:true,...(make?{ai:'make' as const}:{})};
+}
